@@ -1,282 +1,580 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
-import Image from "next/image";
+import { useCallback, useEffect, useState } from "react";
 import {
-  Check,
-  Search,
+  AlertTriangle,
   Building,
-  MapPin,
-  Clock,
-  Trash2,
+  Check,
   CheckCircle2,
-  Ban,
-  ShieldCheck,
-  ExternalLink,
+  Clock,
+  Image as ImageIcon,
+  MapPin,
+  RefreshCw,
+  Search,
+  X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { usePropertyStore } from "@/lib/property-store";
-import type { ModerationProperty } from "@/types/admin";
+import apiClient, { getApiErrorMessage, type ApiEnvelope } from "@/lib/api-client";
 
-interface PropertyModerationGridProps {
-  initialProperties?: ModerationProperty[];
+type PropertyStatus =
+  | "draft"
+  | "pending_approval"
+  | "published"
+  | "rejected"
+  | "sold"
+  | string;
+
+interface AdminProperty {
+  id: string;
+  title: string;
+  description: string;
+  purpose: "Sale" | "Rent";
+  propertyType: string;
+  price: number;
+  areaSize: number;
+  areaUnit: string;
+  location: { city: string; area: string };
+  features?: { bedrooms?: number; bathrooms?: number; parkingSpaces?: number };
+  images: string[];
+  status: PropertyStatus;
+  advertisementStatus?: string | null;
+  inventoryStatus?: string;
+  adminHidden?: boolean;
+  adminRemoved?: boolean;
+  adminFlagged?: boolean;
+  createdAt: string;
+  moderationNotes?: string;
+  agent: {
+    id: string;
+    name: string;
+    phone: string;
+    agencyName?: string;
+    isVerified: boolean;
+  } | null;
 }
 
-export function PropertyModerationGrid({
-  initialProperties,
-}: PropertyModerationGridProps) {
-  const [statusFilter, setStatusFilter] = useState<string>("All");
-  const [searchQuery, setSearchQuery] = useState<string>("");
+interface PropertyCounts {
+  total: number;
+  pending_approval: number;
+  published: number;
+  rejected: number;
+  draft: number;
+  sold: number;
+  [status: string]: number;
+}
 
-  // Connect to global reactive property store
-  const moderationProperties = usePropertyStore((state) => state.moderationProperties);
-  const makePropertyLive = usePropertyStore((state) => state.makePropertyLive);
-  const blockProperty = usePropertyStore((state) => state.blockProperty);
-  const deleteProperty = usePropertyStore((state) => state.deleteProperty);
+interface AdminPropertiesResponse {
+  items: AdminProperty[];
+  counts: PropertyCounts;
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
 
-  const filteredProperties = useMemo(() => {
-    return moderationProperties.filter((prop) => {
-      const matchesStatus =
-        statusFilter === "All" || prop.status === statusFilter;
-      const matchesSearch =
-        searchQuery.trim() === "" ||
-        prop.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        prop.society.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        prop.agentName.toLowerCase().includes(searchQuery.toLowerCase());
+const PAGE_SIZE = 30;
 
-      return matchesStatus && matchesSearch;
-    });
-  }, [moderationProperties, statusFilter, searchQuery]);
+const STATUS_FILTERS = [
+  { value: "all", label: "All" },
+  { value: "pending_approval", label: "Pending Review" },
+  { value: "published", label: "Published" },
+  { value: "rejected", label: "Rejected" },
+  { value: "draft", label: "Draft" },
+  { value: "sold", label: "Sold" },
+] as const;
 
-  const pendingCount = moderationProperties.filter((p) => p.status === "Pending Review").length;
-  const liveCount = moderationProperties.filter((p) => p.status === "Live").length;
-  const blockedCount = moderationProperties.filter((p) => p.status === "Blocked").length;
+function statusLabel(status: string) {
+  const known: Record<string, string> = {
+    pending_approval: "Pending Review",
+    published: "Published",
+    rejected: "Rejected",
+    draft: "Draft",
+    sold: "Sold",
+  };
+  return known[status] ?? `Other: ${status || "unknown"}`;
+}
+
+function formatPrice(price: number) {
+  return `PKR ${new Intl.NumberFormat("en-PK").format(price)}`;
+}
+
+function formatDate(value: string) {
+  const date = new Date(value);
+  return Number.isNaN(date.getTime())
+    ? "Date unavailable"
+    : new Intl.DateTimeFormat("en-PK", { dateStyle: "medium", timeStyle: "short" }).format(date);
+}
+
+export function PropertyModerationGrid({ initialSearch = "" }: { initialSearch?: string }) {
+  const [properties, setProperties] = useState<AdminProperty[]>([]);
+  const [counts, setCounts] = useState<PropertyCounts | null>(null);
+  const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [searchQuery, setSearchQuery] = useState(initialSearch);
+  const [propertyTypeFilter, setPropertyTypeFilter] = useState("");
+  const [purposeFilter, setPurposeFilter] = useState("");
+  const [inventoryFilter, setInventoryFilter] = useState("");
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [actionError, setActionError] = useState("");
+  const [actingId, setActingId] = useState("");
+  const [unavailableImages, setUnavailableImages] = useState<Set<string>>(new Set());
+
+  const markImageUnavailable = (url: string) => {
+    setUnavailableImages((current) => new Set(current).add(url));
+  };
+
+  const loadProperties = useCallback(async (nextPage: number, status: string) => {
+    setLoading(true);
+    setError("");
+    try {
+      const response = await apiClient.get<ApiEnvelope<AdminPropertiesResponse>>(
+        "/admin/properties",
+        {
+          params: {
+            page: nextPage,
+            limit: PAGE_SIZE,
+            ...(status !== "all" ? { status } : {}),
+            ...(searchQuery.trim() ? { search: searchQuery.trim() } : {}),
+            ...(propertyTypeFilter ? { propertyType: propertyTypeFilter } : {}),
+            ...(purposeFilter ? { purpose: purposeFilter } : {}),
+            ...(inventoryFilter ? { inventoryStatus: inventoryFilter } : {}),
+            ...(fromDate ? { fromDate: new Date(`${fromDate}T00:00:00`).toISOString() } : {}),
+            ...(toDate ? { toDate: new Date(`${toDate}T23:59:59.999`).toISOString() } : {}),
+          },
+        },
+      );
+      const result = response.data.data;
+      setProperties(result.items);
+      setCounts(result.counts);
+      setTotal(result.total);
+      setPage(result.page);
+      setTotalPages(result.totalPages);
+    } catch (requestError) {
+      setError(getApiErrorMessage(requestError));
+      setProperties([]);
+      setCounts(null);
+      setTotal(0);
+      setTotalPages(0);
+    } finally {
+      setLoading(false);
+    }
+  }, [fromDate, inventoryFilter, propertyTypeFilter, purposeFilter, searchQuery, toDate]);
+
+  useEffect(() => {
+    void loadProperties(page, statusFilter);
+  }, [loadProperties, page, statusFilter]);
+
+  const filteredProperties = properties;
+
+  const moderate = async (property: AdminProperty, status: "published" | "rejected") => {
+    const moderationNotes =
+      status === "rejected"
+        ? window.prompt("Enter the reason for rejecting this listing:")?.trim()
+        : undefined;
+    if (status === "rejected" && !moderationNotes) return;
+    if (!window.confirm(
+      status === "published"
+        ? `Approve and publish "${property.title}"?`
+        : `Reject "${property.title}" with this reason?\n\n${moderationNotes}`,
+    )) return;
+
+    setActingId(property.id);
+    setActionError("");
+    try {
+      await apiClient.patch(`/admin/properties/${property.id}/moderate`, {
+        status,
+        ...(moderationNotes ? { moderationNotes } : {}),
+      });
+      await loadProperties(page, statusFilter);
+    } catch (requestError) {
+      setActionError(getApiErrorMessage(requestError));
+    } finally {
+      setActingId("");
+    }
+  };
+
+  const moderateAction = async (
+    property: AdminProperty,
+    action: "hide" | "unpublish" | "restore" | "flag" | "remove",
+  ) => {
+    const needsReason = ["hide", "flag", "remove"].includes(action);
+    const reason = needsReason
+      ? window.prompt(`Enter a reason to ${action} this property:`)?.trim()
+      : "";
+    if (needsReason && !reason) return;
+    const warning = action === "remove"
+      ? "This hides the property and ends its linked advertisement. The original property record, images, analytics, leads, and messages are retained."
+      : `Confirm that you want to ${action} this property?`;
+    if (!window.confirm(`${warning}\n\n${property.title}`)) return;
+    setActingId(property.id);
+    setActionError("");
+    try {
+      await apiClient.patch(`/admin/properties/${property.id}/action`, {
+        action,
+        ...(reason ? { reason } : {}),
+      });
+      await loadProperties(page, statusFilter);
+    } catch (requestError) {
+      setActionError(getApiErrorMessage(requestError));
+    } finally {
+      setActingId("");
+    }
+  };
+
+  const deletePermanently = async (property: AdminProperty) => {
+    const reason = window.prompt("Enter the permanent-deletion reason:")?.trim();
+    if (!reason) return;
+    const confirmation = window.prompt('Type "DELETE PROPERTY" to confirm:')?.trim();
+    if (confirmation !== "DELETE PROPERTY") return;
+    if (!window.confirm(`Permanently delete "${property.title}"? This is blocked when leads or conversations are linked. Images and analytics are retained.`)) return;
+    setActingId(property.id);
+    setActionError("");
+    try {
+      await apiClient.delete(`/admin/properties/${property.id}`, {
+        data: { reason, confirmation },
+      });
+      await loadProperties(page, statusFilter);
+    } catch (requestError) {
+      setActionError(getApiErrorMessage(requestError));
+    } finally {
+      setActingId("");
+    }
+  };
+
+  const countForStatus = (status: string) => {
+    if (!counts) return "—";
+    if (status === "all") return counts.total ?? total;
+    return counts[status] ?? 0;
+  };
 
   return (
     <div className="space-y-6">
-      {/* Filter and Search Controls */}
-      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-4 sm:p-6 shadow-sm space-y-4">
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
-          {/* Search Bar */}
-          <div className="relative flex-1">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 flex-shrink-0" />
+      {actionError && (
+        <p role="alert" className="rounded-xl border border-red-800 bg-red-950/40 p-4 text-sm text-red-300">
+          {actionError}
+        </p>
+      )}
+
+      <section className="space-y-4 rounded-3xl border border-slate-800 bg-slate-900 p-4 shadow-sm sm:p-6">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <label className="relative block flex-1">
+            <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
             <input
-              type="text"
-              placeholder="Search listings by title, society, or poster agency..."
+              type="search"
+              placeholder="Search this page by title, area, or agent..."
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 min-h-[44px] rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-rose-500"
+              onChange={(event) => {
+                setPage(1);
+                setSearchQuery(event.target.value);
+              }}
+              className="min-h-[44px] w-full rounded-xl border border-slate-700 bg-slate-800/80 pl-10 pr-4 text-sm text-white focus:outline-none focus:ring-2 focus:ring-rose-500"
             />
-          </div>
-
-          {/* Status Tabs */}
-          <div className="flex items-center gap-1.5 p-1 bg-slate-100 dark:bg-slate-800 rounded-2xl overflow-x-auto text-xs font-bold scrollbar-none">
-            {[
-              { label: "All", count: moderationProperties.length },
-              { label: "Live", count: liveCount },
-              { label: "Pending Review", count: pendingCount },
-              { label: "Blocked", count: blockedCount },
-            ].map(({ label, count }) => (
-              <button
-                key={label}
-                onClick={() => setStatusFilter(label)}
-                className={`px-3.5 py-2 rounded-xl transition-all whitespace-nowrap min-h-[38px] flex items-center gap-1.5 ${
-                  statusFilter === label
-                    ? "bg-white dark:bg-slate-900 text-rose-600 dark:text-rose-400 shadow-xs font-bold"
-                    : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
-                }`}
-              >
-                <span>{label}</span>
-                <span className="px-1.5 py-0.2 rounded-full bg-slate-200 dark:bg-slate-700 text-[10px] text-slate-700 dark:text-slate-300">
-                  {count}
-                </span>
-              </button>
-            ))}
-          </div>
+          </label>
+          <button
+            type="button"
+            onClick={() => void loadProperties(page, statusFilter)}
+            disabled={loading}
+            className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl border border-slate-700 px-4 text-sm font-semibold text-slate-200 hover:bg-slate-800 disabled:opacity-50"
+          >
+            <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
+            Refresh
+          </button>
         </div>
 
-        {/* Post-Moderation Notice */}
-        <div className="flex items-center justify-between text-xs text-slate-500 pt-2 border-t border-slate-100 dark:border-slate-800">
-          <span className="flex items-center gap-1.5">
-            <ShieldCheck className="h-4 w-4 text-emerald-500 flex-shrink-0" />
-            <span><strong>Post-Moderation Active:</strong> Listings from verified agents go Live instantly. Admins can block or remove spam below anytime.</span>
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+          <label className="space-y-1 text-xs text-slate-400">
+            Type
+            <select value={propertyTypeFilter} onChange={(event) => { setPage(1); setPropertyTypeFilter(event.target.value); }} className="min-h-10 w-full rounded-lg border border-slate-700 bg-slate-800 px-2 text-sm text-white">
+              <option value="">All types</option>
+              {["House", "Flat", "Upper Portion", "Lower Portion", "Plot", "Commercial"].map((item) => <option key={item} value={item}>{item}</option>)}
+            </select>
+          </label>
+          <label className="space-y-1 text-xs text-slate-400">
+            Purpose
+            <select value={purposeFilter} onChange={(event) => { setPage(1); setPurposeFilter(event.target.value); }} className="min-h-10 w-full rounded-lg border border-slate-700 bg-slate-800 px-2 text-sm text-white">
+              <option value="">Sale or rent</option><option value="Sale">Sale</option><option value="Rent">Rent</option>
+            </select>
+          </label>
+          <label className="space-y-1 text-xs text-slate-400">
+            Inventory
+            <select value={inventoryFilter} onChange={(event) => { setPage(1); setInventoryFilter(event.target.value); }} className="min-h-10 w-full rounded-lg border border-slate-700 bg-slate-800 px-2 text-sm text-white">
+              <option value="">All availability</option>{["available", "sold", "rented", "reserved", "unavailable"].map((item) => <option key={item} value={item}>{item}</option>)}
+            </select>
+          </label>
+          <label className="space-y-1 text-xs text-slate-400">
+            Listed from
+            <input type="date" value={fromDate} onChange={(event) => { setPage(1); setFromDate(event.target.value); }} className="min-h-10 w-full rounded-lg border border-slate-700 bg-slate-800 px-2 text-sm text-white" />
+          </label>
+          <label className="space-y-1 text-xs text-slate-400">
+            Listed to
+            <input type="date" value={toDate} onChange={(event) => { setPage(1); setToDate(event.target.value); }} className="min-h-10 w-full rounded-lg border border-slate-700 bg-slate-800 px-2 text-sm text-white" />
+          </label>
+        </div>
+
+        <div className="flex gap-2 overflow-x-auto border-b border-slate-800 pb-3">
+          {STATUS_FILTERS.map(({ value, label }) => (
+            <button
+              key={value}
+              type="button"
+              onClick={() => {
+                setPage(1);
+                setStatusFilter(value);
+              }}
+              aria-pressed={statusFilter === value}
+              className={`inline-flex min-h-[38px] flex-shrink-0 items-center gap-2 rounded-xl px-3.5 text-xs font-bold ${
+                statusFilter === value
+                  ? "bg-blue-600 text-white"
+                  : "bg-slate-800 text-slate-300 hover:bg-slate-700"
+              }`}
+            >
+              {label}
+              <span className="rounded-full bg-black/20 px-1.5 py-0.5">
+                {value === "all" ? counts?.total ?? "—" : countForStatus(value)}
+              </span>
+            </button>
+          ))}
+        </div>
+
+        <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-slate-400">
+          <span>
+            {counts ? `Database total: ${counts.total} · pending: ${counts.pending_approval ?? 0} · published: ${counts.published ?? 0} · rejected: ${counts.rejected ?? 0}` : "Loading database totals…"}
           </span>
-          <span className="text-slate-400 hidden sm:inline">
-            Total Listings: {moderationProperties.length}
+          <span>
+            {total > 0
+              ? `Showing ${Math.min((page - 1) * PAGE_SIZE + 1, total)}–${Math.min(page * PAGE_SIZE, total)} of ${total}`
+              : "No matching records"}
           </span>
         </div>
-      </div>
+      </section>
 
-      {/* Moderation Property Cards Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
-        {filteredProperties.length === 0 ? (
-          <div className="col-span-full py-16 text-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-8">
-            <Building className="h-10 w-10 text-slate-400 mx-auto mb-3 flex-shrink-0" />
-            <h4 className="font-bold text-slate-800 dark:text-slate-200 text-base">
-              No listings found
-            </h4>
-            <p className="text-xs text-slate-500 mt-1">
-              No property items match your current moderation filter.
-            </p>
-          </div>
-        ) : (
-          filteredProperties.map((property) => {
-            const isPending = property.status === "Pending Review";
-            const isLive = property.status === "Live";
-            const isBlocked = property.status === "Blocked";
-
+      {loading ? (
+        <p role="status" className="rounded-2xl border border-slate-800 bg-slate-900 py-12 text-center text-sm text-slate-400">
+          Loading property records from the server…
+        </p>
+      ) : error ? (
+        <div className="rounded-2xl border border-red-900 bg-red-950/30 px-5 py-10 text-center">
+          <AlertTriangle className="mx-auto h-8 w-8 text-red-400" />
+          <p role="alert" className="mt-3 text-sm text-red-300">{error}</p>
+          <Button
+            type="button"
+            onClick={() => void loadProperties(page, statusFilter)}
+            className="mt-4 bg-rose-600 text-white hover:bg-rose-700"
+          >
+            Retry
+          </Button>
+        </div>
+      ) : filteredProperties.length === 0 ? (
+        <div className="rounded-2xl border border-slate-800 bg-slate-900 px-6 py-14 text-center">
+          <Building className="mx-auto h-10 w-10 text-slate-500" />
+          <h2 className="mt-3 text-base font-semibold text-white">
+            {total === 0 ? "No property records" : "No listings match this search"}
+          </h2>
+          <p className="mt-1 text-sm text-slate-400">
+            {total === 0
+              ? "The database contains no properties for this filter."
+              : "Try another search or status filter."}
+          </p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
+          {filteredProperties.map((property) => {
+            const isPending = property.status === "pending_approval";
             return (
-              <div
-                key={property.id}
-                className="group bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700 transition-all flex flex-col justify-between"
-              >
-                <div>
-                  {/* Property Image & Status Badges */}
-                  <div className="relative aspect-[16/10] w-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
-                    {property.imageUrl ? (
-                      <Image
-                        src={property.imageUrl}
-                        alt={property.title}
-                        fill
-                        sizes="(max-width: 768px) 100vw, 400px"
-                        className="object-cover"
-                        unoptimized
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-slate-400">
-                        <Building className="h-8 w-8" />
-                      </div>
-                    )}
-
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/30 pointer-events-none" />
-
-                    {/* Top Status Tag */}
-                    <div className="absolute top-3 left-3 right-3 flex items-center justify-between">
-                      {isPending && (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-amber-500 text-white shadow-md">
-                          <Clock className="h-3 w-3 flex-shrink-0" />
-                          <span>Pending Review</span>
-                        </span>
-                      )}
-                      {isLive && (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-600 text-white shadow-md">
-                          <CheckCircle2 className="h-3 w-3 flex-shrink-0" />
-                          <span>Live On Marketplace</span>
-                        </span>
-                      )}
-                      {isBlocked && (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-rose-600 text-white shadow-md">
-                          <Ban className="h-3 w-3 flex-shrink-0" />
-                          <span>Blocked / Spam</span>
-                        </span>
-                      )}
-
-                      {property.area && (
-                        <span className="px-2 py-0.5 rounded-md text-[11px] font-bold bg-black/60 text-white backdrop-blur-sm">
-                          {property.area}
-                        </span>
-                      )}
-                    </div>
-
-                    <div className="absolute bottom-3 left-3">
-                      <span className="text-xl font-black text-white drop-shadow-md">
-                        {property.price}
-                      </span>
-                    </div>
+              <article key={property.id} className="flex flex-col overflow-hidden rounded-3xl border border-slate-800 bg-slate-900">
+                {property.images[0] && !unavailableImages.has(property.images[0]) ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={property.images[0]}
+                    alt={property.title}
+                    className="h-44 w-full bg-slate-800 object-cover"
+                    onError={() => markImageUnavailable(property.images[0])}
+                  />
+                ) : (
+                  <div className="flex h-52 items-center justify-center bg-slate-800 text-slate-500">
+                    <ImageIcon className="h-8 w-8" />
+                    <span className="ml-2 text-sm">
+                      {property.images[0] ? "Image unavailable" : "No listing image"}
+                    </span>
                   </div>
-
-                  {/* Body Info */}
-                  <div className="p-4 sm:p-5 space-y-3">
-                    <h3 className="font-bold text-slate-900 dark:text-white text-sm sm:text-base line-clamp-2">
-                      {property.title}
-                    </h3>
-
-                    <div className="flex items-center gap-1.5 text-xs text-slate-500">
-                      <MapPin className="h-3.5 w-3.5 text-emerald-600 flex-shrink-0" />
-                      <span className="truncate">{property.society}</span>
+                )}
+                <div className="flex flex-1 flex-col gap-3 p-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="text-lg font-bold text-white">{formatPrice(property.price)}</p>
+                    <h2 className="mt-1 line-clamp-2 min-h-11 font-semibold text-slate-100">{property.title}</h2>
                     </div>
-
-                    <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs">
-                      <span className="text-slate-400">Posted by:</span>
-                      <span className="font-bold text-slate-700 dark:text-slate-200 truncate ml-2">
-                        {property.agentName}
-                      </span>
-                    </div>
+                    <span className={`flex-shrink-0 rounded-full px-2.5 py-1 text-xs font-bold ${
+                      isPending ? "bg-amber-500/15 text-amber-300" :
+                      property.status === "published" ? "bg-emerald-500/15 text-emerald-300" :
+                      property.status === "rejected" ? "bg-rose-500/15 text-rose-300" :
+                      "bg-slate-700 text-slate-300"
+                    }`}>
+                      {statusLabel(property.status)}
+                    </span>
                   </div>
-                </div>
+                  {(property.adminHidden || property.adminRemoved || property.adminFlagged) && (
+                    <div className="flex flex-wrap gap-1">
+                      {property.adminHidden && <span className="rounded-full bg-amber-500/15 px-2 py-1 text-[10px] font-semibold text-amber-300">Hidden</span>}
+                      {property.adminRemoved && <span className="rounded-full bg-rose-500/15 px-2 py-1 text-[10px] font-semibold text-rose-300">Removed</span>}
+                      {property.adminFlagged && <span className="rounded-full bg-orange-500/15 px-2 py-1 text-[10px] font-semibold text-orange-300">Flagged</span>}
+                    </div>
+                  )}
+                  <p className="flex items-center gap-1.5 text-sm text-slate-400">
+                    <MapPin className="h-4 w-4 flex-shrink-0 text-rose-400" />
+                    {property.location.area}, {property.location.city}
+                  </p>
+                  <div className="grid grid-cols-2 gap-2 text-xs text-slate-400">
+                    <span>{property.purpose} · {property.propertyType}</span>
+                    <span>{property.areaSize} {property.areaUnit}</span>
+                  </div>
+                  <div className="flex flex-wrap gap-1.5 text-[10px] font-semibold">
+                    <span className="rounded-full bg-slate-800 px-2.5 py-1 text-slate-300">
+                      Inventory: {property.inventoryStatus ?? "unknown"}
+                    </span>
+                    <span className={`rounded-full px-2.5 py-1 ${
+                      property.advertisementStatus === "published"
+                        ? "bg-emerald-500/15 text-emerald-300"
+                        : property.advertisementStatus === "pending_review"
+                          ? "bg-amber-500/15 text-amber-300"
+                          : "bg-slate-800 text-slate-300"
+                    }`}>
+                      Ad: {property.advertisementStatus?.replaceAll("_", " ") ?? "none"}
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-400">
+                    Agent: {property.agent?.name ?? "Unknown agent"}
+                    {property.agent?.agencyName ? ` · ${property.agent.agencyName}` : ""}
+                  </p>
+                  <p className="text-xs text-slate-500">Submitted {formatDate(property.createdAt)}</p>
 
-                {/* Moderation Actions */}
-                <div className="p-4 sm:p-5 pt-0 border-t border-slate-100 dark:border-slate-800 flex items-center gap-2">
+                  <details className="rounded-xl border border-slate-800 bg-slate-950/60 p-3">
+                    <summary className="cursor-pointer text-sm font-semibold text-slate-200">
+                      Inspect real listing details ({property.images.length} {property.images.length === 1 ? "image" : "images"})
+                    </summary>
+                    <div className="mt-3 space-y-3">
+                      <p className="whitespace-pre-wrap text-sm text-slate-300">{property.description}</p>
+                      <p className="text-xs text-slate-400">
+                        Bedrooms: {property.features?.bedrooms ?? "—"} · Bathrooms: {property.features?.bathrooms ?? "—"} · Parking: {property.features?.parkingSpaces ?? "—"}
+                      </p>
+                      {property.moderationNotes && (
+                        <p className="text-xs text-amber-300">Moderation note: {property.moderationNotes}</p>
+                      )}
+                      {property.images.length > 1 && (
+                        <div className="grid grid-cols-3 gap-2">
+                          {property.images.slice(1).map((image, index) => (
+                            unavailableImages.has(image) ? (
+                              <div
+                                key={`${property.id}-${index}`}
+                                className="flex h-20 items-center justify-center rounded-lg bg-slate-800 text-[10px] text-slate-400"
+                              >
+                                Image unavailable
+                              </div>
+                            ) : (
+                              // eslint-disable-next-line @next/next/no-img-element
+                              <img
+                                key={`${property.id}-${index}`}
+                                src={image}
+                                alt={`${property.title} image ${index + 2}`}
+                                className="h-20 w-full rounded-lg object-cover"
+                                onError={() => markImageUnavailable(image)}
+                              />
+                            )
+                          ))}
+                        </div>
+                      )}
+                      <p className="break-all text-[10px] text-slate-600">Property ID: {property.id}</p>
+                    </div>
+                  </details>
+
                   {isPending && (
-                    <>
+                    <div className="mt-auto flex gap-2 border-t border-slate-800 pt-4">
                       <Button
-                        size="sm"
-                        onClick={() => makePropertyLive(property.id)}
-                        className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold min-h-[40px] gap-1 shadow-sm"
+                        type="button"
+                        disabled={actingId === property.id}
+                        onClick={() => void moderate(property, "published")}
+                        className="flex-1 gap-1 bg-blue-600 text-white hover:bg-blue-700"
                       >
-                        <Check className="h-3.5 w-3.5 flex-shrink-0" />
-                        <span>Make Live</span>
+                        <Check className="h-4 w-4" />
+                        Approve
                       </Button>
                       <Button
-                        size="sm"
+                        type="button"
                         variant="danger"
-                        onClick={() => blockProperty(property.id)}
-                        className="flex-1 text-xs font-bold min-h-[40px] gap-1"
+                        disabled={actingId === property.id}
+                        onClick={() => void moderate(property, "rejected")}
+                        className="flex-1 gap-1"
                       >
-                        <Ban className="h-3.5 w-3.5 flex-shrink-0" />
-                        <span>Block</span>
+                        <X className="h-4 w-4" />
+                        Reject
                       </Button>
-                    </>
+                    </div>
                   )}
-
-                  {isLive && (
-                    <>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => blockProperty(property.id)}
-                        className="flex-1 text-xs text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 min-h-[40px] border-rose-200 dark:border-rose-800/60 font-bold"
-                      >
-                        <Ban className="h-3.5 w-3.5 mr-1 flex-shrink-0" />
-                        <span>Block Listing</span>
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => deleteProperty(property.id)}
-                        className="min-h-[40px] text-slate-400 hover:text-rose-600 px-3"
-                      >
-                        <Trash2 className="h-4 w-4 flex-shrink-0" />
-                      </Button>
-                    </>
+                  {!isPending && property.status === "published" && !property.adminHidden && !property.adminRemoved && (
+                    <p className="mt-auto flex items-center gap-1 border-t border-slate-800 pt-4 text-xs text-emerald-300">
+                      <CheckCircle2 className="h-4 w-4" /> Publicly published
+                    </p>
                   )}
-
-                  {isBlocked && (
-                    <>
-                      <Button
-                        size="sm"
-                        onClick={() => makePropertyLive(property.id)}
-                        className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold min-h-[40px] gap-1"
-                      >
-                        <Check className="h-3.5 w-3.5 flex-shrink-0" />
-                        <span>Restore to Live</span>
+                  {!isPending && property.status === "rejected" && (
+                    <p className="mt-auto flex items-center gap-1 border-t border-slate-800 pt-4 text-xs text-rose-300">
+                      <Clock className="h-4 w-4" /> Rejected; not shown on public listings
+                    </p>
+                  )}
+                  {!property.adminRemoved && (
+                    <div className="flex flex-wrap gap-2 border-t border-slate-800 pt-4">
+                      {property.adminHidden ? (
+                        <Button type="button" size="sm" variant="outline" disabled={actingId === property.id} onClick={() => void moderateAction(property, "restore")}>Restore visibility</Button>
+                      ) : property.status === "published" ? (
+                        <>
+                          <Button type="button" size="sm" variant="outline" disabled={actingId === property.id} onClick={() => void moderateAction(property, "hide")}>Hide</Button>
+                          <Button type="button" size="sm" variant="outline" disabled={actingId === property.id} onClick={() => void moderateAction(property, "unpublish")}>Unpublish ad</Button>
+                        </>
+                      ) : null}
+                      {!property.adminFlagged && (
+                        <Button type="button" size="sm" variant="outline" disabled={actingId === property.id} onClick={() => void moderateAction(property, "flag")}>Flag</Button>
+                      )}
+                      <Button type="button" size="sm" variant="danger" disabled={actingId === property.id} onClick={() => void moderateAction(property, "remove")}>Remove</Button>
+                    </div>
+                  )}
+                  {property.adminRemoved && (
+                    <div className="border-t border-slate-800 pt-4">
+                      <Button type="button" size="sm" variant="danger" disabled={actingId === property.id} onClick={() => void deletePermanently(property)}>
+                        Delete permanently
                       </Button>
-                      <Button
-                        size="sm"
-                        variant="danger"
-                        onClick={() => deleteProperty(property.id)}
-                        className="min-h-[40px] text-xs px-3"
-                      >
-                        <Trash2 className="h-4 w-4 flex-shrink-0" />
-                      </Button>
-                    </>
+                    </div>
                   )}
                 </div>
-              </div>
+              </article>
             );
-          })
-        )}
-      </div>
+          })}
+        </div>
+      )}
+
+      {!loading && !error && totalPages > 1 && (
+        <div className="flex items-center justify-between">
+          <Button
+            type="button"
+            variant="outline"
+            disabled={page <= 1}
+            onClick={() => setPage((value) => Math.max(1, value - 1))}
+          >
+            Previous
+          </Button>
+          <span className="text-sm text-slate-400">Page {page} of {totalPages}</span>
+          <Button
+            type="button"
+            variant="outline"
+            disabled={page >= totalPages}
+            onClick={() => setPage((value) => Math.min(totalPages, value + 1))}
+          >
+            Next
+          </Button>
+        </div>
+      )}
     </div>
   );
 }

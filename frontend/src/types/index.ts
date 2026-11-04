@@ -40,6 +40,12 @@ export interface PropertyFeatures {
   electricityMeter?: boolean;
   gasConnection?: boolean;
   waterSupply?: boolean;
+  rooms?: Record<string, number>;
+  outdoor?: Record<string, number>;
+  interior?: string[];
+  furnishing?: "Furnished" | "Semi-furnished" | "Unfurnished";
+  community?: string[];
+  nearby?: string[];
 }
 
 export interface Property {

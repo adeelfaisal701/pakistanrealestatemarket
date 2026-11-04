@@ -1,95 +1,304 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
   MapPin,
-  BedDouble,
-  Bath,
-  Maximize2,
-  Image as ImageIcon,
   CheckCircle2,
   Sparkles,
   ArrowRight,
   PlusCircle,
-  ExternalLink,
   ShieldCheck,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { LAHORE_SOCIETIES } from "@/lib/crm-mock-data";
 import { formatPKR } from "@/lib/utils";
-import { usePropertyStore } from "@/lib/property-store";
 import type { AgentPropertyListing, PropertyRequirement, PropertyType } from "@/types/crm";
+import type { PropertyFeatureData } from "@/types/marketplace";
+import apiClient, { getApiErrorMessage, type ApiEnvelope } from "@/lib/api-client";
+import { PropertyFeatureSelector } from "./PropertyFeatureSelector";
+import { PropertyMediaPicker, type PropertyMediaItem } from "./PropertyMediaPicker";
 
 interface AddPropertyFormProps {
   onPropertyAdded?: (property: AgentPropertyListing) => void;
+  propertyId?: string;
 }
 
-const SAMPLE_PRESET_IMAGES = [
-  {
-    label: "Modern House",
-    url: "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=800&q=80",
-  },
-  {
-    label: "Spanish Villa",
-    url: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=800&q=80",
-  },
-  {
-    label: "Open Plot",
-    url: "https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=800&q=80",
-  },
-  {
-    label: "Apartment",
-    url: "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=800&q=80",
-  },
-];
+interface PropertyApiRecord {
+  _id: string;
+  title: string;
+  description: string;
+  purpose: "Sale" | "Rent";
+  propertyType: string;
+  price: number;
+  areaSize: number;
+  areaUnit: string;
+  location: { city: string; area: string };
+  features?: PropertyFeatureData;
+  images?: string[];
+  status: string;
+  inventoryStatus?: string;
+  advertisementStatus?: string | null;
+  createdAt: string;
+}
 
-export function AddPropertyForm({ onPropertyAdded }: AddPropertyFormProps) {
+function toFormPropertyType(value: string): PropertyType {
+  switch (value) {
+    case "House":
+    case "Plot":
+    case "Upper Portion":
+    case "Lower Portion":
+    case "Commercial":
+      return value;
+    case "Flat":
+      return "Apartment";
+    default:
+      throw new Error(`Unsupported property type: ${value}`);
+  }
+}
+
+export function AddPropertyForm({ onPropertyAdded, propertyId }: AddPropertyFormProps) {
   const [purpose, setPurpose] = useState<PropertyRequirement>("Buy");
   const [propertyType, setPropertyType] = useState<PropertyType>("House");
   const [title, setTitle] = useState("");
   const [society, setSociety] = useState(LAHORE_SOCIETIES[0]);
   const [rawPrice, setRawPrice] = useState("");
   const [areaSize, setAreaSize] = useState("5");
-  const [areaUnit, setAreaUnit] = useState<"Marla" | "Kanal" | "Sq. Ft.">("Marla");
-  const [beds, setBeds] = useState(3);
-  const [baths, setBaths] = useState(3);
-  const [imageUrl, setImageUrl] = useState(SAMPLE_PRESET_IMAGES[0].url);
+  const [areaUnit, setAreaUnit] = useState<"Marla" | "Kanal" | "Sq. Ft." | "Sq. Yd.">("Marla");
+  const [features, setFeatures] = useState<PropertyFeatureData>({});
+  const [images, setImages] = useState<PropertyMediaItem[]>([]);
+  const [savedImageUrls, setSavedImageUrls] = useState<string[]>([]);
+  const [activePropertyId, setActivePropertyId] = useState(propertyId ?? "");
+  const [loadingListing, setLoadingListing] = useState(Boolean(propertyId));
+  const [loadError, setLoadError] = useState("");
+  const [mediaProgress, setMediaProgress] = useState<number | null>(null);
+  const [mediaError, setMediaError] = useState("");
   const [description, setDescription] = useState("");
 
   const [submittedProperty, setSubmittedProperty] = useState<AgentPropertyListing | null>(null);
+  const [submitError, setSubmitError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (!propertyId) return;
+    let active = true;
+    apiClient
+      .get<ApiEnvelope<PropertyApiRecord>>(`/properties/manage/${encodeURIComponent(propertyId)}`)
+      .then(({ data }) => {
+        if (!active) return;
+        const listing = data.data;
+        setActivePropertyId(listing._id);
+        setTitle(listing.title);
+        setDescription(listing.description);
+        setPurpose(listing.purpose === "Rent" ? "Rent" : "Buy");
+        setPropertyType(toFormPropertyType(listing.propertyType));
+        setRawPrice(String(listing.price));
+        setAreaSize(String(listing.areaSize));
+        setAreaUnit(
+          listing.areaUnit === "SqFt"
+            ? "Sq. Ft."
+            : listing.areaUnit === "SqYd"
+              ? "Sq. Yd."
+              : listing.areaUnit as typeof areaUnit,
+        );
+        setSociety(listing.location.area);
+        setFeatures(listing.features ?? {});
+        const savedImages = listing.images ?? [];
+        setSavedImageUrls(savedImages);
+        setImages(savedImages.map((url, index) => ({ key: `saved-${index}-${url}`, url })));
+      })
+      .catch((requestError: unknown) => {
+        if (active) setLoadError(getApiErrorMessage(requestError));
+      })
+      .finally(() => {
+        if (active) setLoadingListing(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, [propertyId]);
 
   // Live formatted price calculator
   const numericPrice = parseFloat(rawPrice.replace(/[^0-9.]/g, "")) || 0;
   const formattedPricePreview = numericPrice > 0 ? formatPKR(numericPrice) : "PKR 0";
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title.trim()) return;
+    const submitter = (e.nativeEvent as SubmitEvent).submitter as HTMLButtonElement | null;
+    const submissionMode = submitter?.value === "inventory" ? "inventory" : "advertise";
+    setSubmitError("");
+    setMediaError("");
+    if (numericPrice <= 0 || !Number.isFinite(numericPrice)) {
+      setSubmitError("Enter a valid price greater than zero.");
+      return;
+    }
+    if (Number(areaSize) <= 0 || !Number.isFinite(Number(areaSize))) {
+      setSubmitError("Enter a valid area size greater than zero.");
+      return;
+    }
+    if (!description.trim()) {
+      setSubmitError("Add a property description before submitting.");
+      return;
+    }
 
-    const formattedPrice = numericPrice > 0 ? formattedPricePreview : rawPrice;
+    setSubmitting(true);
+    let targetId = activePropertyId;
+    try {
+      const propertyPayload = {
+        submissionMode,
+        title: title.trim(),
+        description: description.trim(),
+        purpose: purpose === "Buy" ? "Sale" : "Rent",
+        propertyType: propertyType === "Apartment" ? "Flat" : propertyType,
+        price: numericPrice,
+        areaSize: Number(areaSize),
+        areaUnit:
+          areaUnit === "Sq. Ft."
+            ? "SqFt"
+            : areaUnit === "Sq. Yd."
+              ? "SqYd"
+              : areaUnit,
+        location: { city: "Lahore", area: society },
+        features: {
+          ...features,
+          electricityMeter: features.electricityMeter ?? false,
+          gasConnection: features.gasConnection ?? false,
+          waterSupply: features.waterSupply ?? false,
+          servantQuarter: (features.rooms?.servantQuarters ?? 0) > 0 || undefined,
+          parkingSpaces:
+            (features.outdoor?.openParking ?? 0) +
+            (features.outdoor?.coveredGarages ?? 0) +
+            (features.outdoor?.carPorches ?? 0) || undefined,
+          furnished: features.furnishing === "Furnished" || features.furnished || undefined,
+        },
+      };
+      let property: PropertyApiRecord;
+      if (targetId) {
+        const response = await apiClient.put<ApiEnvelope<PropertyApiRecord>>(
+          `/properties/${encodeURIComponent(targetId)}`,
+          propertyPayload,
+        );
+        property = response.data.data;
+      } else {
+        const response = await apiClient.post<ApiEnvelope<PropertyApiRecord>>(
+          "/properties",
+          propertyPayload,
+        );
+        property = response.data.data;
+        targetId = property._id;
+        setActivePropertyId(targetId);
+      }
+      if (
+        targetId &&
+        submissionMode === "advertise" &&
+        property.status !== "pending_approval" &&
+        property.status !== "published"
+      ) {
+        await apiClient.post(
+          `/properties/${encodeURIComponent(targetId)}/advertisement`,
+        );
+        property.status = "pending_approval";
+        property.advertisementStatus = "pending_review";
+      }
 
-    // Instant Public Publishing & Global Store Sync
-    const { agentItem } = usePropertyStore.getState().addPropertyFromAgent({
-      title: title.trim(),
-      price: formattedPrice,
-      society,
-      area: `${areaSize} ${areaUnit}`,
-      beds: propertyType === "Plot" || propertyType === "Commercial" ? 0 : beds,
-      baths: propertyType === "Plot" ? 0 : baths,
-      purpose,
-      propertyType,
-      imageUrl: imageUrl.trim() || undefined,
-      description: description.trim() || undefined,
-      agentName: "Adeel & Associates (Verified Agent)",
-      agentPhone: "923004445566",
-    });
+      const removedImages = savedImageUrls.filter(
+        (url) => !images.some((image) => image.url === url),
+      );
+      for (const url of removedImages) {
+        await apiClient.delete(`/properties/${encodeURIComponent(targetId)}/images`, {
+          data: { url },
+        });
+        setSavedImageUrls((current) => current.filter((savedUrl) => savedUrl !== url));
+      }
 
-    setSubmittedProperty(agentItem);
-    if (onPropertyAdded) {
-      onPropertyAdded(agentItem);
+      let currentImages = [...images];
+      const pendingImages = currentImages.filter((image) => image.file);
+      for (const [index, image] of pendingImages.entries()) {
+        const body = new FormData();
+        body.append("images", image.file as File);
+        const response = await apiClient.post<
+          ApiEnvelope<{ images: string[]; uploaded: string[] }>
+        >(`/properties/${encodeURIComponent(targetId)}/images`, body, {
+          timeout: 120000,
+          headers: { "Content-Type": "multipart/form-data" },
+          onUploadProgress: (progressEvent) => {
+            if (!progressEvent.total) return;
+            const perFile = progressEvent.loaded / progressEvent.total;
+            setMediaProgress(
+              Math.min(
+                99,
+                Math.round(((index + perFile) / pendingImages.length) * 100),
+              ),
+            );
+          },
+        });
+        const uploadedImages = response.data.data.images;
+        const uploadedUrl = response.data.data.uploaded[0];
+        if (!uploadedUrl) {
+          throw new Error("The server did not return the saved image URL.");
+        }
+        currentImages = currentImages.map((item) =>
+          item.key === image.key
+            ? { key: item.key, url: uploadedUrl }
+            : item,
+        );
+        setImages(currentImages);
+        setSavedImageUrls(response.data.data.images);
+        setMediaProgress(
+          Math.round(((index + 1) / pendingImages.length) * 100),
+        );
+      }
+
+      const orderedUrls = currentImages.flatMap((image) =>
+        image.url ? [image.url] : [],
+      );
+      await apiClient.put(
+        `/properties/${encodeURIComponent(targetId)}/images/order`,
+        { images: orderedUrls },
+      );
+      setSavedImageUrls(orderedUrls);
+      setMediaProgress(null);
+
+      const agentItem: AgentPropertyListing = {
+        id: property._id,
+        title: property.title,
+        price: formatPKR(property.price),
+        society: property.location.area,
+        area: `${property.areaSize} ${property.areaUnit}`,
+        beds: property.features?.bedrooms ?? 0,
+        baths: property.features?.bathrooms ?? 0,
+        status:
+          property.status === "published"
+            ? "Active"
+            : property.status === "pending_approval"
+              ? "Pending Review"
+              : property.status === "rejected"
+                ? "Rejected"
+                : property.status === "sold"
+                  ? "Sold"
+                  : property.status === "available"
+                    ? "Available"
+                    : "Draft",
+        purpose: property.purpose === "Rent" ? "Rent" : "Buy",
+        propertyType: toFormPropertyType(property.propertyType),
+        imageUrl: orderedUrls[0],
+        description: property.description,
+        createdAt: property.createdAt,
+      };
+      setSubmittedProperty(agentItem);
+      onPropertyAdded?.(agentItem);
+    } catch (requestError) {
+      const message = getApiErrorMessage(requestError);
+      setSubmitError(
+        targetId
+          ? `The listing is saved, but its latest changes or photos could not all be saved. ${message} Retry to finish saving.`
+          : message,
+      );
+    } finally {
+      setMediaProgress(null);
+      setSubmitting(false);
     }
   };
 
@@ -97,8 +306,26 @@ export function AddPropertyForm({ onPropertyAdded }: AddPropertyFormProps) {
     setTitle("");
     setRawPrice("");
     setDescription("");
+    setFeatures({});
+    setImages([]);
+    setSavedImageUrls([]);
+    setActivePropertyId("");
     setSubmittedProperty(null);
   };
+
+  if (loadingListing) {
+    return <p role="status" className="rounded-xl bg-white p-8 text-center text-sm text-slate-500">Loading saved listing…</p>;
+  }
+  if (propertyId && loadError) {
+    return (
+      <div role="alert" className="space-y-4 rounded-xl border border-red-300 bg-red-50 p-5 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/30 dark:text-red-300">
+        <p>{loadError}</p>
+        <Link href="/agent/listings" className="inline-flex min-h-11 items-center font-semibold underline">
+          Return to my listings
+        </Link>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-4xl mx-auto">
@@ -112,13 +339,21 @@ export function AddPropertyForm({ onPropertyAdded }: AddPropertyFormProps) {
           <div className="space-y-1.5 max-w-md mx-auto">
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 text-xs font-bold uppercase tracking-wider border border-emerald-300 dark:border-emerald-800">
               <Sparkles className="h-3.5 w-3.5 text-emerald-600" />
-              <span>Instant Live On Public Marketplace</span>
+              <span>
+                {submittedProperty.status === "Pending Review" || submittedProperty.status === "Active"
+                  ? "Advertisement submitted"
+                  : "Saved to private inventory"}
+              </span>
             </div>
             <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white">
-              Listing Published Successfully!
+              {submittedProperty.status === "Pending Review" || submittedProperty.status === "Active"
+                ? propertyId ? "Listing Updated Successfully" : "Submitted for Review"
+                : propertyId ? "Listing Updated Successfully" : "Added to My Listings"}
             </h2>
             <p className="text-xs sm:text-sm text-slate-500">
-              Your property is now <strong>🟢 Live & Verified</strong> on the Public Marketplace and active in your CRM for instant 1-tap WhatsApp matching.
+              {submittedProperty.status === "Pending Review" || submittedProperty.status === "Active"
+                ? "Your listing is in the advertising workflow and will appear publicly only after admin approval."
+                : "Your property is saved in your private inventory and is not visible on the public marketplace."}
             </p>
           </div>
 
@@ -139,7 +374,7 @@ export function AddPropertyForm({ onPropertyAdded }: AddPropertyFormProps) {
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-1.5">
                 <span className="text-[10px] font-bold text-emerald-600 bg-emerald-100 dark:bg-emerald-950 px-1.5 py-0.2 rounded">
-                  Live
+                  {submittedProperty.status}
                 </span>
                 <h4 className="font-bold text-xs sm:text-sm text-slate-900 dark:text-white truncate">
                   {submittedProperty.title}
@@ -158,19 +393,15 @@ export function AddPropertyForm({ onPropertyAdded }: AddPropertyFormProps) {
 
           {/* Action Buttons */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-2.5 pt-2">
-            <Button onClick={handleReset} variant="outline" size="md" className="w-full sm:w-auto min-h-[46px]">
-              <PlusCircle className="h-4 w-4 mr-2 flex-shrink-0" />
-              <span>Add Another Listing</span>
-            </Button>
-            <Link href="/" target="_blank" className="w-full sm:w-auto">
-              <Button variant="secondary" size="md" className="w-full min-h-[46px] font-bold gap-2">
-                <span>View on Public Marketplace</span>
-                <ExternalLink className="h-4 w-4 flex-shrink-0" />
+            {!propertyId && (
+              <Button onClick={handleReset} variant="outline" size="md" className="w-full sm:w-auto min-h-[46px]">
+                <PlusCircle className="h-4 w-4 mr-2 flex-shrink-0" />
+                <span>Add Another Listing</span>
               </Button>
-            </Link>
-            <Link href="/agent" className="w-full sm:w-auto">
+            )}
+            <Link href="/agent/listings" className="w-full sm:w-auto">
               <Button size="md" className="w-full bg-emerald-600 hover:bg-emerald-700 text-white min-h-[46px] font-bold">
-                <span>Leads Pipeline</span>
+                <span>View My Listings</span>
                 <ArrowRight className="h-4 w-4 ml-2 flex-shrink-0" />
               </Button>
             </Link>
@@ -179,18 +410,15 @@ export function AddPropertyForm({ onPropertyAdded }: AddPropertyFormProps) {
       ) : (
         /* Form Section */
         <form onSubmit={handleSubmit} className="space-y-6 sm:space-y-8">
-          {/* Instant Publish Notice */}
-          <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-xs text-emerald-700 dark:text-emerald-300 flex items-center justify-between gap-3">
+          {/* Inventory and advertising are separate workflows. */}
+          <div className="p-4 rounded-2xl bg-slate-100 border border-slate-300 text-xs text-slate-700 dark:bg-slate-800/60 dark:border-slate-700 dark:text-slate-300 flex items-center justify-between gap-3">
             <div className="flex items-center gap-2">
               <ShieldCheck className="h-5 w-5 text-emerald-600 flex-shrink-0" />
               <div>
-                <strong className="block text-slate-900 dark:text-white">Instant-Live Verification Active</strong>
-                <span>Your listing bypasses waiting queues and publishes immediately to buyers across Lahore.</span>
+                <strong className="block text-slate-900 dark:text-white">Choose what to do when saving</strong>
+                <span>Add to Listings keeps the property private. Send to Live submits it for admin review.</span>
               </div>
             </div>
-            <span className="hidden sm:inline-flex px-2.5 py-1 rounded-full bg-emerald-600 text-white font-bold text-[10px] uppercase">
-              Zero Delay
-            </span>
           </div>
 
           {/* 1. Purpose & Property Type Card */}
@@ -237,11 +465,45 @@ export function AddPropertyForm({ onPropertyAdded }: AddPropertyFormProps) {
                   Property Type *
                 </label>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                  {(["House", "Plot", "Apartment", "Commercial"] as PropertyType[]).map((t) => (
+                  {(["House", "Plot", "Apartment", "Upper Portion", "Lower Portion", "Commercial"] as PropertyType[]).map((t) => (
                     <button
                       type="button"
                       key={t}
-                      onClick={() => setPropertyType(t)}
+                      onClick={() => {
+                        setPropertyType(t);
+                        if (t === "Plot") {
+                          setFeatures((current) => ({
+                            outdoor: current.outdoor,
+                            community: current.community,
+                            nearby: current.nearby,
+                            interior: current.interior?.filter((feature) =>
+                              ["solarSystem", "upsGeneratorBackup", "waterTank", "waterFiltration", "broadbandInternet"].includes(feature),
+                            ),
+                            electricityMeter: current.electricityMeter,
+                            gasConnection: current.gasConnection,
+                            waterSupply: current.waterSupply,
+                          }));
+                        } else if (t === "Commercial") {
+                          setFeatures((current) => ({
+                            rooms: current.rooms
+                              ? Object.fromEntries(
+                                  Object.entries(current.rooms).filter(([key]) =>
+                                    ["lobbies", "receptionAreas", "storeRooms", "basementRooms", "homeOffices", "homeGyms", "homeTheatres"].includes(key),
+                                  ),
+                                )
+                              : undefined,
+                            outdoor: current.outdoor,
+                            interior: current.interior,
+                            community: current.community,
+                            nearby: current.nearby,
+                            electricityMeter: current.electricityMeter,
+                            gasConnection: current.gasConnection,
+                            waterSupply: current.waterSupply,
+                            furnishing: undefined,
+                            furnished: undefined,
+                          }));
+                        }
+                      }}
                       className={`min-h-[48px] rounded-xl font-semibold text-xs transition-all border flex items-center justify-center ${
                         propertyType === t
                           ? "bg-emerald-600 text-white border-emerald-600 shadow-sm"
@@ -352,12 +614,11 @@ export function AddPropertyForm({ onPropertyAdded }: AddPropertyFormProps) {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               {/* Area Size & Unit */}
               <div>
-                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5 flex items-center gap-1">
-                  <Maximize2 className="h-3.5 w-3.5 text-emerald-600 flex-shrink-0" />
-                  <span>Area Size *</span>
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5">
+                <span>Area Size *</span>
                 </label>
                 <div className="flex gap-2">
                   <Input
@@ -370,102 +631,38 @@ export function AddPropertyForm({ onPropertyAdded }: AddPropertyFormProps) {
                   />
                   <select
                     value={areaUnit}
-                    onChange={(e) => setAreaUnit(e.target.value as any)}
+                    onChange={(e) => setAreaUnit(e.target.value as typeof areaUnit)}
                     className="flex-1 min-h-[48px] px-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold focus:ring-2 focus:ring-emerald-500"
                   >
                     <option value="Marla">Marla</option>
                     <option value="Kanal">Kanal</option>
                     <option value="Sq. Ft.">Sq. Ft.</option>
+                    <option value="Sq. Yd.">Sq. Yd.</option>
                   </select>
                 </div>
               </div>
-
-              {/* Beds */}
-              {propertyType !== "Plot" && (
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5 flex items-center gap-1">
-                    <BedDouble className="h-3.5 w-3.5 text-emerald-600 flex-shrink-0" />
-                    <span>Bedrooms</span>
-                  </label>
-                  <select
-                    value={beds}
-                    onChange={(e) => setBeds(parseInt(e.target.value))}
-                    className="w-full min-h-[48px] px-3 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-base sm:text-sm font-medium focus:ring-2 focus:ring-emerald-500"
-                  >
-                    {[1, 2, 3, 4, 5, 6, 7, 8].map((b) => (
-                      <option key={b} value={b}>
-                        {b} Beds
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              )}
-
-              {/* Baths */}
-              {propertyType !== "Plot" && (
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5 flex items-center gap-1">
-                    <Bath className="h-3.5 w-3.5 text-emerald-600 flex-shrink-0" />
-                    <span>Bathrooms</span>
-                  </label>
-                  <select
-                    value={baths}
-                    onChange={(e) => setBaths(parseInt(e.target.value))}
-                    className="w-full min-h-[48px] px-3 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-base sm:text-sm font-medium focus:ring-2 focus:ring-emerald-500"
-                  >
-                    {[1, 2, 3, 4, 5, 6, 7, 8].map((b) => (
-                      <option key={b} value={b}>
-                        {b} Baths
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              )}
             </div>
 
-            {/* Image URL with Presets */}
-            <div className="space-y-2.5 pt-2">
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider flex items-center justify-between">
-                <span className="flex items-center gap-1.5">
-                  <ImageIcon className="h-3.5 w-3.5 text-emerald-600 flex-shrink-0" />
-                  <span>Listing Photo URL</span>
-                </span>
-                <span className="text-[11px] text-slate-400 font-normal hidden sm:inline">
-                  Or pick a demo preset
-                </span>
-              </label>
-              <Input
-                placeholder="https://images.unsplash.com/..."
-                value={imageUrl}
-                onChange={(e) => setImageUrl(e.target.value)}
-                className="min-h-[46px] text-xs font-mono"
-              />
-
-              {/* Presets picker */}
-              <div className="flex flex-wrap gap-2 pt-1">
-                {SAMPLE_PRESET_IMAGES.map((preset) => (
-                  <button
-                    type="button"
-                    key={preset.label}
-                    onClick={() => setImageUrl(preset.url)}
-                    className={`text-[11px] font-medium px-3 py-1.5 rounded-lg border transition-all min-h-[36px] flex items-center ${
-                      imageUrl === preset.url
-                        ? "bg-emerald-50 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-200 border-emerald-500 font-bold"
-                        : "bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:border-slate-400"
-                    }`}
-                  >
-                    {preset.label}
-                  </button>
-                ))}
-              </div>
-            </div>
+            <PropertyFeatureSelector
+              propertyType={propertyType}
+              value={features}
+              onChange={setFeatures}
+            />
+            <PropertyMediaPicker
+              images={images}
+              onChange={setImages}
+              onError={setMediaError}
+              uploadProgress={mediaProgress}
+              error={mediaError}
+            />
 
             {/* Description */}
             <div className="space-y-1.5 pt-2">
               <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
-                Key Features / Highlights
+                Key Features / Highlights *
               </label>
               <textarea
+                required
                 rows={3}
                 placeholder="e.g. Solid construction, Grohe sanitary, double height lobby, underground utilities, direct owner transfer..."
                 value={description}
@@ -475,20 +672,46 @@ export function AddPropertyForm({ onPropertyAdded }: AddPropertyFormProps) {
             </div>
           </div>
 
-          {/* Submit Button */}
+          {submitError && (
+            <p role="alert" className="rounded-xl border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/30 dark:text-red-300">
+              {submitError}
+            </p>
+          )}
+
+          {/* Submission actions */}
           <div className="flex flex-col sm:flex-row items-center justify-end gap-3 pt-2">
-            <Link href="/agent" className="w-full sm:w-auto order-2 sm:order-1">
+            <Link href={propertyId ? "/agent/listings" : "/agent"} className="w-full sm:w-auto order-2 sm:order-1">
               <Button type="button" variant="outline" size="lg" className="w-full sm:w-auto min-h-[48px]">
                 Cancel
               </Button>
             </Link>
             <Button
               type="submit"
+              value="inventory"
+              disabled={submitting}
+              size="lg"
+              variant="outline"
+              className="w-full sm:w-auto min-h-[48px] font-bold px-6 order-1 sm:order-2"
+            >
+              <span>{submitting ? "Saving…" : "Add to Listings"}</span>
+            </Button>
+            <Button
+              type="submit"
+              value="advertise"
+              disabled={submitting}
               size="lg"
               className="w-full sm:w-auto min-h-[48px] bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-8 shadow-lg shadow-emerald-600/30 order-1 sm:order-2"
             >
               <Sparkles className="h-5 w-5 mr-2 text-amber-300 flex-shrink-0" />
-              <span>Publish Instantly (Live on Marketplace)</span>
+              <span>
+                {submitting
+                  ? "Saving..."
+                  : propertyId
+                    ? "Save Changes"
+                    : activePropertyId
+                      ? "Retry Save"
+                      : "Send to Live"}
+              </span>
             </Button>
           </div>
         </form>

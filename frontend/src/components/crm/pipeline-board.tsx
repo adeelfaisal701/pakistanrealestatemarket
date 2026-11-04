@@ -13,7 +13,8 @@ const STAGES: { key: LeadStatus; label: string; color: string }[] = [
   { key: "contacted", label: "Contacted", color: "border-amber-500" },
   { key: "site_visit_scheduled", label: "Site Visits", color: "border-emerald-500" },
   { key: "negotiation", label: "Negotiation", color: "border-purple-500" },
-  { key: "closed_won", label: "Closed / Deals", color: "border-green-600" },
+  { key: "closed_won", label: "Closed Won", color: "border-green-600" },
+  { key: "lost", label: "Lost", color: "border-red-600" },
 ];
 
 export function PipelineBoard({ leads = [] }: PipelineBoardProps) {

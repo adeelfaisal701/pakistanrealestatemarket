@@ -1,4 +1,4 @@
-import { IsEmail, IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
+import { IsEmail, IsEnum, IsMongoId, IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
 import { LeadSource, LeadStatus } from '../schemas/lead.schema';
 
 export class CreateLeadDto {
@@ -15,7 +15,7 @@ export class CreateLeadDto {
   clientEmail?: string;
 
   @IsOptional()
-  @IsString()
+  @IsMongoId()
   propertyId?: string;
 
   @IsOptional()

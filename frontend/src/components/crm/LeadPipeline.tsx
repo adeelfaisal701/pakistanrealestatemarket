@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect, useCallback, useRef } from "react";
 import {
   PlusCircle,
   Search,
@@ -15,31 +15,140 @@ import { LeadCard } from "@/components/crm/LeadCard";
 import { AutoMatchDrawer } from "@/components/crm/AutoMatchDrawer";
 import { WhatsAppShareModal } from "@/components/crm/WhatsAppShareModal";
 import { LAHORE_SOCIETIES } from "@/lib/crm-mock-data";
-import { usePropertyStore } from "@/lib/property-store";
+import apiClient, { getApiErrorMessage, type ApiEnvelope } from "@/lib/api-client";
+import { useAgentStore } from "@/lib/agent-store";
 import type { CRMLead, LeadStatus, AgentPropertyListing, PropertyRequirement, PropertyType } from "@/types/crm";
 
-interface LeadPipelineProps {
-  initialLeads: CRMLead[];
-  properties?: AgentPropertyListing[];
-}
-
-const STAGES: { id: LeadStatus; label: string; color: string; description: string }[] = [
-  { id: "New", label: "New Leads", color: "from-blue-500 to-indigo-600", description: "Fresh buyer inquiries" },
-  { id: "Contacted", label: "Contacted", color: "from-purple-500 to-violet-600", description: "First call/chat done" },
-  { id: "Site Visit", label: "Site Visit", color: "from-amber-500 to-orange-600", description: "Physical visit booked" },
-  { id: "Negotiation", label: "Negotiation", color: "from-rose-500 to-pink-600", description: "Offer made / Token talk" },
-  { id: "Closed", label: "Closed Won", color: "from-emerald-500 to-teal-600", description: "Deal finalized" },
-];
-
-export function LeadPipeline({ initialLeads, properties: initialProperties }: LeadPipelineProps) {
-  const [leads, setLeads] = useState<CRMLead[]>(initialLeads);
+export function LeadPipeline() {
+  const [leads, setLeads] = useState<CRMLead[]>([]);
+  const setStoredLeadStatus = useAgentStore((state) => state.setLeadStatus);
+  const [properties, setProperties] = useState<AgentPropertyListing[]>([]);
+  const [loadError, setLoadError] = useState("");
+  const [savingError, setSavingError] = useState("");
+  const [savingLeadIds, setSavingLeadIds] = useState<Set<string>>(new Set());
+  const [statusFeedback, setStatusFeedback] = useState<Record<string, { type: "success" | "error"; message: string }>>({});
+  const statusRequests = useRef(new Set<string>());
+  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedRequirement, setSelectedRequirement] = useState<string>("all");
   const [selectedPropertyType, setSelectedPropertyType] = useState<string>("all");
 
-  // Read agent properties directly from global reactive store
-  const storeAgentProperties = usePropertyStore((state) => state.agentProperties);
-  const activeProperties = storeAgentProperties.length > 0 ? storeAgentProperties : (initialProperties || []);
+  const activeProperties = properties;
+
+  const loadPipelineData = useCallback(async () => {
+    setLoading(true);
+    setLoadError("");
+    try {
+      const [leadResponse, propertyResponse] = await Promise.all([
+        apiClient.get<ApiEnvelope<Array<{
+          _id: string;
+          clientName: string;
+          clientPhone: string;
+          propertyId?: string;
+          propertyTitle?: string;
+          status: string;
+          source?: string;
+          budget?: number;
+          interestedCity?: string;
+          createdAt: string;
+          notes?: string;
+          conversationId?: string;
+          advertisementId?: string;
+        }>>>("/crm/leads"),
+        apiClient.get<ApiEnvelope<Array<{
+          _id: string;
+          title: string;
+          price: number;
+          location: { area: string };
+          areaSize: number;
+          areaUnit: string;
+          features?: { bedrooms?: number; bathrooms?: number };
+          purpose: string;
+          propertyType: string;
+          images?: string[];
+          description: string;
+          status: string;
+          createdAt: string;
+        }>>>("/properties/agent/my-listings"),
+      ]);
+      const statusMap: Record<string, LeadStatus> = {
+        new: "New",
+        contacted: "Connected",
+        site_visit_scheduled: "Site Visit",
+        negotiation: "Negotiation",
+        closed_won: "Closed Won",
+        lost: "Lost",
+      };
+      const mappedProperties = propertyResponse.data.data.map((property) => ({
+        id: property._id,
+        title: property.title,
+        price: `PKR ${new Intl.NumberFormat("en-PK").format(property.price)}`,
+        society: property.location.area,
+        area: `${property.areaSize} ${property.areaUnit}`,
+        beds: property.features?.bedrooms ?? 0,
+        baths: property.features?.bathrooms ?? 0,
+        status:
+          property.status === "published"
+            ? "Active" as const
+            : property.status === "pending_approval"
+              ? "Pending Review" as const
+              : property.status === "rejected"
+                ? "Rejected" as const
+                : property.status === "sold"
+                  ? "Sold" as const
+                  : "Draft" as const,
+        purpose: property.purpose === "Rent" ? "Rent" as const : "Buy" as const,
+        propertyType: property.propertyType === "Flat" ? "Apartment" as PropertyType : property.propertyType as PropertyType,
+        imageUrl: property.images?.[0],
+        description: property.description,
+        createdAt: property.createdAt,
+      }));
+      setProperties(mappedProperties);
+      setLeads(leadResponse.data.data.map((lead) => {
+        const title = lead.propertyTitle ?? "";
+        const linkedProperty = mappedProperties.find(
+          (property) =>
+            (lead.propertyId && property.id === lead.propertyId) ||
+            Boolean(title && property.title === title),
+        );
+        const propertyType: PropertyType = linkedProperty?.propertyType ?? (/plot|land/i.test(title)
+          ? "Plot"
+          : /apartment|flat/i.test(title)
+            ? "Apartment"
+            : /shop|office|commercial|plaza/i.test(title)
+              ? "Commercial"
+              : "House");
+        return {
+          id: lead._id,
+          clientName: lead.clientName,
+          clientPhone: lead.clientPhone,
+          requirement: linkedProperty?.purpose ?? (/rent/i.test(title) ? "Rent" : "Buy"),
+          propertyType,
+          budgetMin: lead.budget ? String(lead.budget) : "TBD",
+          budgetMax: lead.budget ? String(lead.budget) : "TBD",
+          preferredSocieties: lead.interestedCity ? [lead.interestedCity] : [],
+          status: statusMap[lead.status] ?? "New",
+          createdAt: lead.createdAt,
+          notes: lead.notes,
+          source: lead.source,
+          interest: lead.propertyTitle,
+          conversationId: lead.conversationId,
+          adId: lead.advertisementId,
+          propertyImageUrl: linkedProperty?.imageUrl,
+        };
+      }));
+    } catch (requestError) {
+      setLoadError(getApiErrorMessage(requestError));
+      setLeads([]);
+      setProperties([]);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    void loadPipelineData();
+  }, [loadPipelineData]);
 
   // Drawer & Modal States
   const [autoMatchLead, setAutoMatchLead] = useState<CRMLead | null>(null);
@@ -56,9 +165,9 @@ export function LeadPipeline({ initialLeads, properties: initialProperties }: Le
     clientPhone: "",
     requirement: "Buy" as PropertyRequirement,
     propertyType: "House" as PropertyType,
-    budgetMin: "2.0 Crore",
-    budgetMax: "3.5 Crore",
-    preferredSociety: "Bahria Town Lahore",
+    budgetMin: "",
+    budgetMax: "",
+    preferredSociety: "",
     notes: "",
   });
 
@@ -82,10 +191,46 @@ export function LeadPipeline({ initialLeads, properties: initialProperties }: Le
   }, [leads, searchQuery, selectedRequirement, selectedPropertyType]);
 
   // Stage change handler
-  const handleStatusChange = (leadId: string, nextStatus: LeadStatus) => {
-    setLeads((prev) =>
-      prev.map((l) => (l.id === leadId ? { ...l, status: nextStatus } : l))
-    );
+  const handleStatusChange = async (leadId: string, nextStatus: LeadStatus) => {
+    if (statusRequests.current.has(leadId)) return;
+    statusRequests.current.add(leadId);
+    setSavingLeadIds((current) => new Set(current).add(leadId));
+    setStatusFeedback((current) => {
+      const next = { ...current };
+      delete next[leadId];
+      return next;
+    });
+    setSavingError("");
+    const apiStatus: Record<LeadStatus, string> = {
+      New: "new",
+      Connected: "contacted",
+      "Site Visit": "site_visit_scheduled",
+      Negotiation: "negotiation",
+      "Closed Won": "closed_won",
+      Lost: "lost",
+    };
+    try {
+      await apiClient.patch(`/crm/leads/${leadId}/status`, { status: apiStatus[nextStatus] });
+      setLeads((prev) => prev.map((l) => (l.id === leadId ? { ...l, status: nextStatus } : l)));
+      setStoredLeadStatus(leadId, nextStatus);
+      setStatusFeedback((current) => ({
+        ...current,
+        [leadId]: { type: "success", message: `Stage saved: ${nextStatus}.` },
+      }));
+    } catch (requestError) {
+      const message = getApiErrorMessage(requestError);
+      setStatusFeedback((current) => ({
+        ...current,
+        [leadId]: { type: "error", message },
+      }));
+    } finally {
+      statusRequests.current.delete(leadId);
+      setSavingLeadIds((current) => {
+        const next = new Set(current);
+        next.delete(leadId);
+        return next;
+      });
+    }
   };
 
   // Handlers for Drawer & WhatsApp
@@ -108,40 +253,74 @@ export function LeadPipeline({ initialLeads, properties: initialProperties }: Le
   };
 
   // Quick Add Lead Submit
-  const handleAddLeadSubmit = (e: React.FormEvent) => {
+  const handleAddLeadSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newLeadForm.clientName.trim() || !newLeadForm.clientPhone.trim()) return;
 
-    const newLead: CRMLead = {
-      id: `lead-${Date.now()}`,
-      clientName: newLeadForm.clientName.trim(),
-      clientPhone: newLeadForm.clientPhone.trim(),
-      requirement: newLeadForm.requirement,
-      propertyType: newLeadForm.propertyType,
-      budgetMin: newLeadForm.budgetMin.trim(),
-      budgetMax: newLeadForm.budgetMax.trim(),
-      preferredSocieties: [newLeadForm.preferredSociety],
-      status: "New",
-      createdAt: new Date().toISOString(),
-      notes: newLeadForm.notes.trim() || undefined,
-    };
-
-    setLeads((prev) => [newLead, ...prev]);
-    setIsAddLeadModalOpen(false);
-    setNewLeadForm({
-      clientName: "",
-      clientPhone: "",
-      requirement: "Buy",
-      propertyType: "House",
-      budgetMin: "2.0 Crore",
-      budgetMax: "3.5 Crore",
-      preferredSociety: "Bahria Town Lahore",
-      notes: "",
-    });
+    setSavingError("");
+    try {
+      const response = await apiClient.post<ApiEnvelope<{
+        _id: string;
+        clientName: string;
+        clientPhone: string;
+        propertyTitle?: string;
+        status: string;
+        createdAt: string;
+        interestedCity?: string;
+        notes?: string;
+      }>>("/crm/leads", {
+        clientName: newLeadForm.clientName.trim(),
+        clientPhone: newLeadForm.clientPhone.trim(),
+        propertyTitle: `${newLeadForm.propertyType} · ${newLeadForm.requirement}`,
+        interestedCity: newLeadForm.preferredSociety || undefined,
+        notes: newLeadForm.notes.trim() || undefined,
+      });
+      const savedLead = response.data.data;
+      const newLead: CRMLead = {
+        id: savedLead._id,
+        clientName: savedLead.clientName,
+        clientPhone: savedLead.clientPhone,
+        requirement: newLeadForm.requirement,
+        propertyType: newLeadForm.propertyType,
+        budgetMin: newLeadForm.budgetMin.trim(),
+        budgetMax: newLeadForm.budgetMax.trim(),
+        preferredSocieties: savedLead.interestedCity
+          ? [savedLead.interestedCity]
+          : [],
+        status: "New",
+        createdAt: savedLead.createdAt,
+        notes: savedLead.notes,
+        interest: savedLead.propertyTitle,
+      };
+      setLeads((prev) => [newLead, ...prev]);
+      setIsAddLeadModalOpen(false);
+      setNewLeadForm({
+        clientName: "",
+        clientPhone: "",
+        requirement: "Buy",
+        propertyType: "House",
+        budgetMin: "",
+        budgetMax: "",
+        preferredSociety: "",
+        notes: "",
+      });
+    } catch (requestError) {
+      setSavingError(getApiErrorMessage(requestError));
+    }
   };
 
   return (
     <div className="space-y-5">
+      {loading && <p role="status" className="text-sm text-slate-400">Loading your leads and listings…</p>}
+      {loadError && (
+        <div role="alert" className="flex flex-col gap-3 rounded-xl border border-red-300 bg-red-50 p-4 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/30 dark:text-red-300 sm:flex-row sm:items-center sm:justify-between">
+          <span>{loadError}</span>
+          <button type="button" onClick={() => void loadPipelineData()} className="font-semibold underline underline-offset-2">
+            Retry
+          </button>
+        </div>
+      )}
+      {savingError && <p role="alert" className="rounded-xl border border-red-300 bg-red-50 p-4 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/30 dark:text-red-300">{savingError}</p>}
       {/* Search & Filter Controls Bar */}
       <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-sm space-y-3">
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
@@ -220,56 +399,22 @@ export function LeadPipeline({ initialLeads, properties: initialProperties }: Le
         </div>
       </div>
 
-      {/* Horizontal Scrollable Kanban Pipeline Board */}
-      <div className="overflow-x-auto pb-4 -mx-4 px-4 sm:mx-0 sm:px-0 scrollbar-none">
-        <div className="flex gap-3 sm:gap-4 min-w-max">
-          {STAGES.map((stage) => {
-            const stageLeads = filteredLeads.filter((l) => l.status === stage.id);
-
-            return (
-              <div
-                key={stage.id}
-                className="w-[82vw] sm:w-[300px] md:w-[320px] flex-shrink-0 flex flex-col rounded-2xl bg-slate-100/90 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800/80 p-3"
-              >
-                {/* Stage Header */}
-                <div className="flex items-center justify-between pb-2.5 px-1 border-b border-slate-200 dark:border-slate-800">
-                  <div className="flex items-center gap-2">
-                    <div className={`w-2.5 h-2.5 rounded-full bg-gradient-to-r ${stage.color} flex-shrink-0`} />
-                    <h3 className="font-bold text-slate-900 dark:text-white text-sm">
-                      {stage.label}
-                    </h3>
-                  </div>
-                  <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 shadow-2xs">
-                    {stageLeads.length}
-                  </span>
-                </div>
-
-                <p className="text-[11px] text-slate-500 dark:text-slate-400 px-1 py-1.5 truncate">
-                  {stage.description}
-                </p>
-
-                {/* Cards Container */}
-                <div className="flex-1 space-y-3 pt-2 overflow-y-auto max-h-[calc(100vh-340px)] min-h-[140px]">
-                  {stageLeads.length === 0 ? (
-                    <div className="p-4 text-center rounded-xl border border-dashed border-slate-300 dark:border-slate-800 text-xs text-slate-400">
-                      No leads in {stage.label}
-                    </div>
-                  ) : (
-                    stageLeads.map((lead) => (
-                      <LeadCard
-                        key={lead.id}
-                        lead={lead}
-                        onStatusChange={handleStatusChange}
-                        onAutoMatch={handleOpenAutoMatch}
-                        onWhatsAppPitch={handleOpenWhatsApp}
-                      />
-                    ))
-                  )}
-                </div>
-              </div>
-            );
-          })}
-        </div>
+      <div className="space-y-3">
+        {filteredLeads.length ? filteredLeads.map((lead) => (
+          <LeadCard
+            key={lead.id}
+            lead={lead}
+            onStatusChange={handleStatusChange}
+            statusSaving={savingLeadIds.has(lead.id)}
+            statusFeedback={statusFeedback[lead.id]}
+            onAutoMatch={handleOpenAutoMatch}
+            onWhatsAppPitch={handleOpenWhatsApp}
+          />
+        )) : (
+          <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-10 text-center text-sm text-slate-500 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400">
+            {loading ? "Loading leads…" : "No leads match your current filters."}
+          </div>
+        )}
       </div>
 
       {/* Auto-Match Slide-Out Drawer with real-time reactive agent properties */}

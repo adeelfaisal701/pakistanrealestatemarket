@@ -1,266 +1,316 @@
 "use client";
 
-import React from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
-  ShieldAlert,
-  LayoutDashboard,
-  UserCheck,
+  Activity,
   Building2,
-  ExternalLink,
-  Shield,
-  Layers,
+  ClipboardList,
   ChevronRight,
-  Sparkles,
-  AlertTriangle,
+  ExternalLink,
+  Gavel,
+  Home,
+  LayoutDashboard,
+  Menu,
+  Megaphone,
+  MessageSquareWarning,
+  Search,
+  Shield,
+  ShieldCheck,
+  UserCheck,
+  Users,
+  X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-interface AdminSidebarProps {
-  pendingAgentsCount?: number;
-  pendingPropertiesCount?: number;
+const MAIN_SITE_URL =
+  process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+
+const navigation = [
+  {
+    name: "Overview & Analytics",
+    href: "/admin",
+    icon: LayoutDashboard,
+    description: "Platform insights",
+  },
+  {
+    name: "Agent Approvals",
+    href: "/admin/agents",
+    icon: Users,
+    description: "Verify local brokers",
+  },
+  {
+    name: "Property Moderation",
+    href: "/admin/properties",
+    icon: Gavel,
+    description: "Approve or hide listings",
+  },
+  {
+    name: "Client Requirements",
+    href: "/admin/requirements",
+    icon: ClipboardList,
+    description: "Review buyer requests and offers",
+  },
+  {
+    name: "Agency Directory",
+    href: "/admin/agencies",
+    icon: Building2,
+    description: "Registered agencies",
+  },
+  {
+    name: "Advertisements",
+    href: "/admin/advertisements",
+    icon: Megaphone,
+    description: "Publish, pause or remove ads",
+  },
+  {
+    name: "Reports & Complaints",
+    href: "/admin/reports",
+    icon: MessageSquareWarning,
+    description: "Review public reports",
+  },
+  {
+    name: "Activity Log",
+    href: "/admin/activity",
+    icon: Activity,
+    description: "Track admin activities",
+  },
+];
+
+interface AdminIdentity {
+  name: string;
+  email?: string;
 }
 
-export function AdminSidebar({
-  pendingAgentsCount = 2,
-  pendingPropertiesCount = 2,
-}: AdminSidebarProps) {
-  const pathname = usePathname();
+function getStoredAdmin(): AdminIdentity | null {
+  try {
+    const raw = localStorage.getItem("auth_user");
+    if (!raw) return null;
+    const user: unknown = JSON.parse(raw);
+    if (!user || typeof user !== "object" || !("name" in user)) return null;
+    const name = user.name;
+    const email = "email" in user ? user.email : undefined;
+    if (typeof name !== "string" || !name.trim()) return null;
+    return {
+      name: name.trim(),
+      ...(typeof email === "string" ? { email } : {}),
+    };
+  } catch (error) {
+    console.error("Unable to read administrator identity.", error);
+    return null;
+  }
+}
 
-  const navigation = [
-    {
-      name: "Overview & Analytics",
-      href: "/admin",
-      icon: LayoutDashboard,
-      description: "Platform health & KPIs",
-    },
-    {
-      name: "Agent Approvals",
-      href: "/admin/agents",
-      icon: UserCheck,
-      badge: pendingAgentsCount > 0 ? `${pendingAgentsCount} Pending` : undefined,
-      badgeVariant: "warning",
-      description: "Verify local brokers",
-    },
-    {
-      name: "Property Moderation",
-      href: "/admin/properties",
-      icon: Building2,
-      badge: pendingPropertiesCount > 0 ? `${pendingPropertiesCount} Review` : undefined,
-      badgeVariant: "danger",
-      description: "Approve or block listings",
-    },
-  ];
+export function AdminSidebar() {
+  const pathname = usePathname();
+  const router = useRouter();
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [admin, setAdmin] = useState<AdminIdentity | null>(null);
+  const [globalSearch, setGlobalSearch] = useState("");
+
+  useEffect(() => {
+    setAdmin(getStoredAdmin());
+  }, []);
+
+  useEffect(() => {
+    setMenuOpen(false);
+  }, [pathname]);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setMenuOpen(false);
+    };
+    window.addEventListener("keydown", closeOnEscape);
+    return () => window.removeEventListener("keydown", closeOnEscape);
+  }, [menuOpen]);
+
+  const submitSearch = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const query = globalSearch.trim();
+    router.push(query ? `/admin/properties?search=${encodeURIComponent(query)}` : "/admin/properties");
+  };
+
+  const isActive = (href: string) =>
+    pathname === href || (href !== "/admin" && pathname.startsWith(`${href}/`));
+
+  const renderNavigation = () => (
+    <>
+      <p className="px-3 pb-2 pt-1 text-[10px] font-bold uppercase tracking-[0.16em] text-slate-500">
+        Admin Management
+      </p>
+      <nav aria-label="Admin management" className="space-y-1">
+        {navigation.map((item) => {
+          const Icon = item.icon;
+          const active = isActive(item.href);
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              aria-current={active ? "page" : undefined}
+              className={cn(
+                "group flex min-h-11 items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-colors",
+                active
+                  ? "bg-blue-600/25 text-white ring-1 ring-inset ring-blue-500/30"
+                  : "text-slate-300 hover:bg-slate-800/80 hover:text-white",
+              )}
+            >
+              <span
+                className={cn(
+                  "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg",
+                  active ? "bg-blue-600 text-white" : "text-slate-400 group-hover:text-blue-300",
+                )}
+              >
+                <Icon className="h-[18px] w-[18px]" />
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block truncate font-semibold">{item.name}</span>
+                <span className={cn("mt-0.5 block truncate text-[10px]", active ? "text-blue-200/80" : "text-slate-500")}>
+                  {item.description}
+                </span>
+              </span>
+            </Link>
+          );
+        })}
+      </nav>
+
+      <p className="px-3 pb-2 pt-6 text-[10px] font-bold uppercase tracking-[0.16em] text-slate-500">
+        Cross Portals
+      </p>
+      <nav aria-label="Other portals" className="space-y-1">
+        <Link
+          href={`${MAIN_SITE_URL}/agent`}
+          className="flex min-h-10 items-center gap-3 rounded-xl px-3 text-sm font-medium text-slate-300 transition-colors hover:bg-slate-800/80 hover:text-white"
+        >
+          <Users className="h-4 w-4 text-slate-400" />
+          <span className="flex-1">Agent CRM Portal</span>
+          <ChevronRight className="h-4 w-4 text-slate-500" />
+        </Link>
+        <Link
+          href={MAIN_SITE_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex min-h-10 items-center gap-3 rounded-xl px-3 text-sm font-medium text-slate-300 transition-colors hover:bg-slate-800/80 hover:text-white"
+        >
+          <ExternalLink className="h-4 w-4 text-slate-400" />
+          <span className="flex-1">Public Marketplace</span>
+          <ChevronRight className="h-4 w-4 text-slate-500" />
+        </Link>
+      </nav>
+    </>
+  );
+
+  const initials = admin?.name
+    ? admin.name.split(/\s+/).slice(0, 2).map((part) => part[0]).join("").toUpperCase()
+    : "A";
 
   return (
     <>
-      {/* Desktop Sidebar (hidden on mobile) */}
-      <aside className="hidden lg:flex lg:flex-col lg:w-72 lg:fixed lg:inset-y-0 bg-slate-950 text-slate-100 border-r border-slate-800 z-30 shadow-2xl">
-        {/* Brand Header */}
-        <div className="flex items-center gap-3 px-6 h-20 border-b border-slate-800 bg-slate-900/60 flex-shrink-0">
-          <div className="h-11 w-11 rounded-2xl bg-gradient-to-br from-rose-600 to-amber-600 flex items-center justify-center shadow-lg shadow-rose-950/50 border border-rose-400/20 flex-shrink-0">
-            <ShieldAlert className="h-6 w-6 text-white" />
-          </div>
-          <div className="flex flex-col">
-            <div className="flex items-center gap-1.5">
-              <span className="font-black text-lg tracking-tight text-white">EstatePro</span>
-              <span className="text-[9px] font-black uppercase tracking-wider bg-rose-500/20 text-rose-400 px-1.5 py-0.5 rounded-full border border-rose-500/30">
-                Super Admin
-              </span>
-            </div>
-            <span className="text-xs text-slate-400 font-medium">Control Central</span>
-          </div>
+      <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 flex-col border-r border-slate-800/90 bg-[#0b1426] text-slate-100 lg:flex">
+        <Link href="/admin" className="flex h-[66px] shrink-0 items-center gap-3 border-b border-slate-800/90 px-5">
+          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-600 text-white shadow-lg shadow-blue-950/40">
+            <Home className="h-5 w-5" />
+          </span>
+          <span className="min-w-0">
+            <span className="block text-base font-extrabold tracking-tight text-white">EstatePro</span>
+            <span className="block text-[10px] text-slate-400">Control Panel</span>
+          </span>
+        </Link>
+
+        <div className="mx-5 my-3 flex justify-center">
+          <span className="rounded-full bg-rose-500/10 px-3 py-1 text-[10px] font-bold uppercase tracking-wide text-rose-300 ring-1 ring-inset ring-rose-500/20">
+            Super Admin
+          </span>
         </div>
 
-        {/* Admin Identity Badge */}
-        <div className="px-5 py-4 mx-3 my-4 rounded-2xl bg-slate-900/80 border border-slate-800 backdrop-blur-sm flex-shrink-0">
-          <div className="flex items-center gap-3">
-            <div className="relative flex-shrink-0">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-rose-500 to-indigo-600 flex items-center justify-center font-bold text-white text-xs shadow-md">
-                SA
-              </div>
-              <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-emerald-500 rounded-full ring-2 ring-slate-950" />
-            </div>
-            <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-1">
-                <p className="text-sm font-bold text-white truncate">Super Administrator</p>
-                <Shield className="h-3.5 w-3.5 text-rose-400 flex-shrink-0" />
-              </div>
-              <p className="text-[11px] text-slate-400 font-medium truncate">Full Platform Access</p>
-            </div>
-          </div>
+        <div className="min-h-0 flex-1 overflow-y-auto px-3 pb-3">
+          {renderNavigation()}
         </div>
 
-        {/* Main Navigation Links */}
-        <div className="flex-1 px-3 space-y-1.5 overflow-y-auto">
-          <div className="px-3 pb-2 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
-            Admin Management
+        <div className="m-3 rounded-xl border border-blue-500/20 bg-blue-950/30 p-3">
+          <div className="flex items-center gap-2 text-xs font-bold text-blue-200">
+            <ShieldCheck className="h-4 w-4 text-blue-400" />
+            Platform Control
           </div>
-
-          {navigation.map((item) => {
-            const isActive = pathname === item.href;
-            const Icon = item.icon;
-
-            return (
-              <Link
-                key={item.name}
-                href={item.href}
-                className={cn(
-                  "flex items-center gap-3 px-3.5 py-3 rounded-xl text-sm font-medium transition-all group relative min-h-[48px]",
-                  isActive
-                    ? "bg-gradient-to-r from-rose-600 to-rose-700 text-white shadow-lg shadow-rose-950/60 font-semibold"
-                    : "text-slate-300 hover:bg-slate-900 hover:text-white"
-                )}
-              >
-                <Icon
-                  className={cn(
-                    "h-5 w-5 transition-transform group-hover:scale-110 flex-shrink-0",
-                    isActive ? "text-white" : "text-slate-400"
-                  )}
-                />
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between">
-                    <span className="truncate">{item.name}</span>
-                    {item.badge && (
-                      <span
-                        className={cn(
-                          "ml-2 text-[10px] font-bold px-2 py-0.5 rounded-full border flex-shrink-0",
-                          isActive
-                            ? "bg-white/20 text-white border-white/30"
-                            : item.badgeVariant === "warning"
-                            ? "bg-amber-500/20 text-amber-300 border-amber-500/30"
-                            : "bg-rose-500/20 text-rose-300 border-rose-500/30"
-                        )}
-                      >
-                        {item.badge}
-                      </span>
-                    )}
-                  </div>
-                  <p
-                    className={cn(
-                      "text-[11px] font-normal truncate mt-0.5",
-                      isActive ? "text-rose-100" : "text-slate-400"
-                    )}
-                  >
-                    {item.description}
-                  </p>
-                </div>
-              </Link>
-            );
-          })}
-
-          <div className="pt-5 px-3 pb-2 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
-            Cross Portals
-          </div>
-
-          <Link
-            href="/agent"
-            className="flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-medium text-slate-300 hover:bg-slate-900 hover:text-white transition-all group min-h-[44px]"
-          >
-            <div className="flex items-center gap-3">
-              <Layers className="h-4 w-4 text-emerald-400 flex-shrink-0" />
-              <span>Agent CRM Portal</span>
-            </div>
-            <ChevronRight className="h-4 w-4 text-slate-500 group-hover:translate-x-0.5 transition-transform flex-shrink-0" />
-          </Link>
-
-          <Link
-            href="/"
-            target="_blank"
-            className="flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-medium text-slate-300 hover:bg-slate-900 hover:text-white transition-all group min-h-[44px]"
-          >
-            <div className="flex items-center gap-3">
-              <ExternalLink className="h-4 w-4 text-slate-400 group-hover:text-rose-400 transition-colors flex-shrink-0" />
-              <span>Public Marketplace</span>
-            </div>
-            <ChevronRight className="h-4 w-4 text-slate-500 group-hover:translate-x-0.5 transition-transform flex-shrink-0" />
-          </Link>
-        </div>
-
-        {/* Security Warning Footer */}
-        <div className="p-4 m-3 rounded-2xl bg-gradient-to-br from-rose-950/40 to-slate-900 border border-rose-500/20 text-xs flex-shrink-0">
-          <div className="flex items-center gap-1.5 text-rose-400 font-bold mb-1">
-            <AlertTriangle className="h-4 w-4 flex-shrink-0" />
-            <span>Strict Moderation</span>
-          </div>
-          <p className="text-slate-300 text-[11px] leading-relaxed">
-            All agent approvals require CNIC and phone verification before enabling Level 2 trust badges.
+          <p className="mt-1 text-[10px] leading-4 text-slate-400">
+            Keep the marketplace safe and trustworthy.
           </p>
+          <Link
+            href="/admin/activity"
+            className="mt-2 inline-flex min-h-8 w-full items-center justify-center gap-1 rounded-lg bg-blue-700 px-3 text-[10px] font-semibold text-white transition-colors hover:bg-blue-600"
+          >
+            View Activity Log <ChevronRight className="h-3 w-3" />
+          </Link>
         </div>
       </aside>
 
-      {/* Mobile Top Header */}
-      <header className="lg:hidden sticky top-0 z-40 flex items-center justify-between h-16 px-4 bg-slate-950/95 backdrop-blur-md border-b border-slate-800 text-white">
-        <div className="flex items-center gap-2.5">
-          <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-rose-600 to-amber-600 flex items-center justify-center shadow-md flex-shrink-0">
-            <ShieldAlert className="h-5 w-5 text-white" />
-          </div>
-          <div>
-            <div className="flex items-center gap-1.5">
-              <span className="font-bold text-base text-white tracking-tight">EstatePro</span>
-              <span className="text-[9px] font-bold uppercase bg-rose-500/20 text-rose-400 px-1 py-0.2 rounded border border-rose-500/30">
-                Super Admin
-              </span>
-            </div>
-          </div>
-        </div>
+      <header className="sticky top-0 z-30 flex min-h-16 items-center gap-3 border-b border-slate-800/90 bg-[#0b1426]/95 px-3 text-white backdrop-blur lg:ml-64 lg:px-5">
+        <button
+          type="button"
+          aria-label={menuOpen ? "Close admin navigation" : "Open admin navigation"}
+          aria-expanded={menuOpen}
+          onClick={() => setMenuOpen((current) => !current)}
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-slate-300 transition-colors hover:bg-slate-800 hover:text-white lg:hidden"
+        >
+          {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+        </button>
+        <form onSubmit={submitSearch} role="search" className="flex min-w-0 max-w-3xl flex-1 items-center">
+          <label className="flex h-10 w-full items-center gap-2 rounded-full border border-slate-700/80 bg-slate-800/70 px-4 text-slate-400 transition-colors focus-within:border-blue-500/70 focus-within:bg-slate-800">
+            <Search className="h-4 w-4 shrink-0" />
+            <input
+              type="search"
+              value={globalSearch}
+              onChange={(event) => setGlobalSearch(event.target.value)}
+              placeholder="Search properties, agents, or locations..."
+              aria-label="Search admin properties, agents, or locations"
+              className="min-w-0 flex-1 bg-transparent text-xs text-white outline-none placeholder:text-slate-400 sm:text-sm"
+            />
+          </label>
+        </form>
 
-        <div className="flex items-center gap-2">
-          <Link
-            href="/admin/agents"
-            className="flex items-center gap-1 px-3 py-2 text-xs font-bold bg-rose-600 hover:bg-rose-500 text-white rounded-xl shadow-sm transition-all min-h-[38px]"
-          >
-            <UserCheck className="h-3.5 w-3.5 flex-shrink-0" />
-            <span>Approvals</span>
-          </Link>
+        <div className="ml-auto flex shrink-0 items-center gap-2 sm:gap-3">
+          <span className="hidden text-right sm:block">
+            <span className="block text-xs font-semibold text-slate-100">{admin?.name ?? "Admin"}</span>
+            <span className="block text-[10px] text-slate-400">{admin?.email ?? "Administrator"}</span>
+          </span>
+          <span className="flex h-9 w-9 items-center justify-center rounded-full border border-blue-400/40 bg-blue-600/25 text-xs font-bold text-blue-100">
+            {initials}
+          </span>
+          <span className="hidden text-xs font-medium text-slate-300 sm:block">Admin</span>
+          <Shield className="hidden h-4 w-4 text-blue-300 sm:block" />
         </div>
       </header>
 
-      {/* Mobile Bottom Navigation Bar (min-height 48px tap targets) */}
-      <nav className="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-slate-950/95 backdrop-blur-md border-t border-slate-800 px-2 py-2 flex items-center justify-around shadow-2xl">
-        <Link
-          href="/admin"
-          className={cn(
-            "flex flex-col items-center justify-center gap-1 py-1 px-3 rounded-xl text-[11px] font-medium transition-colors min-h-[48px] min-w-[70px]",
-            pathname === "/admin" ? "text-rose-400 font-bold bg-slate-900" : "text-slate-400 hover:text-white"
-          )}
-        >
-          <LayoutDashboard className="h-5 w-5 flex-shrink-0" />
-          <span>Overview</span>
-        </Link>
-
-        <Link
-          href="/admin/agents"
-          className={cn(
-            "flex flex-col items-center justify-center gap-1 py-1 px-3 rounded-xl text-[11px] font-medium transition-colors min-h-[48px] min-w-[70px]",
-            pathname === "/admin/agents" ? "text-rose-400 font-bold bg-slate-900" : "text-slate-400 hover:text-white"
-          )}
-        >
-          <UserCheck className="h-5 w-5 flex-shrink-0" />
-          <span>Agents</span>
-        </Link>
-
-        <Link
-          href="/admin/properties"
-          className={cn(
-            "flex flex-col items-center justify-center gap-1 py-1 px-3 rounded-xl text-[11px] font-medium transition-colors min-h-[48px] min-w-[70px]",
-            pathname === "/admin/properties" ? "text-rose-400 font-bold bg-slate-900" : "text-slate-400 hover:text-white"
-          )}
-        >
-          <Building2 className="h-5 w-5 flex-shrink-0" />
-          <span>Properties</span>
-        </Link>
-
-        <Link
-          href="/"
-          target="_blank"
-          className="flex flex-col items-center justify-center gap-1 py-1 px-3 rounded-xl text-[11px] font-medium text-slate-400 hover:text-white transition-colors min-h-[48px] min-w-[70px]"
-        >
-          <ExternalLink className="h-5 w-5 flex-shrink-0" />
-          <span>Public</span>
-        </Link>
-      </nav>
+      {menuOpen && (
+        <div className="fixed inset-0 z-50 lg:hidden">
+          <button
+            type="button"
+            aria-label="Close admin navigation"
+            onClick={() => setMenuOpen(false)}
+            className="absolute inset-0 bg-slate-950/70"
+          />
+          <aside className="relative flex h-full w-[min(20rem,88vw)] flex-col border-r border-slate-800 bg-[#0b1426] p-3 text-slate-100 shadow-2xl">
+            <div className="flex h-12 items-center justify-between border-b border-slate-800 px-2 pb-3">
+              <Link href="/admin" className="flex items-center gap-2.5" onClick={() => setMenuOpen(false)}>
+                <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600">
+                  <Home className="h-4 w-4" />
+                </span>
+                <span className="text-sm font-bold">EstatePro Admin</span>
+              </Link>
+              <button
+                type="button"
+                aria-label="Close admin navigation"
+                onClick={() => setMenuOpen(false)}
+                className="flex h-9 w-9 items-center justify-center rounded-lg text-slate-300 hover:bg-slate-800"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <div className="mt-3 min-h-0 flex-1 overflow-y-auto">{renderNavigation()}</div>
+          </aside>
+        </div>
+      )}
     </>
   );
 }

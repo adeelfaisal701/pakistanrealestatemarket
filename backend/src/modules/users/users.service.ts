@@ -19,7 +19,18 @@ export class UsersService {
   }
 
   async findByEmail(email: string): Promise<UserDocument | null> {
-    return this.userModel.findOne({ email: email.toLowerCase() }).exec();
+    return this.userModel.findOne({ email: email.trim().toLowerCase() }).exec();
+  }
+
+  async findBuyerIdentityByEmail(
+    email: string,
+  ): Promise<{ id: string; role: string } | null> {
+    const user = await this.userModel
+      .findOne({ email: email.toLowerCase() })
+      .select('_id role')
+      .lean()
+      .exec();
+    return user ? { id: String(user._id), role: user.role } : null;
   }
 
   async findById(id: string): Promise<UserDocument | null> {

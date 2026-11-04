@@ -1,49 +1,42 @@
-import React from "react";
 import Link from "next/link";
-import { ArrowLeft, Building2, ShieldAlert, AlertTriangle } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { PropertyModerationGrid } from "@/components/admin/PropertyModerationGrid";
-import { INITIAL_MODERATION_PROPERTIES } from "@/lib/admin-mock-data";
 
 export const metadata = {
-  title: "Property Moderation & Spam Removal | Super Admin",
-  description: "Review, approve, or block submitted property listings across Lahore societies.",
+  title: "Property Moderation | Super Admin",
+  description: "Review real property records submitted to the marketplace.",
 };
 
-export default function AdminPropertiesPage() {
-  const pendingCount = INITIAL_MODERATION_PROPERTIES.filter(
-    (p) => p.status === "Pending Review"
-  ).length;
+export default async function AdminPropertiesPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ search?: string | string[] }>;
+}) {
+  const params = await searchParams;
+  const initialSearch = Array.isArray(params.search)
+    ? params.search[0] ?? ""
+    : params.search ?? "";
 
   return (
     <div className="space-y-6">
-      {/* Top Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-900 border border-slate-800 rounded-3xl p-5 sm:p-7 shadow-xl">
+      <header className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
         <div>
-          <Link
-            href="/admin"
-            className="inline-flex items-center gap-1.5 text-xs font-semibold text-rose-400 hover:text-rose-300 mb-2 transition-colors min-h-[30px]"
-          >
-            <ArrowLeft className="h-3.5 w-3.5 flex-shrink-0" />
-            <span>Back to Admin Overview</span>
-          </Link>
-          <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
-            Property Moderation & Spam Removal
+          <p className="mb-2 text-xs text-slate-400">
+            Dashboard <span className="px-1.5 text-slate-600">/</span> Property Moderation
+          </p>
+          <h1 className="text-2xl font-bold tracking-tight text-white sm:text-3xl">
+            Property Moderation
           </h1>
-          <p className="text-xs sm:text-sm text-slate-400 mt-1">
-            Review newly submitted real estate listings across Bahria, DHA, Lake City & Lahore societies before publishing live.
+          <p className="mt-1 text-sm text-slate-400">
+            Review real listings, inventory and linked advertisement status.
           </p>
         </div>
-
-        <div className="flex items-center gap-2">
-          <div className="px-3.5 py-1.5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs font-bold flex items-center gap-1.5">
-            <AlertTriangle className="h-3.5 w-3.5 flex-shrink-0" />
-            <span>{pendingCount} Pending Moderation</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Main Moderation Grid */}
-      <PropertyModerationGrid initialProperties={INITIAL_MODERATION_PROPERTIES} />
+        <Link href="/admin" className="inline-flex min-h-10 items-center gap-2 self-start rounded-lg border border-slate-700 px-3 text-sm font-medium text-slate-300 hover:bg-slate-800 sm:self-auto">
+          <ArrowLeft className="h-4 w-4" />
+          Overview
+        </Link>
+      </header>
+      <PropertyModerationGrid key={initialSearch} initialSearch={initialSearch} />
     </div>
   );
 }

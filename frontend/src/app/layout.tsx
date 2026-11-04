@@ -1,5 +1,7 @@
 import type { Metadata } from 'next';
+import 'leaflet/dist/leaflet.css';
 import './globals.css';
+import { BuyerSavedPropertiesProvider } from '@/components/buyer/BuyerSavedPropertiesProvider';
 
 export const metadata: Metadata = {
   title: 'PRM | Pakistan Real Estate Marketplace & Agent CRM (Lahore)',
@@ -23,7 +25,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="scroll-smooth">
       <body className="min-h-screen bg-slate-50 dark:bg-slate-950 font-sans text-slate-900 dark:text-slate-100 antialiased selection:bg-emerald-500 selection:text-white">
-        {children}
+        <BuyerSavedPropertiesProvider>{children}</BuyerSavedPropertiesProvider>
       </body>
     </html>
   );

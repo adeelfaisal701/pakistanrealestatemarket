@@ -10,8 +10,25 @@
     "format": "prettier --write \"src/**/*.ts\"",
     "start": "nest start",
     "start:dev": "nest start --watch",
+    "start:dev:analytics": "node scripts/start-dev-analytics.js",
     "start:debug": "nest start --debug --watch",
-    "start:prod": "node dist/main",
+    "prestart:prod": "npm run build",
+    "start:prod": "node dist/main.js",
+    "db:migrate:indexes": "node -r ts-node/register src/database/migrate-schema-indexes.ts",
+    "admin:provision": "node scripts/provision-admin.js",
+    "test": "node --test -r ts-node/register test/*.spec.ts test/*.spec.js",
+    "test:registration": "node --test -r ts-node/register test/auth-registration.spec.ts",
+    "test:admin-auth": "node --test -r ts-node/register test/admin-auth.spec.ts",
+    "test:jwt-role": "node --test -r ts-node/register test/jwt-role.spec.js",
+    "test:admin-moderation": "node --test -r ts-node/register test/admin-moderation.spec.ts",
+    "test:admin-hard-delete-uri": "node --test -r ts-node/register test/admin-hard-delete-integration-uri.spec.ts",
+    "test:admin-hard-delete-cleanup": "node --test -r ts-node/register test/admin-hard-delete-fixture-cleanup.spec.ts",
+    "test:admin-hard-delete-integration": "node --test -r ts-node/register test/admin-hard-delete-replica-set.integration.spec.ts",
+    "test:location-sharing": "node --test -r ts-node/register test/property-location-sharing.spec.ts",
+    "test:property-images": "node --test -r ts-node/register test/property-images-and-features.spec.ts",
+    "test:database-index-migration": "node --test -r ts-node/register test/schema-index-migration.spec.ts test/database-config.spec.ts",
+    "test:cors": "node --test -r ts-node/register test/cors-config.spec.ts",
+    "test:property-advertisements": "node --test -r ts-node/register test/property-advertisement-analytics.spec.ts",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix"
   },
   "dependencies": {
@@ -29,7 +46,8 @@
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
     "reflect-metadata": "^0.2.2",
-    "rxjs": "^7.8.1"
+    "rxjs": "^7.8.1",
+    "sharp": "0.34.5"
   },
   "devDependencies": {
     "@nestjs/cli": "^11.0.0",

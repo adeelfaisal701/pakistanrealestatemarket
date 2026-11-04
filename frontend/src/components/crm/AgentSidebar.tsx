@@ -1,238 +1,236 @@
 "use client";
 
-import React from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  LayoutDashboard,
-  PlusCircle,
   Building2,
-  ExternalLink,
-  Sparkles,
-  ShieldCheck,
   ChevronRight,
+  ClipboardList,
+  Home,
+  Megaphone,
+  MessageCircle,
+  Phone,
+  PlusCircle,
+  Users,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useAgentStore } from "@/lib/agent-store";
+import apiClient, { getApiErrorMessage, type ApiEnvelope } from "@/lib/api-client";
 
-interface AgentSidebarProps {
-  activeInventoryCount?: number;
-  totalLeadsCount?: number;
+type BadgeKey = "newLeads" | "unreadConversations";
+
+interface NavItem {
+  name: string;
+  shortName: string;
+  icon: React.ElementType;
+  href: string;
+  badgeKey?: BadgeKey;
 }
 
-export function AgentSidebar({
-  activeInventoryCount = 5,
-  totalLeadsCount = 12,
-}: AgentSidebarProps) {
-  const pathname = usePathname();
+const NAVIGATION: NavItem[] = [
+  { name: "Dashboard", shortName: "Home", icon: Home, href: "/agent" },
+  { name: "My Ads", shortName: "Ads", icon: Megaphone, href: "/agent/ads" },
+  { name: "Leads", shortName: "Leads", icon: Users, href: "/agent/leads", badgeKey: "newLeads" },
+  { name: "Calls & Messages", shortName: "Calls", icon: Phone, href: "/agent/calls", badgeKey: "unreadConversations" },
+  { name: "Listings", shortName: "Listings", icon: Building2, href: "/agent/listings" },
+  { name: "Client Requirements", shortName: "Requests", icon: ClipboardList, href: "/agent/requirements" },
+];
 
-  const navigation = [
-    {
-      name: "Leads & CRM Pipeline",
-      href: "/agent",
-      icon: LayoutDashboard,
-      badge: totalLeadsCount > 0 ? totalLeadsCount : undefined,
-      description: "Pipeline & WhatsApp Leads",
-    },
-    {
-      name: "Add New Property",
-      href: "/agent/add-property",
-      icon: PlusCircle,
-      badge: "Fast Post",
-      highlight: true,
-      description: "Direct Lahore Listings",
-    },
-  ];
+function isItemActive(pathname: string, href: string): boolean {
+  if (href === "/agent") return pathname === "/agent";
+  return pathname === href || pathname.startsWith(`${href}/`);
+}
+
+export function AgentSidebar() {
+  const pathname = usePathname();
+  const newLeads = useAgentStore((s) => s.crmLeads.filter((l) => l.status === "New").length);
+  const [unreadConversations, setUnreadConversations] = useState<number | null>(null);
+  const [unreadChatError, setUnreadChatError] = useState("");
+  const requestVersion = useRef(0);
+
+  const loadUnreadConversations = useCallback(async () => {
+    const currentRequestVersion = ++requestVersion.current;
+    try {
+      const response = await apiClient.get<ApiEnvelope<{ count: number }>>(
+        "/messages/agent/unread-count",
+      );
+      if (currentRequestVersion === requestVersion.current) {
+        setUnreadConversations(response.data.data.count);
+        setUnreadChatError("");
+      }
+    } catch (requestError) {
+      if (currentRequestVersion === requestVersion.current) {
+        setUnreadChatError(getApiErrorMessage(requestError));
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    void loadUnreadConversations();
+    const timer = window.setInterval(() => void loadUnreadConversations(), 15_000);
+    const handleAuthChange = () => {
+      requestVersion.current += 1;
+      setUnreadConversations(null);
+      void loadUnreadConversations();
+    };
+    const handleStorage = (event: StorageEvent) => {
+      if (event.key === "auth_user" || event.key === "auth_token") {
+        handleAuthChange();
+      }
+    };
+    window.addEventListener("estatepro:auth-changed", handleAuthChange);
+    window.addEventListener("storage", handleStorage);
+    return () => {
+      window.clearInterval(timer);
+      window.removeEventListener("estatepro:auth-changed", handleAuthChange);
+      window.removeEventListener("storage", handleStorage);
+    };
+  }, [loadUnreadConversations]);
+
+  const badges: Record<BadgeKey, number> = {
+    newLeads,
+    unreadConversations: unreadConversations ?? 0,
+  };
 
   return (
     <>
       {/* Desktop Sidebar (hidden on mobile) */}
-      <aside className="hidden lg:flex lg:flex-col lg:w-72 lg:fixed lg:inset-y-0 bg-slate-900 text-slate-100 border-r border-slate-800 z-30 shadow-xl">
-        {/* Brand Header */}
-        <div className="flex items-center gap-3 px-6 h-20 border-b border-slate-800/80 bg-slate-950/40 flex-shrink-0">
-          <div className="h-11 w-11 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-700 flex items-center justify-center shadow-lg shadow-emerald-900/40 border border-emerald-400/20 flex-shrink-0">
+      <aside className="z-30 hidden border-r border-[#16243a] bg-[#08101d] text-slate-100 lg:fixed lg:inset-y-0 lg:flex lg:w-72 lg:flex-col">
+        {/* Brand */}
+        <div className="flex h-20 flex-shrink-0 items-center gap-3 border-b border-[#16243a] px-6">
+          <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl bg-emerald-500 shadow-lg shadow-emerald-900/40">
             <Building2 className="h-6 w-6 text-white" />
           </div>
-          <div className="flex flex-col">
-            <div className="flex items-center gap-1.5">
-              <span className="font-extrabold text-lg tracking-tight text-white">EstatePro</span>
-              <span className="text-[10px] font-bold uppercase tracking-wider bg-emerald-500/20 text-emerald-400 px-1.5 py-0.5 rounded-full border border-emerald-500/30">
+          <div className="min-w-0">
+            <div className="flex items-center gap-2">
+              <span className="text-lg font-bold tracking-tight text-white">EstatePro</span>
+              <span className="rounded-full border border-emerald-500/40 bg-emerald-500/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-emerald-400">
                 Agent CRM
               </span>
             </div>
-            <span className="text-xs text-slate-400 font-medium">Lahore Property Hub</span>
+            <span className="text-xs text-slate-400">Lahore Property Hub</span>
           </div>
         </div>
 
-        {/* Agent Profile Summary Card */}
-        <div className="px-5 py-4 mx-3 my-4 rounded-2xl bg-slate-800/60 border border-slate-700/60 backdrop-blur-sm flex-shrink-0">
-          <div className="flex items-center gap-3">
-            <div className="relative flex-shrink-0">
-              <div className="w-11 h-11 rounded-full bg-gradient-to-br from-amber-400 to-emerald-500 flex items-center justify-center font-bold text-slate-900 shadow-md">
-                AA
-              </div>
-              <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-emerald-500 rounded-full ring-2 ring-slate-900" />
-            </div>
-            <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-1">
-                <p className="text-sm font-semibold text-white truncate">Adeel & Associates</p>
-                <ShieldCheck className="h-3.5 w-3.5 text-emerald-400 flex-shrink-0" />
-              </div>
-              <p className="text-xs text-emerald-400/90 font-medium">Verified Lahore Agent</p>
-            </div>
-          </div>
-          <div className="mt-3 pt-2.5 border-t border-slate-700/50 flex items-center justify-between text-xs text-slate-400">
-            <span>Active Listings: <strong className="text-white">{activeInventoryCount}</strong></span>
-            <span>Leads: <strong className="text-emerald-400">{totalLeadsCount}</strong></span>
-          </div>
-        </div>
-
-        {/* Main Navigation Links */}
-        <div className="flex-1 px-3 space-y-1.5 overflow-y-auto">
-          <div className="px-3 pb-2 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
-            Agent Dashboard
-          </div>
-          {navigation.map((item) => {
-            const isActive = pathname === item.href;
+        {/* Navigation */}
+        <nav aria-label="Agent navigation" className="flex-1 space-y-1.5 overflow-y-auto px-3 py-6">
+          {NAVIGATION.map((item) => {
             const Icon = item.icon;
+            const active = isItemActive(pathname, item.href);
+            const count = item.badgeKey ? badges[item.badgeKey] : 0;
 
             return (
               <Link
                 key={item.name}
                 href={item.href}
+                aria-current={active ? "page" : undefined}
                 className={cn(
-                  "flex items-center gap-3 px-3.5 py-3 rounded-xl text-sm font-medium transition-all group relative min-h-[46px]",
-                  isActive
-                    ? "bg-emerald-600 text-white shadow-lg shadow-emerald-950/50 font-semibold"
-                    : "text-slate-300 hover:bg-slate-800/80 hover:text-white"
+                  "flex min-h-[48px] items-center gap-3.5 rounded-xl border px-4 py-3 text-[15px] font-medium transition-colors",
+                  active
+                    ? "border-emerald-500/30 bg-gradient-to-r from-emerald-600/35 to-emerald-600/10 text-white"
+                    : "border-transparent text-slate-300 hover:bg-white/5 hover:text-white"
                 )}
               >
-                <Icon
-                  className={cn(
-                    "h-5 w-5 transition-transform group-hover:scale-110 flex-shrink-0",
-                    isActive ? "text-white" : item.highlight ? "text-emerald-400" : "text-slate-400"
-                  )}
-                />
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between">
-                    <span className="truncate">{item.name}</span>
-                    {item.badge && (
-                      <span
-                        className={cn(
-                          "ml-2 text-[10px] font-bold px-2 py-0.5 rounded-full border flex-shrink-0",
-                          isActive
-                            ? "bg-emerald-700 text-white border-emerald-500/40"
-                            : item.highlight
-                            ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/30"
-                            : "bg-slate-800 text-slate-300 border-slate-700"
-                        )}
-                      >
-                        {item.badge}
-                      </span>
-                    )}
-                  </div>
-                  <p
-                    className={cn(
-                      "text-[11px] font-normal truncate mt-0.5",
-                      isActive ? "text-emerald-100" : "text-slate-400"
-                    )}
+                <Icon className={cn("h-5 w-5 flex-shrink-0", active ? "text-emerald-400" : "text-slate-400")} />
+                <span className="flex-1">{item.name}</span>
+                {count > 0 && (
+                  <span
+                    aria-label={`${count} new`}
+                    className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-emerald-500 px-1.5 text-[11px] font-bold text-white"
                   >
-                    {item.description}
-                  </p>
-                </div>
+                    {count > 99 ? "99+" : count}
+                  </span>
+                )}
+                {item.badgeKey === "unreadConversations" && unreadChatError && (
+                  <span
+                    title={`Unread chat count unavailable: ${unreadChatError}`}
+                    aria-label="Unread chat count unavailable"
+                    className="h-2 w-2 rounded-full bg-amber-400"
+                  />
+                )}
               </Link>
             );
           })}
+        </nav>
 
-          <div className="pt-5 px-3 pb-2 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
-            Quick Tools & Public Site
-          </div>
-
+        {/* Fast WhatsApp Close */}
+        <div className="flex-shrink-0 p-4">
           <Link
-            href="/"
-            target="_blank"
-            className="flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-medium text-slate-300 hover:bg-slate-800/80 hover:text-white transition-all group min-h-[44px]"
+            href="/agent/leads"
+            className="flex items-center gap-3 rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-3 transition-colors hover:bg-emerald-500/15"
           >
-            <div className="flex items-center gap-3">
-              <ExternalLink className="h-4 w-4 text-slate-400 group-hover:text-emerald-400 transition-colors flex-shrink-0" />
-              <span>Public Marketplace</span>
-            </div>
-            <ChevronRight className="h-4 w-4 text-slate-500 group-hover:translate-x-0.5 transition-transform flex-shrink-0" />
+            <span className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl bg-emerald-500">
+              <MessageCircle className="h-6 w-6 text-white" />
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block text-sm font-semibold text-emerald-400">Fast WhatsApp Close</span>
+              <span className="block text-xs text-slate-300">Click to chat with leads</span>
+            </span>
+            <ChevronRight className="h-4 w-4 flex-shrink-0 text-slate-300" />
           </Link>
-        </div>
-
-        {/* Footer Quick Support Note */}
-        <div className="p-4 m-3 rounded-2xl bg-gradient-to-br from-emerald-950/60 to-slate-900 border border-emerald-500/20 text-xs flex-shrink-0">
-          <div className="flex items-center gap-2 text-emerald-400 font-semibold mb-1">
-            <Sparkles className="h-4 w-4 flex-shrink-0" />
-            <span>Fast WhatsApp Close</span>
-          </div>
-          <p className="text-slate-300 text-[11px] leading-relaxed">
-            Click &apos;Match & WhatsApp&apos; on any lead card to instantly auto-match properties and send verified details.
-          </p>
         </div>
       </aside>
 
       {/* Mobile Top Header */}
-      <header className="lg:hidden sticky top-0 z-40 flex items-center justify-between h-16 px-4 bg-slate-900/95 backdrop-blur-md border-b border-slate-800 text-white">
+      <header className="sticky top-0 z-40 flex h-16 items-center justify-between border-b border-[#16243a] bg-[#08101d]/95 px-4 text-white backdrop-blur-md lg:hidden">
         <div className="flex items-center gap-2.5">
-          <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-700 flex items-center justify-center shadow-md flex-shrink-0">
+          <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-emerald-500 shadow-md">
             <Building2 className="h-5 w-5 text-white" />
           </div>
-          <div>
-            <div className="flex items-center gap-1.5">
-              <span className="font-bold text-base text-white tracking-tight">EstatePro</span>
-              <span className="text-[9px] font-bold uppercase bg-emerald-500/20 text-emerald-400 px-1 py-0.2 rounded border border-emerald-500/30">
-                Agent CRM
-              </span>
-            </div>
+          <div className="flex items-center gap-1.5">
+            <span className="text-base font-bold tracking-tight text-white">EstatePro</span>
+            <span className="rounded border border-emerald-500/40 bg-emerald-500/15 px-1 text-[9px] font-bold uppercase text-emerald-400">
+              Agent CRM
+            </span>
           </div>
         </div>
-
-        <div className="flex items-center gap-2">
-          <Link
-            href="/agent/add-property"
-            className="flex items-center gap-1.5 px-3 py-2 text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl shadow-sm transition-all min-h-[38px]"
-          >
-            <PlusCircle className="h-3.5 w-3.5 flex-shrink-0" />
-            <span>Add Property</span>
-          </Link>
-        </div>
-      </header>
-
-      {/* Mobile Bottom Fixed Navigation Bar (min-height 48px tap targets) */}
-      <nav className="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-slate-900/95 backdrop-blur-md border-t border-slate-800 px-2 py-2 flex items-center justify-around shadow-2xl">
-        <Link
-          href="/agent"
-          className={cn(
-            "flex flex-col items-center justify-center gap-1 py-1 px-4 rounded-xl text-[11px] font-medium transition-colors min-h-[48px] min-w-[70px]",
-            pathname === "/agent" ? "text-emerald-400 font-bold bg-slate-800/60" : "text-slate-400 hover:text-white"
-          )}
-        >
-          <LayoutDashboard className="h-5 w-5 flex-shrink-0" />
-          <span>Leads CRM</span>
-        </Link>
 
         <Link
           href="/agent/add-property"
-          className={cn(
-            "flex flex-col items-center justify-center gap-1 py-1 px-4 rounded-xl text-[11px] font-medium transition-colors min-h-[48px] min-w-[70px]",
-            pathname === "/agent/add-property"
-              ? "text-emerald-400 font-bold bg-slate-800/60"
-              : "text-slate-400 hover:text-white"
-          )}
+          className="flex min-h-[38px] items-center gap-1.5 rounded-xl bg-emerald-600 px-3 py-2 text-xs font-bold text-white shadow-sm transition-colors hover:bg-emerald-500"
         >
-          <PlusCircle className="h-5 w-5 flex-shrink-0" />
-          <span>Add Listing</span>
+          <PlusCircle className="h-3.5 w-3.5 flex-shrink-0" />
+          <span>Create New Ad</span>
         </Link>
+      </header>
 
-        <Link
-          href="/"
-          target="_blank"
-          className="flex flex-col items-center justify-center gap-1 py-1 px-4 rounded-xl text-[11px] font-medium text-slate-400 hover:text-white transition-colors min-h-[48px] min-w-[70px]"
-        >
-          <ExternalLink className="h-5 w-5 flex-shrink-0" />
-          <span>Marketplace</span>
-        </Link>
+      {/* Mobile Bottom Navigation (48px tap targets) */}
+      <nav
+        aria-label="Agent navigation (mobile)"
+        className="fixed inset-x-0 bottom-0 z-40 flex items-center justify-around overflow-x-auto border-t border-[#16243a] bg-[#08101d]/95 px-1 py-2 shadow-2xl backdrop-blur-md lg:hidden"
+      >
+        {NAVIGATION.map((item) => {
+          const Icon = item.icon;
+          const active = isItemActive(pathname, item.href);
+          const count = item.badgeKey ? badges[item.badgeKey] : 0;
+          return (
+            <Link
+              key={item.name}
+              href={item.href}
+              aria-current={active ? "page" : undefined}
+              className={cn(
+                "relative flex min-h-[48px] min-w-[52px] shrink-0 flex-col items-center justify-center gap-1 rounded-xl px-1 py-1 text-[11px] font-medium transition-colors",
+                active ? "bg-white/5 font-bold text-emerald-400" : "text-slate-400 hover:text-white"
+              )}
+            >
+              <Icon className="h-5 w-5 flex-shrink-0" />
+              <span>{item.shortName}</span>
+              {count > 0 && (
+                <span className="absolute right-2 top-0.5 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-emerald-500 px-1 text-[9px] font-bold text-white">
+                  {count > 9 ? "9+" : count}
+                </span>
+              )}
+              {item.badgeKey === "unreadConversations" && unreadChatError && (
+                <span
+                  title={`Unread chat count unavailable: ${unreadChatError}`}
+                  aria-label="Unread chat count unavailable"
+                  className="absolute right-2 top-1 h-2 w-2 rounded-full bg-amber-400"
+                />
+              )}
+            </Link>
+          );
+        })}
       </nav>
     </>
   );

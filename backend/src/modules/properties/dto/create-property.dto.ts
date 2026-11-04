@@ -1,12 +1,21 @@
 import {
+  ArrayMaxSize,
+  IsArray,
+  IsBoolean,
   IsEnum,
+  IsIn,
+  IsInt,
   IsNotEmpty,
   IsNumber,
+  IsObject,
   IsOptional,
+  IsPositive,
   IsString,
-  ValidateNested,
-  IsArray,
+  IsUrl,
+  Max,
+  MaxLength,
   Min,
+  ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { AreaUnit, PropertyPurpose, PropertyType } from '../schemas/property.schema';
@@ -14,61 +23,98 @@ import { AreaUnit, PropertyPurpose, PropertyType } from '../schemas/property.sch
 export class LocationDto {
   @IsNotEmpty()
   @IsString()
+  @MaxLength(100)
   city: string;
 
   @IsNotEmpty()
   @IsString()
+  @MaxLength(100)
   area: string;
-
-  @IsOptional()
-  @IsString()
-  address?: string;
-
-  @IsOptional()
-  @IsNumber()
-  latitude?: number;
-
-  @IsOptional()
-  @IsNumber()
-  longitude?: number;
 }
 
 export class FeaturesDto {
   @IsOptional()
-  @IsNumber()
+  @IsInt()
+  @Min(0)
+  @Max(50)
   bedrooms?: number;
 
   @IsOptional()
-  @IsNumber()
+  @IsInt()
+  @Min(0)
+  @Max(50)
   bathrooms?: number;
 
   @IsOptional()
+  @IsBoolean()
   servantQuarter?: boolean;
 
   @IsOptional()
-  @IsNumber()
+  @IsInt()
+  @Min(0)
+  @Max(50)
   parkingSpaces?: number;
 
   @IsOptional()
+  @IsBoolean()
   furnished?: boolean;
 
   @IsOptional()
+  @IsBoolean()
   electricityMeter?: boolean;
 
   @IsOptional()
+  @IsBoolean()
   gasConnection?: boolean;
 
   @IsOptional()
+  @IsBoolean()
   waterSupply?: boolean;
+
+  @IsOptional()
+  @IsObject()
+  rooms?: Record<string, number>;
+
+  @IsOptional()
+  @IsObject()
+  outdoor?: Record<string, number>;
+
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(50)
+  @IsString({ each: true })
+  interior?: string[];
+
+  @IsOptional()
+  @IsIn(['Furnished', 'Semi-furnished', 'Unfurnished'])
+  furnishing?: string;
+
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(30)
+  @IsString({ each: true })
+  community?: string[];
+
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(10)
+  @IsString({ each: true })
+  nearby?: string[];
 }
 
 export class CreatePropertyDto {
+  @IsOptional()
+  @IsIn(['inventory', 'advertise'])
+  submissionMode?: 'inventory' | 'advertise';
+
   @IsNotEmpty()
   @IsString()
+  @MaxLength(200)
   title: string;
 
   @IsNotEmpty()
   @IsString()
+  @MaxLength(5000)
   description: string;
 
   @IsNotEmpty()
@@ -79,14 +125,17 @@ export class CreatePropertyDto {
   @IsEnum(PropertyType)
   propertyType: PropertyType;
 
+  /** Price in PKR. Must be a positive number. */
   @IsNotEmpty()
   @IsNumber()
-  @Min(0)
+  @IsPositive()
+  @Max(1_000_000_000_000)
   price: number;
 
   @IsNotEmpty()
   @IsNumber()
-  @Min(0)
+  @IsPositive()
+  @Max(10_000_000)
   areaSize: number;
 
   @IsNotEmpty()
@@ -103,8 +152,12 @@ export class CreatePropertyDto {
   @Type(() => FeaturesDto)
   features?: FeaturesDto;
 
+  /** Existing externally hosted HTTPS images remain supported for compatibility. */
   @IsOptional()
   @IsArray()
+  @ArrayMaxSize(10)
   @IsString({ each: true })
+  @MaxLength(2048, { each: true })
+  @IsUrl({ protocols: ['https'], require_protocol: true }, { each: true })
   images?: string[];
 }

@@ -1,0 +1,19 @@
+import { BuyerAccessGuard } from "@/components/buyer/BuyerAccessGuard";
+import { BuyerNavigation } from "@/components/buyer/BuyerNavigation";
+
+export default function BuyerDashboardLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <BuyerAccessGuard>
+      <div className="min-h-screen bg-[#061326] text-slate-100">
+        <BuyerNavigation />
+        <main className="mx-auto min-h-screen max-w-[1500px] px-4 pb-8 pt-20 sm:px-6 lg:ml-[212px] lg:px-7 lg:py-7">
+          {children}
+        </main>
+      </div>
+    </BuyerAccessGuard>
+  );
+}

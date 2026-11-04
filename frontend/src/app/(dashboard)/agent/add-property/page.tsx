@@ -32,7 +32,7 @@ export default function AddPropertyPage() {
         <div className="flex items-center gap-2">
           <div className="px-3.5 py-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/80 border border-emerald-200 dark:border-emerald-800 text-xs font-semibold text-emerald-700 dark:text-emerald-300 flex items-center gap-1.5">
             <Sparkles className="h-3.5 w-3.5 text-emerald-600 flex-shrink-0" />
-            <span>Instant CRM Match Ready</span>
+            <span>Server submission · admin review required</span>
           </div>
         </div>
       </div>

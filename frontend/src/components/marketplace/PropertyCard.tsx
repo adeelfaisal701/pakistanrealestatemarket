@@ -3,6 +3,9 @@
 import React from 'react';
 import { Bed, Bath, Maximize2, MapPin, Phone, ShieldCheck, MessageCircle } from 'lucide-react';
 import { Property } from '@/types/property';
+import { TrackedWhatsAppLink } from './TrackedWhatsAppLink';
+import { TrackedCallLink } from './TrackedCallLink';
+import { SavePropertyButton } from '@/components/buyer/SavePropertyButton';
 
 interface PropertyCardProps {
   property: Property;
@@ -45,6 +48,9 @@ export default function PropertyCard({ property }: PropertyCardProps) {
               <ShieldCheck className="h-3.5 w-3.5 flex-shrink-0" />
               <span>{property.verificationLevel}</span>
             </span>
+          </div>
+          <div className="absolute right-2.5 top-12 z-10">
+            <SavePropertyButton propertyId={property.id} compact />
           </div>
 
           {/* Purpose & Type Tag on bottom of image */}
@@ -128,22 +134,22 @@ export default function PropertyCard({ property }: PropertyCardProps) {
 
       {/* Action Buttons: Direct WhatsApp & Call with touch-friendly min-h-[44px] */}
       <div className="p-4 sm:p-5 pt-0 grid grid-cols-2 gap-2">
-        <a
+        <TrackedWhatsAppLink
+          propertyId={property.id}
           href={whatsappUrl}
-          target="_blank"
-          rel="noopener noreferrer"
           className="inline-flex items-center justify-center gap-1.5 py-3 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-sm transition-all active:scale-[0.98] min-h-[44px]"
         >
           <MessageCircle className="h-4 w-4 flex-shrink-0" />
           <span>WhatsApp</span>
-        </a>
-        <a
+        </TrackedWhatsAppLink>
+        <TrackedCallLink
+          propertyId={property.id}
           href={callUrl}
           className="inline-flex items-center justify-center gap-1.5 py-3 px-3 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-bold text-xs border border-slate-200 dark:border-slate-700 transition-all active:scale-[0.98] min-h-[44px]"
         >
           <Phone className="h-3.5 w-3.5 text-slate-600 dark:text-slate-300 flex-shrink-0" />
           <span>Call Agent</span>
-        </a>
+        </TrackedCallLink>
       </div>
     </div>
   );

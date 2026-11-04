@@ -5,6 +5,10 @@ import { AppModule } from './app.module';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { TransformInterceptor } from './common/interceptors/transform.interceptor';
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
+import {
+  createCorsPolicy,
+  createPrivateNetworkCorsMiddleware,
+} from './config/cors.config';
 
 async function bootstrap() {
   const logger = new Logger('Bootstrap');
@@ -15,14 +19,14 @@ async function bootstrap() {
   app.setGlobalPrefix('api/v1');
 
   // Global Validation Pipe
+  // NOTE: implicit type conversion is intentionally OFF. It silently turned
+  // "false" into true and "" into 0 for request bodies. DTOs that need numeric
+  // query-string coercion declare it explicitly with @Type(() => Number).
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
       transform: true,
       forbidNonWhitelisted: true,
-      transformOptions: {
-        enableImplicitConversion: true,
-      },
     }),
   );
 
@@ -33,12 +37,17 @@ async function bootstrap() {
     new TransformInterceptor(),
   );
 
-  // CORS Setup
-  const corsOrigin = configService.get<string>('cors.origin') || 'http://localhost:3000';
-  app.enableCors({
-    origin: corsOrigin === '*' ? true : [corsOrigin, 'http://localhost:3000'],
-    credentials: true,
-  });
+  const corsPolicy = createCorsPolicy(
+    configService.get<string>('nodeEnv'),
+    configService.get<string>('cors.origin'),
+  );
+  app.use(
+    createPrivateNetworkCorsMiddleware(
+      configService.get<string>('nodeEnv') ?? '',
+      corsPolicy.allowedOrigins,
+    ),
+  );
+  app.enableCors(corsPolicy);
 
   const port = configService.get<number>('port') || 5000;
   await app.listen(port);

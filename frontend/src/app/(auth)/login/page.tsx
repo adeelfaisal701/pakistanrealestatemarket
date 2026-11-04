@@ -2,23 +2,65 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Building2, Lock, Mail, ArrowRight, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
+import apiClient, { getApiErrorMessage, type ApiEnvelope } from "@/lib/api-client";
+
+interface AuthResponse {
+  user: { id: string; name: string; email: string; role: string };
+  accessToken: string;
+}
+
+function getSafeReturnPath(returnTo: string | null): string | null {
+  if (!returnTo) return null;
+
+  try {
+    const returnUrl = new URL(returnTo, window.location.origin);
+    if (returnUrl.origin !== window.location.origin || returnUrl.pathname === "/login") {
+      return null;
+    }
+    return `${returnUrl.pathname}${returnUrl.search}${returnUrl.hash}`;
+  } catch {
+    return null;
+  }
+}
 
 export default function LoginPage() {
+  const router = useRouter();
   const [role, setRole] = useState<"agent" | "buyer">("agent");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Placeholder login action
-    if (role === "agent") {
-      window.location.href = "/agent";
-    } else {
-      window.location.href = "/buyer";
+    setError("");
+    setSubmitting(true);
+    try {
+      const response = await apiClient.post<ApiEnvelope<AuthResponse>>("/auth/login", {
+        email: email.trim(),
+        password,
+      });
+      const { accessToken, user } = response.data.data;
+      if (user.role !== role) {
+        setError(`This account is registered as a ${user.role}. Select the matching account type.`);
+        return;
+      }
+      localStorage.setItem("auth_token", accessToken);
+      localStorage.setItem("auth_user", JSON.stringify(user));
+      window.dispatchEvent(new Event("estatepro:auth-changed"));
+      const returnPath = getSafeReturnPath(
+        new URLSearchParams(window.location.search).get("returnTo"),
+      );
+      router.push(returnPath || (user.role === "agent" ? "/agent" : "/buyer"));
+    } catch (requestError) {
+      setError(getApiErrorMessage(requestError));
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -65,7 +107,7 @@ export default function LoginPage() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-1.5">
               <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                Email Address or Phone
+                Email Address
               </label>
               <div className="relative">
                 <Mail className="absolute left-3.5 top-3.5 h-4 w-4 text-slate-400" />
@@ -81,14 +123,9 @@ export default function LoginPage() {
             </div>
 
             <div className="space-y-1.5">
-              <div className="flex items-center justify-between">
-                <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                  Password
-                </label>
-                <a href="#" className="text-xs text-emerald-600 hover:underline">
-                  Forgot password?
-                </a>
-              </div>
+              <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                Password
+              </label>
               <div className="relative">
                 <Lock className="absolute left-3.5 top-3.5 h-4 w-4 text-slate-400" />
                 <Input
@@ -102,8 +139,14 @@ export default function LoginPage() {
               </div>
             </div>
 
-            <Button type="submit" className="w-full h-11 font-semibold gap-2">
-              <span>Sign In as {role === "agent" ? "Agent" : "Buyer"}</span>
+            {error && <p role="alert" className="text-sm text-red-600 dark:text-red-400">{error}</p>}
+
+            <Button type="submit" disabled={submitting} className="w-full h-11 font-semibold gap-2">
+              <span>
+                {submitting
+                  ? "Signing In..."
+                  : `Sign In as ${role === "agent" ? "Agent" : "Buyer"}`}
+              </span>
               <ArrowRight className="h-4 w-4" />
             </Button>
           </form>

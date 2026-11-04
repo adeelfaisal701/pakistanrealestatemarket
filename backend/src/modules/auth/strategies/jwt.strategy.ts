@@ -3,6 +3,7 @@ import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { ConfigService } from '@nestjs/config';
 import { UsersService } from '../../users/users.service';
+import { UserAccountStatus } from '../../users/schemas/user.schema';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -13,7 +14,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
-      secretOrKey: configService.get<string>('jwt.secret') || 'super_secret_jwt_key_zameen_pakistan_2026',
+      secretOrKey: configService.getOrThrow<string>('jwt.secret'),
     });
   }
 
@@ -22,10 +23,16 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     if (!user) {
       throw new UnauthorizedException('Invalid user credentials');
     }
+    if (
+      user.accountStatus &&
+      user.accountStatus !== UserAccountStatus.ACTIVE
+    ) {
+      throw new UnauthorizedException('This account is not active');
+    }
     return {
       id: payload.sub,
-      email: payload.email,
-      role: payload.role,
+      email: user.email,
+      role: user.role,
     };
   }
 }

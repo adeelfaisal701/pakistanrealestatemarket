@@ -6,6 +6,7 @@ import {
   Body,
   Param,
   Query,
+  ParseEnumPipe,
   UseGuards,
 } from '@nestjs/common';
 import { CrmService } from './crm.service';
@@ -16,6 +17,7 @@ import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
+import { ParseObjectIdPipe } from '../../common/pipes/parse-object-id.pipe';
 import { UserRole } from '../users/schemas/user.schema';
 
 @Controller('crm')
@@ -35,14 +37,20 @@ export class CrmController {
   @Get('leads')
   getAgentLeads(
     @CurrentUser('id') agentId: string,
-    @Query('status') status?: LeadStatus,
+    @Query('status', new ParseEnumPipe(LeadStatus, { optional: true }))
+    status?: LeadStatus,
   ) {
     return this.crmService.getAgentLeads(agentId, status);
   }
 
+  @Get('activity')
+  getAgentRecentActivity(@CurrentUser('id') agentId: string) {
+    return this.crmService.getAgentRecentActivity(agentId);
+  }
+
   @Patch('leads/:id/status')
   updateLeadStatus(
-    @Param('id') leadId: string,
+    @Param('id', ParseObjectIdPipe) leadId: string,
     @Body() updateDto: UpdateLeadStatusDto,
     @CurrentUser('id') agentId: string,
   ) {

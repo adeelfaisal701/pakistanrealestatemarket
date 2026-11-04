@@ -30,6 +30,35 @@ export class CrmService {
     return this.leadModel.find(filter).sort({ createdAt: -1 }).exec();
   }
 
+  async getAgentRecentActivity(agentId: string) {
+    const leads = await this.leadModel
+      .find({ agentId: new Types.ObjectId(agentId) })
+      .sort({ updatedAt: -1 })
+      .limit(20)
+      .exec();
+    return leads.flatMap((lead) => {
+      const property = lead.propertyTitle ?? 'Lead';
+      const createdAt = (lead as LeadDocument & { createdAt?: Date }).createdAt;
+      const events = createdAt
+        ? [{
+          id: `${String(lead._id)}-created`,
+          title: 'Lead added',
+          description: property,
+          occurredAt: createdAt,
+        }]
+        : [];
+      if (lead.lastContactedAt) {
+        events.push({
+          id: `${String(lead._id)}-updated`,
+          title: 'Lead updated',
+          description: property,
+          occurredAt: lead.lastContactedAt,
+        });
+      }
+      return events;
+    }).sort((left, right) => right.occurredAt.getTime() - left.occurredAt.getTime()).slice(0, 10);
+  }
+
   async updateLeadStatus(
     leadId: string,
     agentId: string,
@@ -40,7 +69,6 @@ export class CrmService {
       {
         status: updateDto.status,
         ...(updateDto.notes ? { notes: updateDto.notes } : {}),
-        lastContactedAt: new Date(),
       },
       { new: true },
     );
@@ -60,6 +88,7 @@ export class CrmService {
     const siteVisits = leads.filter((l) => l.status === LeadStatus.SITE_VISIT_SCHEDULED).length;
     const negotiations = leads.filter((l) => l.status === LeadStatus.NEGOTIATION).length;
     const closedWon = leads.filter((l) => l.status === LeadStatus.CLOSED_WON).length;
+    const lost = leads.filter((l) => l.status === LeadStatus.LOST).length;
 
     return {
       totalLeads,
@@ -67,6 +96,7 @@ export class CrmService {
       siteVisits,
       negotiations,
       closedWon,
+      lost,
     };
   }
 }

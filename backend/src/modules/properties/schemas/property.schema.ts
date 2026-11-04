@@ -30,6 +30,11 @@ export enum PropertyStatus {
   PUBLISHED = 'published',
   SOLD = 'sold',
   REJECTED = 'rejected',
+  AVAILABLE = 'available',
+  RESERVED = 'reserved',
+  RENTED = 'rented',
+  UNAVAILABLE = 'unavailable',
+  REMOVED = 'removed',
 }
 
 @Schema({ _id: false })
@@ -40,14 +45,20 @@ export class PropertyLocation {
   @Prop({ required: true, index: true })
   area: string;
 
-  @Prop()
+  @Prop({ select: false })
   address?: string;
 
-  @Prop()
+  @Prop({ select: false })
   latitude?: number;
 
-  @Prop()
+  @Prop({ select: false })
   longitude?: number;
+}
+
+@Schema({ _id: false })
+export class PrivatePropertyLocation {
+  @Prop({ required: true, select: false })
+  encryptedData: string;
 }
 
 @Schema({ _id: false })
@@ -75,6 +86,51 @@ export class PropertyFeatures {
 
   @Prop({ default: true })
   waterSupply: boolean;
+
+  @Prop({ type: Object })
+  rooms?: Record<string, number>;
+
+  @Prop({ type: Object })
+  outdoor?: Record<string, number>;
+
+  @Prop({ type: [String] })
+  interior?: string[];
+
+  @Prop({ type: String })
+  furnishing?: string;
+
+  @Prop({ type: [String] })
+  community?: string[];
+
+  @Prop({ type: [String] })
+  nearby?: string[];
+}
+
+@Schema({ _id: false })
+export class PropertyImageMetadata {
+  @Prop({ required: true })
+  url: string;
+
+  @Prop({ required: true })
+  filename: string;
+
+  @Prop({ required: true })
+  contentType: string;
+
+  @Prop({ required: true })
+  size: number;
+
+  @Prop()
+  checksum?: string;
+
+  @Prop({ required: true, default: 0 })
+  order: number;
+
+  @Prop({ required: true, default: false })
+  isCover: boolean;
+
+  @Prop({ required: true, default: Date.now })
+  uploadedAt: Date;
 }
 
 @Schema({ timestamps: true })
@@ -103,11 +159,17 @@ export class Property {
   @Prop({ type: PropertyLocation, required: true })
   location: PropertyLocation;
 
+  @Prop({ type: PrivatePropertyLocation, select: false })
+  privateLocation?: PrivatePropertyLocation;
+
   @Prop({ type: PropertyFeatures, default: () => ({}) })
   features: PropertyFeatures;
 
   @Prop({ type: [String], default: [] })
   images: string[];
+
+  @Prop({ type: [PropertyImageMetadata], default: [] })
+  imageMetadata?: PropertyImageMetadata[];
 
   @Prop({ type: Types.ObjectId, ref: 'User', required: true, index: true })
   agentId: Types.ObjectId;
@@ -115,11 +177,47 @@ export class Property {
   @Prop({ type: String, enum: PropertyStatus, default: PropertyStatus.PENDING_APPROVAL, index: true })
   status: PropertyStatus;
 
+  @Prop({ type: String, enum: ['available', 'sold', 'rented', 'reserved', 'unavailable'], default: 'available', index: true })
+  inventoryStatus: string;
+
   @Prop({ default: false, index: true })
   isFeatured: boolean;
 
   @Prop({ default: 0 })
   viewsCount: number;
+
+  // Moderation audit trail. Hidden from queries by default (select: false) so
+  // internal notes/admin ids never leak through public endpoints; owner/admin
+  // queries opt in with .select('+moderationNotes +moderatedBy').
+  @Prop({ type: String, select: false })
+  moderationNotes?: string;
+
+  @Prop({ type: Types.ObjectId, ref: 'User', select: false })
+  moderatedBy?: Types.ObjectId;
+
+  @Prop({ type: Date })
+  moderatedAt?: Date;
+
+  @Prop({ default: false, index: true })
+  adminHidden: boolean;
+
+  @Prop({ default: false, index: true })
+  adminRemoved: boolean;
+
+  @Prop({ default: false, index: true })
+  adminFlagged: boolean;
+
+  @Prop({ default: false })
+  agentArchived: boolean;
+
+  @Prop({ type: Date })
+  agentArchivedAt?: Date;
+
+  @Prop({ type: Types.ObjectId, ref: 'User' })
+  agentArchivedBy?: Types.ObjectId;
+
+  @Prop({ type: String, select: false })
+  adminModerationReason?: string;
 }
 
 export const PropertySchema = SchemaFactory.createForClass(Property);

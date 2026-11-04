@@ -31,7 +31,7 @@ export function AdminStatsCard({
   };
 
   return (
-    <Card className="p-4 sm:p-5 border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow">
+    <Card className="flex flex-col justify-between border-slate-800 bg-[#101b30] p-4 text-white shadow-sm transition-shadow hover:border-slate-700 hover:shadow-md sm:p-5">
       <div className="flex items-center justify-between gap-2">
         <span className="text-[11px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider truncate">
           {title}
@@ -42,7 +42,7 @@ export function AdminStatsCard({
       </div>
 
       <div className="mt-2 sm:mt-3">
-        <div className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
+        <div className="text-2xl font-black tracking-tight text-white sm:text-3xl">
           {value}
         </div>
 
@@ -63,7 +63,7 @@ export function AdminStatsCard({
             </span>
           )}
           {subtitle && (
-            <span className="text-slate-500 truncate text-[11px] sm:text-xs">
+            <span className="truncate text-[11px] text-slate-400 sm:text-xs">
               {subtitle}
             </span>
           )}

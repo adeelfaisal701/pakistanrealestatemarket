@@ -17,6 +17,7 @@ export enum LeadSource {
   DIRECT_WHATSAPP = 'direct_whatsapp',
   PHONE_CALL = 'phone_call',
   REFERRAL = 'referral',
+  WEBSITE_CHAT = 'website_chat',
 }
 
 @Schema({ timestamps: true })
@@ -24,7 +25,7 @@ export class Lead {
   @Prop({ required: true, trim: true })
   clientName: string;
 
-  @Prop({ required: true, trim: true })
+  @Prop({ trim: true, default: '' })
   clientPhone: string;
 
   @Prop({ trim: true, default: null })
@@ -32,6 +33,18 @@ export class Lead {
 
   @Prop({ type: Types.ObjectId, ref: 'Property', default: null })
   propertyId?: Types.ObjectId;
+
+  @Prop({ type: Types.ObjectId, ref: 'PropertyAdvertisement', default: null })
+  advertisementId?: Types.ObjectId;
+
+  @Prop({ type: Types.ObjectId, ref: 'PropertyConversation', default: null })
+  conversationId?: Types.ObjectId;
+
+  @Prop({ type: Types.ObjectId, ref: 'User', default: null, select: false })
+  buyerId?: Types.ObjectId;
+
+  @Prop({ type: String, select: false })
+  visitorHash?: string;
 
   @Prop({ default: null })
   propertyTitle?: string;
@@ -59,3 +72,12 @@ export class Lead {
 }
 
 export const LeadSchema = SchemaFactory.createForClass(Lead);
+
+LeadSchema.index(
+  { agentId: 1, propertyId: 1, visitorHash: 1 },
+  {
+    unique: true,
+    partialFilterExpression: { visitorHash: { $type: 'string' } },
+    name: 'unique_chat_lead_per_visitor_property',
+  },
+);
