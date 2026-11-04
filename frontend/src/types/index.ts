@@ -119,3 +119,5 @@ export interface ApiResponse<T> {
   data: T;
   meta?: PaginationMeta;
 }
+
+export type { PendingAgent, ModerationProperty } from "./admin";
