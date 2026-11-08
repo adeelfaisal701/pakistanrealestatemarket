@@ -234,7 +234,6 @@ export function AddPropertyForm({ onPropertyAdded, propertyId }: AddPropertyForm
             );
           },
         });
-        const uploadedImages = response.data.data.images;
         const uploadedUrl = response.data.data.uploaded[0];
         if (!uploadedUrl) {
           throw new Error("The server did not return the saved image URL.");

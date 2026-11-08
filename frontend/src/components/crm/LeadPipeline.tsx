@@ -4,9 +4,6 @@ import React, { useState, useMemo, useEffect, useCallback, useRef } from "react"
 import {
   PlusCircle,
   Search,
-  Users,
-  Sparkles,
-  Building2,
   X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -310,7 +307,7 @@ export function LeadPipeline() {
   };
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-5 max-lg:space-y-3">
       {loading && <p role="status" className="text-sm text-slate-400">Loading your leads and listings…</p>}
       {loadError && (
         <div role="alert" className="flex flex-col gap-3 rounded-xl border border-red-300 bg-red-50 p-4 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/30 dark:text-red-300 sm:flex-row sm:items-center sm:justify-between">
@@ -322,8 +319,8 @@ export function LeadPipeline() {
       )}
       {savingError && <p role="alert" className="rounded-xl border border-red-300 bg-red-50 p-4 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/30 dark:text-red-300">{savingError}</p>}
       {/* Search & Filter Controls Bar */}
-      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-sm space-y-3">
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-sm space-y-3 max-lg:rounded-xl max-lg:p-3 max-lg:space-y-2">
+        <div className="flex flex-col gap-2.5 lg:flex-row lg:items-center lg:justify-between">
           {/* Search Bar */}
           <div className="relative flex-1">
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 flex-shrink-0" />
@@ -332,7 +329,7 @@ export function LeadPipeline() {
               placeholder="Search leads by name, phone, or society..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-9 min-h-[44px] rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              className="w-full pl-10 pr-9 min-h-10 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 text-base focus:outline-none focus:ring-2 focus:ring-emerald-500 lg:min-h-[44px] lg:text-sm"
             />
             {searchQuery && (
               <button
@@ -345,11 +342,12 @@ export function LeadPipeline() {
           </div>
 
           {/* Quick Filters */}
-          <div className="grid grid-cols-2 sm:flex items-center gap-2">
+          <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_44px] items-center gap-2 lg:flex">
             <select
+              aria-label="Filter leads by purpose"
               value={selectedRequirement}
               onChange={(e) => setSelectedRequirement(e.target.value)}
-              className="min-h-[44px] px-3 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              className="min-h-10 w-full min-w-0 rounded-xl border border-slate-300 bg-white px-2.5 text-[11px] font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 lg:min-h-[44px] lg:px-3 lg:text-xs"
             >
               <option value="all">Purpose: All</option>
               <option value="Buy">Buy</option>
@@ -357,9 +355,10 @@ export function LeadPipeline() {
             </select>
 
             <select
+              aria-label="Filter leads by property type"
               value={selectedPropertyType}
               onChange={(e) => setSelectedPropertyType(e.target.value)}
-              className="min-h-[44px] px-3 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              className="min-h-10 w-full min-w-0 rounded-xl border border-slate-300 bg-white px-2.5 text-[11px] font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 lg:min-h-[44px] lg:px-3 lg:text-xs"
             >
               <option value="all">Type: All</option>
               <option value="House">House</option>
@@ -369,11 +368,13 @@ export function LeadPipeline() {
             </select>
 
             <Button
+              aria-label="Add New Lead"
+              title="Add New Lead"
               onClick={() => setIsAddLeadModalOpen(true)}
-              className="col-span-2 sm:col-span-1 min-h-[44px] px-4 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold gap-1.5 shadow-sm whitespace-nowrap"
+              className="h-10 min-h-10 w-11 min-w-11 justify-center bg-emerald-600 p-0 text-white shadow-sm hover:bg-emerald-700 lg:h-auto lg:min-h-[44px] lg:w-auto lg:min-w-0 lg:gap-1.5 lg:px-4 lg:text-xs lg:font-bold"
             >
               <PlusCircle className="h-4 w-4 flex-shrink-0" />
-              <span>Add New Lead</span>
+              <span className="hidden lg:inline">Add New Lead</span>
             </Button>
           </div>
         </div>
@@ -399,7 +400,7 @@ export function LeadPipeline() {
         </div>
       </div>
 
-      <div className="space-y-3">
+      <div className="space-y-3 max-lg:space-y-2">
         {filteredLeads.length ? filteredLeads.map((lead) => (
           <LeadCard
             key={lead.id}

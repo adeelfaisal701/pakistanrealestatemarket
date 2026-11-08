@@ -3,6 +3,8 @@ export interface AgentIdentity {
   email: string | null;
   role: string;
   avatarUrl: string | null;
+  agencyName: string | null;
+  isVerified: boolean;
 }
 
 export interface AgentProfile {
@@ -10,6 +12,8 @@ export interface AgentProfile {
   email?: unknown;
   role?: unknown;
   avatarUrl?: unknown;
+  agencyName?: unknown;
+  isVerified?: unknown;
 }
 
 export const DEFAULT_AGENT_IDENTITY: AgentIdentity = {
@@ -17,6 +21,8 @@ export const DEFAULT_AGENT_IDENTITY: AgentIdentity = {
   email: null,
   role: "agent",
   avatarUrl: null,
+  agencyName: null,
+  isVerified: false,
 };
 
 export function mapAgentIdentity(profile: unknown): AgentIdentity {
@@ -28,6 +34,8 @@ export function mapAgentIdentity(profile: unknown): AgentIdentity {
     email: nonEmptyString(user.email),
     role: nonEmptyString(user.role) ?? DEFAULT_AGENT_IDENTITY.role,
     avatarUrl: safeAvatarUrl(user.avatarUrl),
+    agencyName: nonEmptyString(user.agencyName),
+    isVerified: user.isVerified === true,
   };
 }
 

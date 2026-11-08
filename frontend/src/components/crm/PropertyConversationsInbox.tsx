@@ -98,6 +98,10 @@ export function PropertyConversationsInbox() {
   const [sending, setSending] = useState(false);
   const [error, setError] = useState("");
   const [failedDraft, setFailedDraft] = useState<{ content: string; key: string } | null>(null);
+  const [mobileChatViewport, setMobileChatViewport] = useState<{
+    top: number;
+    keyboardHeight: number;
+  } | null>(null);
 
   const selected = useMemo(
     () => conversations.find((conversation) => conversation.id === selectedId) ?? null,
@@ -245,6 +249,42 @@ export function PropertyConversationsInbox() {
     return () => window.clearInterval(timer);
   }, [loadConversations, loadMessages, refreshSelectedMessages, selectedId]);
 
+  useEffect(() => {
+    if (!selectedId) {
+      setMobileChatViewport(null);
+      return;
+    }
+
+    const viewport = window.visualViewport;
+    if (!viewport) return;
+
+    const updateViewport = () => {
+      if (!window.matchMedia("(max-width: 1023px)").matches) {
+        setMobileChatViewport(null);
+        return;
+      }
+
+      const coveredHeight = Math.max(
+        0,
+        window.innerHeight - viewport.height - viewport.offsetTop,
+      );
+      setMobileChatViewport({
+        top: viewport.offsetTop,
+        keyboardHeight: coveredHeight > 100 ? coveredHeight : 0,
+      });
+    };
+
+    updateViewport();
+    viewport.addEventListener("resize", updateViewport);
+    viewport.addEventListener("scroll", updateViewport);
+    window.addEventListener("resize", updateViewport);
+    return () => {
+      viewport.removeEventListener("resize", updateViewport);
+      viewport.removeEventListener("scroll", updateViewport);
+      window.removeEventListener("resize", updateViewport);
+    };
+  }, [selectedId]);
+
   const chooseConversation = (conversationId: string) => {
     setSelectedId(conversationId);
     if (typeof window !== "undefined") {
@@ -309,14 +349,37 @@ export function PropertyConversationsInbox() {
   };
 
   return (
-    <section className={cn(PANEL, "overflow-hidden")} aria-label="Client conversations">
-      <header className="flex flex-col gap-3 border-b border-[#1a2a3f] p-4 sm:flex-row sm:items-center sm:justify-between sm:px-5">
+    <section
+      className={cn(
+        PANEL,
+        "overflow-hidden",
+        selectedId &&
+          "agent-mobile-chat-panel max-lg:fixed max-lg:inset-x-0 max-lg:top-[env(safe-area-inset-top)] max-lg:z-30 max-lg:flex max-lg:flex-col max-lg:rounded-none",
+      )}
+      style={
+        selectedId && mobileChatViewport
+          ? {
+              ...(mobileChatViewport.top > 0
+                ? { top: mobileChatViewport.top }
+                : {}),
+              ...(mobileChatViewport.keyboardHeight > 0
+                ? { bottom: `${mobileChatViewport.keyboardHeight}px` }
+                : {}),
+            }
+          : undefined
+      }
+      aria-label="Client conversations"
+    >
+      <header className={cn(
+        "flex flex-col gap-3 border-b border-[#1a2a3f] p-4 sm:flex-row sm:items-center sm:justify-between sm:px-5 max-md:border-[#E2E8F0]",
+        selectedId && "max-lg:hidden",
+      )}>
         <div>
-          <h2 className="flex items-center gap-2 text-lg font-bold text-white">
+          <h2 className="flex items-center gap-2 text-lg font-bold text-white max-md:text-[#071B2B]">
             <MessageCircle className="h-5 w-5 text-emerald-400" />
             Property Chats
           </h2>
-          <p className="mt-1 text-xs text-slate-400">
+          <p className="mt-1 text-xs text-slate-400 max-md:text-[#64748B]">
             Visitor conversations are saved with their property and lead.
           </p>
         </div>
@@ -324,22 +387,25 @@ export function PropertyConversationsInbox() {
           type="button"
           onClick={() => void loadConversations()}
           disabled={loadingList}
-          className="inline-flex min-h-10 items-center justify-center gap-2 self-start rounded-lg border border-[#2a3d56] px-3 text-xs font-semibold text-slate-200 hover:bg-white/5 disabled:opacity-50 sm:self-auto"
+          className="inline-flex min-h-10 items-center justify-center gap-2 self-start rounded-lg border border-[#2a3d56] px-3 text-xs font-semibold text-slate-200 hover:bg-white/5 disabled:opacity-50 sm:self-auto max-md:border-[#E2E8F0] max-md:text-[#101D32]"
         >
           <RefreshCw className={cn("h-3.5 w-3.5", loadingList && "animate-spin")} />
           Refresh
         </button>
       </header>
 
-      <div className="grid min-h-[520px] grid-cols-1 lg:grid-cols-[minmax(260px,340px)_minmax(0,1fr)]">
+      <div className={cn(
+        "grid min-h-[520px] grid-cols-1 lg:grid-cols-[minmax(260px,340px)_minmax(0,1fr)]",
+        selectedId && "max-lg:min-h-0 max-lg:flex-1",
+      )}>
         <aside
           className={cn(
-            "border-b border-[#1a2a3f] lg:border-b-0 lg:border-r",
+            "border-b border-[#1a2a3f] lg:border-b-0 lg:border-r max-md:border-[#E2E8F0]",
             selectedId && "hidden lg:block",
           )}
           aria-label="Conversation list"
         >
-          <div className="border-b border-[#1a2a3f] p-3">
+          <div className="border-b border-[#1a2a3f] p-3 max-md:border-[#E2E8F0]">
             <label className="relative block">
               <span className="sr-only">Search conversations</span>
               <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
@@ -362,7 +428,7 @@ export function PropertyConversationsInbox() {
                     "min-h-8 rounded-full border px-3 text-xs font-semibold capitalize",
                     conversationFilter === filter
                       ? "border-emerald-500/50 bg-emerald-500/15 text-emerald-300"
-                      : "border-[#2a3d56] text-slate-400 hover:bg-white/5",
+                      : "border-[#2a3d56] text-slate-400 hover:bg-white/5 max-md:border-[#E2E8F0] max-md:text-[#64748B] max-md:hover:bg-slate-50",
                   )}
                 >
                   {filter}
@@ -371,28 +437,28 @@ export function PropertyConversationsInbox() {
             </div>
           </div>
           {loadingList && conversations.length === 0 ? (
-            <div className="flex min-h-56 items-center justify-center gap-2 text-sm text-slate-400">
+            <div className="flex min-h-56 items-center justify-center gap-2 text-sm text-slate-400 max-md:text-[#64748B]">
               <LoaderCircle className="h-4 w-4 animate-spin" />
               Loading conversations…
             </div>
           ) : visibleConversations.length === 0 ? (
             <div className="flex min-h-56 flex-col items-center justify-center px-6 text-center">
-              <MessageCircle className="h-8 w-8 text-slate-500" />
-              <p className="mt-3 text-sm font-semibold text-slate-200">
+              <MessageCircle className="h-8 w-8 text-slate-500 max-md:text-[#94A3B8]" />
+              <p className="mt-3 text-sm font-semibold text-slate-200 max-md:text-[#475569]">
                 {conversationFilter === "unread"
                   ? "No unread conversations"
                   : conversations.length === 0
                     ? "No client chats yet"
                     : "No conversations match this search"}
               </p>
-              <p className="mt-1 text-xs text-slate-500">
+              <p className="mt-1 text-xs text-slate-500 max-md:text-[#64748B]">
                 {conversationFilter === "unread"
                   ? "New client messages will be highlighted here."
                   : "New property conversations will appear here."}
               </p>
             </div>
           ) : (
-            <ul className="max-h-[520px] divide-y divide-[#17263a] overflow-y-auto lg:max-h-[680px]">
+            <ul className="max-h-[520px] divide-y divide-[#17263a] overflow-y-auto lg:max-h-[680px] max-md:divide-[#E2E8F0]">
               {visibleConversations.map((conversation) => (
                 <li key={conversation.id}>
                   <button
@@ -401,7 +467,7 @@ export function PropertyConversationsInbox() {
                     aria-current={selectedId === conversation.id ? "true" : undefined}
                     className={cn(
                       "w-full px-4 py-4 text-left transition-colors hover:bg-white/[0.04]",
-                      selectedId === conversation.id && "bg-emerald-500/[0.08]",
+                      selectedId === conversation.id && "bg-emerald-500/[0.08] max-md:bg-[#EAF7F2]",
                       conversation.unreadForAgent > 0 && "bg-emerald-500/[0.04]",
                     )}
                   >
@@ -420,7 +486,7 @@ export function PropertyConversationsInbox() {
                       )}
                       <span className="min-w-0 flex-1">
                         <span className="flex items-center justify-between gap-2">
-                          <span className="truncate text-sm font-semibold text-slate-100">
+                          <span className="truncate text-sm font-semibold text-slate-100 max-md:text-[#101D32]">
                             {conversation.visitorName}
                           </span>
                           {conversation.unreadForAgent > 0 && (
@@ -432,14 +498,14 @@ export function PropertyConversationsInbox() {
                             </span>
                           )}
                         </span>
-                        <span className="mt-0.5 block truncate text-xs text-slate-400">
+                        <span className="mt-0.5 block truncate text-xs text-slate-400 max-md:text-[#64748B]">
                           {conversation.property.title}
                         </span>
-                        <span className="mt-1 block truncate text-xs text-slate-500">
+                        <span className="mt-1 block truncate text-xs text-slate-500 max-md:text-[#64748B]">
                           {conversation.latestMessageSender === "visitor" || conversation.latestMessageSender === "buyer" ? "Client: " : "You: "}
                           {conversation.latestMessagePreview || "Conversation started"}
                         </span>
-                        <span className="mt-1 block text-[10px] text-slate-500">
+                        <span className="mt-1 block text-[10px] text-slate-500 max-md:text-[#64748B]">
                           {formatTime(conversation.lastMessageAt)}
                         </span>
                       </span>
@@ -451,22 +517,26 @@ export function PropertyConversationsInbox() {
           )}
         </aside>
 
-        <div className={cn("flex min-h-[520px] flex-col", !selectedId && "hidden lg:flex")}>
+        <div className={cn(
+          "flex min-h-[520px] flex-col",
+          !selectedId && "hidden lg:flex",
+          selectedId && "max-lg:min-h-0 max-lg:flex-1",
+        )}>
           {error && (
-            <p role="alert" className="border-b border-rose-900/50 bg-rose-950/25 px-4 py-2 text-xs text-rose-200">
+            <p role="alert" className="border-b border-rose-900/50 bg-rose-950/25 px-4 py-2 text-xs text-rose-200 max-md:border-rose-200 max-md:bg-rose-50 max-md:text-rose-800">
               {error}
             </p>
           )}
           {!selected ? (
             <div className="flex flex-1 flex-col items-center justify-center px-6 text-center">
-              <MessageCircle className="h-10 w-10 text-slate-600" />
-              <p className="mt-3 text-sm text-slate-400">
+              <MessageCircle className="h-10 w-10 text-slate-600 max-md:text-[#94A3B8]" />
+              <p className="mt-3 text-sm text-slate-400 max-md:text-[#64748B]">
                 Select a conversation to view messages and reply.
               </p>
             </div>
           ) : (
             <>
-              <header className="flex items-start gap-3 border-b border-[#1a2a3f] p-4">
+              <header className="flex items-start gap-3 border-b border-[#1a2a3f] p-4 max-md:border-[#E2E8F0]">
                 <button
                   type="button"
                   onClick={() => {
@@ -493,9 +563,9 @@ export function PropertyConversationsInbox() {
                   </span>
                 )}
                 <div className="min-w-0 flex-1">
-                  <h3 className="truncate font-semibold text-white">{selected.visitorName}</h3>
-                  <p className="mt-0.5 truncate text-xs text-slate-400">{selected.property.title}</p>
-                  <p className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] text-slate-500">
+                  <h3 className="truncate font-semibold text-white max-md:text-[#071B2B]">{selected.visitorName}</h3>
+                    <p className="mt-0.5 truncate text-xs text-slate-400 max-md:text-[#64748B]">{selected.property.title}</p>
+                  <p className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] text-slate-500 max-md:text-[#64748B]">
                     <span className="inline-flex items-center gap-1">
                       <MapPin className="h-3 w-3" />
                       {selected.property.location.area}, {selected.property.location.city}
@@ -514,7 +584,7 @@ export function PropertyConversationsInbox() {
                 </Link>
               </header>
 
-              <div className="flex-1 space-y-3 overflow-y-auto bg-[#091321]/50 p-4" aria-live="polite">
+              <div className="min-h-0 flex-1 space-y-3 overflow-y-auto overscroll-contain bg-[#091321]/50 p-4 max-md:bg-[#F7F9FC]" aria-live="polite">
                 {hasMore && (
                   <button
                     type="button"
@@ -527,12 +597,12 @@ export function PropertyConversationsInbox() {
                   </button>
                 )}
                 {loadingMessages && messages.length === 0 ? (
-                  <div className="flex h-40 items-center justify-center gap-2 text-xs text-slate-400">
+                  <div className="flex h-40 items-center justify-center gap-2 text-xs text-slate-400 max-md:text-[#64748B]">
                     <LoaderCircle className="h-4 w-4 animate-spin" />
                     Loading message history…
                   </div>
                 ) : messages.length === 0 ? (
-                  <p className="py-16 text-center text-sm text-slate-500">No messages in this conversation yet.</p>
+                  <p className="py-16 text-center text-sm text-slate-500 max-md:text-[#64748B]">No messages in this conversation yet.</p>
                 ) : (
                   messages.map((message) => {
                     const agentMessage = message.senderType === "agent";
@@ -542,10 +612,10 @@ export function PropertyConversationsInbox() {
                           "max-w-[85%] rounded-2xl px-3.5 py-2.5",
                           agentMessage
                             ? "rounded-br-md bg-emerald-600 text-white"
-                            : "rounded-bl-md border border-[#263951] bg-[#111e2f] text-slate-100",
+                            : "rounded-bl-md border border-[#263951] bg-[#111e2f] text-slate-100 max-md:border-[#E2E8F0] max-md:bg-white max-md:text-[#101D32]",
                         )}>
                           <p className="whitespace-pre-wrap break-words text-sm leading-relaxed">{message.content}</p>
-                          <p className={cn("mt-1 flex items-center justify-end gap-1 text-[10px]", agentMessage ? "text-emerald-100" : "text-slate-500")}>
+                          <p className={cn("mt-1 flex items-center justify-end gap-1 text-[10px]", agentMessage ? "text-emerald-100" : "text-slate-500 max-md:text-[#64748B]")}>
                             {formatTime(message.createdAt)}
                             {agentMessage && <span>{message.readAt ? "Read" : "Sent"}</span>}
                           </p>
@@ -561,12 +631,12 @@ export function PropertyConversationsInbox() {
                   type="button"
                   onClick={() => void sendReply(failedDraft.content, failedDraft.key)}
                   disabled={sending}
-                  className="mx-4 mt-2 min-h-9 self-start rounded-lg border border-rose-800/60 px-3 text-xs font-semibold text-rose-200 hover:bg-rose-950/30 disabled:opacity-50"
+                  className="mx-4 mt-2 min-h-9 self-start rounded-lg border border-rose-800/60 px-3 text-xs font-semibold text-rose-200 hover:bg-rose-950/30 disabled:opacity-50 max-md:border-rose-200 max-md:text-rose-700"
                 >
                   {sending ? "Retrying…" : "Retry sending"}
                 </button>
               )}
-              <form onSubmit={handleSend} className="flex items-end gap-2 border-t border-[#1a2a3f] bg-[#0b1524] p-3">
+              <form onSubmit={handleSend} className="flex shrink-0 items-end gap-2 border-t border-[#1a2a3f] bg-[#0b1524] p-3 max-md:border-[#E2E8F0] max-md:bg-white">
                 <label className="sr-only" htmlFor={`agent-reply-${selected.id}`}>Write a reply</label>
                 <textarea
                   id={`agent-reply-${selected.id}`}
@@ -581,7 +651,7 @@ export function PropertyConversationsInbox() {
                   rows={1}
                   maxLength={2000}
                   placeholder="Reply to the client…"
-                  className="min-h-11 max-h-28 flex-1 resize-y rounded-xl border border-[#2a3d56] bg-[#08111e] px-3 py-2.5 text-sm text-white outline-none focus:border-emerald-500"
+                  className="min-h-11 max-h-28 flex-1 resize-y rounded-xl border border-[#2a3d56] bg-[#08111e] px-3 py-2.5 text-sm text-white outline-none focus:border-emerald-500 max-md:border-[#CBD5E1] max-md:bg-white max-md:text-[#101D32]"
                 />
                 <button
                   type="submit"

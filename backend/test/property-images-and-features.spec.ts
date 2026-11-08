@@ -87,6 +87,24 @@ test('property image URLs persist on disk and are readable after storage restart
   assert.match(saved.url, /^https:\/\/api\.example\.test\/api\/v1\/properties\/images\//);
 });
 
+test('development loopback image origins use same-origin relative URLs', async (context) => {
+  const directory = await mkdtemp(join(tmpdir(), 'property-image-lan-'));
+  context.after(() => rm(directory, { recursive: true, force: true }));
+  const storage = new PropertyImageStorageService(
+    new ConfigService({
+      nodeEnv: 'development',
+      propertyImages: {
+        storageDir: directory,
+        publicBaseUrl: 'http://localhost:5000/api/v1',
+      },
+    }),
+  );
+
+  const saved = await storage.save(pngFile());
+  assert.match(saved.url, /^\/api\/v1\/properties\/images\//);
+  assert.equal(storage.filenameForManagedUrl(saved.url), saved.filename);
+});
+
 test('JPEG upload strips EXIF GPS metadata', async (context) => {
   const directory = await mkdtemp(join(tmpdir(), 'property-image-gps-'));
   context.after(() => rm(directory, { recursive: true, force: true }));

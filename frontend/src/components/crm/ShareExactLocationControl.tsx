@@ -186,7 +186,7 @@ export function ShareExactLocationControl({
       <button
         type="button"
         onClick={() => void loadManagementData()}
-        className="inline-flex min-h-10 items-center justify-center rounded-lg border border-emerald-500/50 px-3 text-xs font-semibold text-emerald-200 hover:bg-emerald-500/10"
+        className="inline-flex min-h-10 items-center justify-center rounded-lg border border-emerald-500/50 px-3 text-xs font-semibold text-emerald-200 hover:bg-emerald-500/10 max-lg:min-h-11 max-lg:w-full max-lg:border-[#CBD5E1] max-lg:bg-white max-lg:text-emerald-700 max-lg:hover:bg-emerald-50"
       >
         Share Exact Location
       </button>

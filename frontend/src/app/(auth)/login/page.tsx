@@ -3,14 +3,20 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Building2, Lock, Mail, ArrowRight, Shield } from "lucide-react";
+import { Building2, Lock, Mail, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import apiClient, { getApiErrorMessage, type ApiEnvelope } from "@/lib/api-client";
 
 interface AuthResponse {
-  user: { id: string; name: string; email: string; role: string };
+  user: {
+    id: string;
+    name: string;
+    email: string;
+    role: string;
+    profileComplete?: boolean;
+  };
   accessToken: string;
 }
 
@@ -56,7 +62,16 @@ export default function LoginPage() {
       const returnPath = getSafeReturnPath(
         new URLSearchParams(window.location.search).get("returnTo"),
       );
-      router.push(returnPath || (user.role === "agent" ? "/agent" : "/buyer"));
+      const destination = returnPath || (user.role === "agent" ? "/agent" : "/buyer");
+      if (user.role === "agent" && user.profileComplete !== true) {
+        router.replace(
+          `/agent/profile-completion?returnTo=${encodeURIComponent(
+            destination.startsWith("/agent/profile-completion") ? "/agent" : destination,
+          )}`,
+        );
+        return;
+      }
+      router.push(destination);
     } catch (requestError) {
       setError(getApiErrorMessage(requestError));
     } finally {

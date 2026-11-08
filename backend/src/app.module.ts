@@ -13,6 +13,8 @@ import { DevelopmentAnalyticsModule } from './modules/properties/development-ana
 import { BuyerModule } from './modules/buyer/buyer.module';
 import { RequirementsModule } from './modules/requirements/requirements.module';
 import { HealthModule } from './modules/health/health.module';
+import { AgenciesModule } from './modules/agencies/agencies.module';
+import { ProjectsModule } from './modules/projects/projects.module';
 
 const developmentAnalyticsMode =
   process.env.NODE_ENV === 'development' &&
@@ -36,6 +38,8 @@ const developmentAnalyticsMode =
           HealthModule,
           AuthModule,
           UsersModule,
+          AgenciesModule,
+          ProjectsModule,
           PropertiesModule,
           CrmModule,
           BuyerModule,

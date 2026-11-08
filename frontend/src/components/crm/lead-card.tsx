@@ -1,5 +1,5 @@
 import React from "react";
-import { Phone, Calendar, DollarSign, Clock, MessageSquare } from "lucide-react";
+import { DollarSign, Clock } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { WhatsAppButton } from "@/components/crm/whatsapp-button";

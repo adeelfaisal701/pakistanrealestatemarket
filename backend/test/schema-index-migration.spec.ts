@@ -177,7 +177,7 @@ test('migration history versions are independently tracked', async () => {
 });
 
 test('migration allowlist covers audited indexed schemas and declared TTL definitions', () => {
-  assert.equal(APPROVED_INDEX_SCHEMAS.length, 18);
+  assert.equal(APPROVED_INDEX_SCHEMAS.length, 20);
   for (const entry of APPROVED_INDEX_SCHEMAS) {
     assert.ok(entry.purpose.length > 0, `${entry.modelName} needs an index purpose`);
     assert.ok(entry.schema.indexes().length > 0, `${entry.modelName} needs declared indexes`);
@@ -187,6 +187,13 @@ test('migration allowlist covers audited indexed schemas and declared TTL defini
   );
   assert.equal(ttlIndexes.length, 3);
   assert.ok(ttlIndexes.some(([, options]) => options.name === 'visitor_chat_session_expiry'));
+  assert.ok(
+    APPROVED_INDEX_SCHEMAS.some(
+      ({ modelName, purpose }) =>
+        modelName === 'DevelopmentProject' &&
+        purpose.includes('unique project slug'),
+    ),
+  );
 });
 
 test('migration requires an explicit URI and exact database confirmation', () => {

@@ -1,6 +1,29 @@
 import type { NextConfig } from "next";
 import { buildSecurityHeaders } from "./security-headers.mjs";
 
+const developmentImagePatterns =
+  process.env.NODE_ENV === "production"
+    ? []
+    : [process.env.API_PROXY_TARGET, process.env.NEXT_PUBLIC_API_BASE_URL].flatMap(
+        (configuredBase) => {
+          if (!configuredBase) return [];
+          try {
+            const url = new URL(configuredBase);
+            if (url.protocol !== "http:") return [];
+            return [
+              {
+                protocol: "http" as const,
+                hostname: url.hostname,
+                ...(url.port ? { port: url.port } : {}),
+                pathname: `${url.pathname.replace(/\/+$/, "")}/**`,
+              },
+            ];
+          } catch {
+            return [];
+          }
+        },
+      );
+
 const nextConfig: NextConfig = {
   distDir: process.env.NODE_ENV === "development" ? ".next-dev" : ".next",
   reactStrictMode: true,
@@ -31,6 +54,7 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "**",
       },
+      ...developmentImagePatterns,
     ],
   },
 };

@@ -3,12 +3,13 @@ import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { ConfigService } from '@nestjs/config';
 import { UsersService } from '../../users/users.service';
-import { UserAccountStatus } from '../../users/schemas/user.schema';
+import { UserAccountStatus, UserRole } from '../../users/schemas/user.schema';
+import { isAgentProfileComplete } from '../../users/agent-profile.utils';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(
-    private configService: ConfigService,
+    configService: ConfigService,
     private usersService: UsersService,
   ) {
     super({
@@ -33,6 +34,8 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       id: payload.sub,
       email: user.email,
       role: user.role,
+      profileComplete:
+        user.role !== UserRole.AGENT || isAgentProfileComplete(user),
     };
   }
 }

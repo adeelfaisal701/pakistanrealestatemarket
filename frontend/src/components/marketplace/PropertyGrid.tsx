@@ -8,36 +8,52 @@ import { getApiErrorMessage } from '@/lib/api-client';
 import { fetchPublicProperties } from '@/lib/public-properties';
 import type { MarketplaceProperty } from '@/types/marketplace';
 
-export default function PropertyGrid() {
+interface PropertyGridProps {
+  properties?: MarketplaceProperty[];
+  loading?: boolean;
+  error?: string;
+}
+
+export default function PropertyGrid({
+  properties,
+  loading: providedLoading,
+  error: providedError,
+}: PropertyGridProps) {
   const [selectedType, setSelectedType] = useState<string>('All');
   const [selectedPurpose, setSelectedPurpose] = useState<string>('All');
   const [publicProperties, setPublicProperties] = useState<MarketplaceProperty[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [internalLoading, setInternalLoading] = useState(true);
+  const [internalError, setInternalError] = useState('');
 
   useEffect(() => {
+    if (properties !== undefined || window.matchMedia('(min-width: 1280px)').matches) return;
+
     let active = true;
     fetchPublicProperties({ limit: 100, sortBy: 'featured' })
       .then((properties) => {
         if (!active) return;
         setPublicProperties(properties);
-        setError('');
+        setInternalError('');
       })
       .catch((requestError: unknown) => {
         if (!active) return;
-        setError(getApiErrorMessage(requestError));
+        setInternalError(getApiErrorMessage(requestError));
         setPublicProperties([]);
       })
       .finally(() => {
-        if (active) setLoading(false);
+        if (active) setInternalLoading(false);
       });
 
     return () => {
       active = false;
     };
-  }, []);
+  }, [properties]);
 
-  const filteredProperties = publicProperties.filter((item) => {
+  const displayedProperties = properties ?? publicProperties;
+  const loading = providedLoading ?? internalLoading;
+  const error = providedError ?? internalError;
+
+  const filteredProperties = displayedProperties.filter((item) => {
     const matchesType =
       selectedType === 'All' ||
       item.propertyType === selectedType ||
@@ -50,13 +66,13 @@ export default function PropertyGrid() {
   });
 
   return (
-    <section id="properties" className="py-12 sm:py-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+    <section id="properties" className="xl:scroll-mt-24 py-12 sm:py-16 px-4 sm:px-6 lg:px-8 max-w-7xl 2xl:max-w-[1440px] mx-auto">
       {/* Section Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-5 mb-8 sm:mb-10">
         <div>
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 text-xs font-bold uppercase tracking-wider mb-2">
             <Sparkles className="h-3.5 w-3.5 flex-shrink-0" />
-            <span>Published Listings ({publicProperties.length})</span>
+            <span>Published Listings ({displayedProperties.length})</span>
           </div>
           <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight">
             Featured Properties in Pakistan
@@ -125,7 +141,7 @@ export default function PropertyGrid() {
           {error}
         </p>
       ) : filteredProperties.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-5 sm:gap-8">
           {filteredProperties.map((property) => (
             <PropertyCard key={property.id} property={property} />
           ))}

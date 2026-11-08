@@ -10,11 +10,14 @@ import apiClient, {
 } from "@/lib/api-client";
 import { clearAgentDashboardData } from "@/lib/agent-session-data";
 import { useAgentStore } from "@/lib/agent-store";
+import { Building2, LoaderCircle } from "lucide-react";
 
 interface Profile {
   id?: string;
   _id?: string;
   role: string;
+  avatarUrl?: string | null;
+  agencyAddress?: string | null;
 }
 
 type AccessState =
@@ -44,11 +47,22 @@ export function AgentAccessGuard({ children }: { children: React.ReactNode }) {
 
     try {
       const response = await apiClient.get<ApiEnvelope<Profile>>("/users/profile");
-      const role = response.data.data.role;
+      const profile = response.data.data;
+      const role = profile.role;
       if (role === "agent" || role === "admin") {
+        if (
+          role === "agent" &&
+          (!profile.avatarUrl?.trim() || !profile.agencyAddress?.trim())
+        ) {
+          const returnTo = `${pathname}${window.location.search}`;
+          router.replace(
+            `/agent/profile-completion?returnTo=${encodeURIComponent(returnTo)}`,
+          );
+          return;
+        }
         const userId =
-          response.data.data.id ??
-          response.data.data._id ??
+          profile.id ??
+          profile._id ??
           localStorage.getItem("auth_user") ??
           "authenticated";
         setAccess({ status: "allowed", userId });
@@ -100,10 +114,17 @@ export function AgentAccessGuard({ children }: { children: React.ReactNode }) {
 
   if (access.status === "checking") {
     return (
-      <main className="flex min-h-screen items-center justify-center px-4">
-        <p role="status" className="text-sm text-slate-500">
-          Verifying agent account access…
-        </p>
+      <main className="flex min-h-screen items-center justify-center bg-[#F7F9FC] px-4">
+        <section className="flex w-full max-w-sm flex-col items-center rounded-3xl border border-[#E2E8F0] bg-white p-8 text-center shadow-sm">
+          <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#EAF7F2] text-[#008F68]">
+            <Building2 className="h-6 w-6" />
+          </span>
+          <h1 className="mt-4 text-lg font-bold text-[#071B2B]">EstatePro Agent CRM</h1>
+          <p role="status" className="mt-2 inline-flex items-center gap-2 text-sm text-[#64748B]">
+            <LoaderCircle className="h-4 w-4 animate-spin text-[#00B889]" />
+            Verifying agent account access…
+          </p>
+        </section>
       </main>
     );
   }

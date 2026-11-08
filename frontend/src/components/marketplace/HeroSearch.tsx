@@ -1,54 +1,77 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Search, MapPin, Home, DollarSign, Shield, Sparkles, ChevronDown } from 'lucide-react';
-import { LAHORE_SOCIETIES } from '@/lib/mock-data';
-import { PropertyType, PurposeType } from '@/types/property';
+import Link from 'next/link';
+import Image from 'next/image';
+import { useRouter } from 'next/navigation';
+import { Building2, Building, House, LandPlot, Search, Store } from 'lucide-react';
 
-const PROPERTY_TYPES: PropertyType[] = ['House', 'Plot', 'Apartment', 'Commercial'];
-
-const BUDGET_OPTIONS_BUY = [
-  'Any Budget',
-  'Under PKR 1 Crore',
-  'PKR 1 Crore - 2.5 Crore',
-  'PKR 2.5 Crore - 5 Crore',
-  'PKR 5 Crore - 10 Crore',
-  'PKR 10 Crore+',
-];
-
-const BUDGET_OPTIONS_RENT = [
-  'Any Budget',
-  'Under PKR 50,000 / mo',
-  'PKR 50k - 1 Lakh / mo',
-  'PKR 1 Lakh - 2 Lakh / mo',
-  'PKR 2 Lakh - 5 Lakh / mo',
-  'PKR 5 Lakh+ / mo',
-];
-
-export default function HeroSearch() {
-  const [purpose, setPurpose] = useState<PurposeType>('Buy');
-  const [society, setSociety] = useState<string>('');
+export default function HeroSearch({ desktop = false }: { desktop?: boolean }) {
+  const router = useRouter();
+  const [selectedHeroOption, setSelectedHeroOption] = useState<'Property' | 'Maintenance'>('Property');
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const [city, setCity] = useState('');
+  const [location, setLocation] = useState('');
   const [propertyType, setPropertyType] = useState<string>('');
-  const [budget, setBudget] = useState<string>('');
-  const [verifiedOnly, setVerifiedOnly] = useState<boolean>(true);
-  const [freshConfirmedOnly, setFreshConfirmedOnly] = useState<boolean>(true);
-
-  const budgetOptions = purpose === 'Buy' ? BUDGET_OPTIONS_BUY : BUDGET_OPTIONS_RENT;
+  const [minPrice, setMinPrice] = useState('');
+  const [maxPrice, setMaxPrice] = useState('');
+  const [minArea, setMinArea] = useState('');
+  const [maxArea, setMaxArea] = useState('');
+  const [areaUnit, setAreaUnit] = useState('');
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    const element = document.getElementById('properties');
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
-    }
+    const query = new URLSearchParams();
+    if (city.trim()) query.set('city', city.trim());
+    if (location.trim()) query.set('area', location.trim());
+    if (propertyType) query.set('propertyType', propertyType);
+    if (minPrice) query.set('minPrice', minPrice);
+    if (maxPrice) query.set('maxPrice', maxPrice);
+    if (minArea) query.set('minArea', minArea);
+    if (maxArea) query.set('maxArea', maxArea);
+    if (areaUnit) query.set('areaUnit', areaUnit);
+    router.push(`/properties?${query.toString()}`);
+  };
+
+  const clearFilters = () => {
+    setCity('');
+    setLocation('');
+    setPropertyType('');
+    setMinPrice('');
+    setMaxPrice('');
+    setMinArea('');
+    setMaxArea('');
+    setAreaUnit('');
   };
 
   return (
-    <section className="relative pt-8 sm:pt-14 pb-16 sm:pb-24 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-emerald-950 via-slate-900 to-slate-950 text-white overflow-hidden">
-      {/* Background patterns */}
-      <div className="absolute inset-0 opacity-15 bg-[radial-gradient(#10b981_1px,transparent_1px)] [background-size:24px_24px] pointer-events-none" />
-      <div className="absolute -top-40 -left-40 w-80 sm:w-96 h-80 sm:h-96 bg-emerald-500/20 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute top-1/2 -right-40 w-80 sm:w-96 h-80 sm:h-96 bg-teal-500/20 rounded-full blur-3xl pointer-events-none" />
+    <section
+      className={`relative px-4 sm:px-6 lg:px-8 text-white overflow-hidden ${
+        desktop
+          ? 'min-h-[660px] flex items-center rounded-b-[32px] py-20'
+          : 'pt-8 sm:pt-14 pb-16 sm:pb-24 bg-gradient-to-b from-emerald-950 via-slate-900 to-slate-950'
+      }`}
+    >
+      {desktop && (
+        <div className="absolute inset-0">
+          <Image
+            src="/images/mobile hero section.png"
+            alt=""
+            fill
+            priority
+            sizes="99vw"
+            className="object-cover object-center"
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#0a2a1f]/90 via-[#0a2a1f]/75 to-[#0a2a1f]/55" />
+        </div>
+      )}
+      {!desktop && (
+        <>
+          <div className="absolute inset-0 opacity-15 bg-[radial-gradient(#10b981_1px,transparent_1px)] [background-size:24px_24px] pointer-events-none" />
+          <div className="absolute -top-40 -left-40 w-80 sm:w-96 h-80 sm:h-96 bg-emerald-500/20 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute top-1/2 -right-40 w-80 sm:w-96 h-80 sm:h-96 bg-teal-500/20 rounded-full blur-3xl pointer-events-none" />
+        </>
+      )}
 
       <div className="relative max-w-5xl mx-auto text-center space-y-5 sm:space-y-6">
         {/* Top Freshness Pill */}
@@ -72,146 +95,110 @@ export default function HeroSearch() {
           Explore authentic houses, plots, and apartments across Bahria Town, DHA, Johar Town & Gulberg with 1-tap WhatsApp agent access.
         </p>
 
-        {/* Tabbed Search Container */}
         <div className="pt-2 sm:pt-4 max-w-4xl mx-auto">
           <div className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-md rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-2xl border border-white/20 dark:border-slate-800 text-slate-900 dark:text-white text-left">
-            {/* Buy / Rent Switcher Tabs */}
+            {/* UI-only hero options */}
             <div className="flex items-center gap-1.5 p-1 bg-slate-100 dark:bg-slate-800/80 rounded-2xl w-full sm:w-fit mb-5">
-              <button
-                type="button"
-                onClick={() => setPurpose('Buy')}
-                className={`flex-1 sm:flex-initial px-5 py-3 sm:py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all min-h-[44px] flex items-center justify-center ${
-                  purpose === 'Buy'
-                    ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/30'
-                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-                }`}
-              >
-                Buy in Lahore
-              </button>
-              <button
-                type="button"
-                onClick={() => setPurpose('Rent')}
-                className={`flex-1 sm:flex-initial px-5 py-3 sm:py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all min-h-[44px] flex items-center justify-center ${
-                  purpose === 'Rent'
-                    ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/30'
-                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-                }`}
-              >
-                Rent in Lahore
-              </button>
+              {(['Property', 'Maintenance'] as const).map((option) => (
+                <button
+                  key={option}
+                  type="button"
+                  onClick={() => setSelectedHeroOption(option)}
+                  className={`flex-1 sm:flex-initial px-5 py-3 sm:py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all min-h-[44px] flex items-center justify-center ${
+                    selectedHeroOption === option
+                      ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/30'
+                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                  }`}
+                >
+                  {option}
+                </button>
+              ))}
             </div>
 
-            {/* Search Filters Form (Stacks vertically on mobile) */}
-            <form onSubmit={handleSearch} className="space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
-                {/* Lahore Society Dropdown */}
-                <div className="relative">
-                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1.5 uppercase tracking-wider">
-                    Lahore Society
-                  </label>
-                  <div className="relative flex items-center">
-                    <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-emerald-600 dark:text-emerald-400 pointer-events-none flex-shrink-0" />
-                    <select
-                      value={society}
-                      onChange={(e) => setSociety(e.target.value)}
-                      className="w-full min-h-[48px] pl-11 pr-10 py-3 bg-slate-50 dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700 rounded-xl text-base sm:text-sm font-medium text-slate-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:outline-none transition-all cursor-pointer appearance-none"
-                    >
-                      <option value="">All Lahore Societies</option>
-                      {LAHORE_SOCIETIES.map((soc) => (
-                        <option key={soc} value={soc}>
-                          {soc}
-                        </option>
-                      ))}
-                    </select>
-                    <ChevronDown className="absolute right-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none flex-shrink-0" />
-                  </div>
-                </div>
-
-                {/* Property Type Dropdown */}
-                <div className="relative">
-                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1.5 uppercase tracking-wider">
+            {!filtersOpen ? (
+              <button
+                type="button"
+                onClick={() => setFiltersOpen(true)}
+                className="w-full inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-xl font-bold text-sm sm:text-base text-white bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 shadow-lg shadow-emerald-600/30 transition-all active:scale-[0.98] min-h-[48px]"
+              >
+                <Search className="h-4 w-4 flex-shrink-0" />
+                <span>Search Properties</span>
+              </button>
+            ) : (
+              <form onSubmit={handleSearch} className="space-y-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                  {[
+                    { label: 'City', value: city, update: setCity, placeholder: 'Any city' },
+                    { label: 'Location', value: location, update: setLocation, placeholder: 'Area or society' },
+                  ].map((field) => (
+                    <label key={field.label} className="block text-xs font-bold text-slate-600 dark:text-slate-400">
+                      {field.label}
+                      <input value={field.value} onChange={(event) => field.update(event.target.value)} placeholder={field.placeholder} className="mt-1 min-h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm font-medium text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-white" />
+                    </label>
+                  ))}
+                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-400">
                     Property Type
-                  </label>
-                  <div className="relative flex items-center">
-                    <Home className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-emerald-600 dark:text-emerald-400 pointer-events-none flex-shrink-0" />
-                    <select
-                      value={propertyType}
-                      onChange={(e) => setPropertyType(e.target.value)}
-                      className="w-full min-h-[48px] pl-11 pr-10 py-3 bg-slate-50 dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700 rounded-xl text-base sm:text-sm font-medium text-slate-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:outline-none transition-all cursor-pointer appearance-none"
-                    >
-                      <option value="">All Types (House/Plot/Flat)</option>
-                      {PROPERTY_TYPES.map((type) => (
-                        <option key={type} value={type}>
-                          {type}
-                        </option>
-                      ))}
+                    <select aria-label="Property Type" value={propertyType} onChange={(event) => setPropertyType(event.target.value)} className="mt-1 min-h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm font-medium text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-white">
+                      <option value="">Any type</option>
+                      <option value="House">House</option>
+                      <option value="Flat">Apartment</option>
+                      <option value="Upper Portion">Upper Portion</option>
+                      <option value="Lower Portion">Lower Portion</option>
+                      <option value="Plot">Plot</option>
+                      <option value="Commercial">Commercial</option>
                     </select>
-                    <ChevronDown className="absolute right-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none flex-shrink-0" />
-                  </div>
-                </div>
-
-                {/* Budget Range Dropdown */}
-                <div className="relative">
-                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1.5 uppercase tracking-wider">
-                    Budget Range
                   </label>
-                  <div className="relative flex items-center">
-                    <DollarSign className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-emerald-600 dark:text-emerald-400 pointer-events-none flex-shrink-0" />
-                    <select
-                      value={budget}
-                      onChange={(e) => setBudget(e.target.value)}
-                      className="w-full min-h-[48px] pl-11 pr-10 py-3 bg-slate-50 dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700 rounded-xl text-base sm:text-sm font-medium text-slate-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:outline-none transition-all cursor-pointer appearance-none"
-                    >
-                      {budgetOptions.map((opt) => (
-                        <option key={opt} value={opt}>
-                          {opt}
-                        </option>
-                      ))}
+                  {[
+                    { label: 'Minimum Price', value: minPrice, update: setMinPrice },
+                    { label: 'Maximum Price', value: maxPrice, update: setMaxPrice },
+                    { label: 'Minimum Area', value: minArea, update: setMinArea },
+                    { label: 'Maximum Area', value: maxArea, update: setMaxArea },
+                  ].map((field) => (
+                    <label key={field.label} className="block text-xs font-bold text-slate-600 dark:text-slate-400">
+                      {field.label}
+                      <input type="number" min="0" value={field.value} onChange={(event) => field.update(event.target.value)} placeholder="Any" className="mt-1 min-h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm font-medium text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-white" />
+                    </label>
+                  ))}
+                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-400">
+                    Area Unit
+                    <select aria-label="Area Unit" value={areaUnit} onChange={(event) => setAreaUnit(event.target.value)} className="mt-1 min-h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm font-medium text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-white">
+                      <option value="">Any unit</option>
+                      <option value="Marla">Marla</option>
+                      <option value="Kanal">Kanal</option>
+                      <option value="SqFt">Sq Ft</option>
+                      <option value="SqYd">Sq Yd</option>
                     </select>
-                    <ChevronDown className="absolute right-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none flex-shrink-0" />
-                  </div>
-                </div>
-              </div>
-
-              {/* Checkbox Toggles & Search Button */}
-              <div className="pt-2 sm:pt-3 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 border-t border-slate-100 dark:border-slate-800">
-                <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 text-xs font-medium text-slate-600 dark:text-slate-300">
-                  <label className="flex items-center gap-2 cursor-pointer select-none py-1">
-                    <input
-                      type="checkbox"
-                      checked={verifiedOnly}
-                      onChange={(e) => setVerifiedOnly(e.target.checked)}
-                      className="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 accent-emerald-600 cursor-pointer flex-shrink-0"
-                    />
-                    <span className="flex items-center gap-1">
-                      <Shield className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400 flex-shrink-0" />
-                      <span>Verified Listings Only</span>
-                    </span>
-                  </label>
-
-                  <label className="flex items-center gap-2 cursor-pointer select-none py-1">
-                    <input
-                      type="checkbox"
-                      checked={freshConfirmedOnly}
-                      onChange={(e) => setFreshConfirmedOnly(e.target.checked)}
-                      className="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 accent-emerald-600 cursor-pointer flex-shrink-0"
-                    />
-                    <span className="flex items-center gap-1">
-                      <Sparkles className="h-3.5 w-3.5 text-amber-500 flex-shrink-0" />
-                      <span>Freshly Confirmed (14 Days)</span>
-                    </span>
                   </label>
                 </div>
-
-                <button
-                  type="submit"
-                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-xl font-bold text-sm sm:text-base text-white bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 shadow-lg shadow-emerald-600/30 transition-all active:scale-[0.98] min-h-[48px]"
+                <div className="flex flex-col-reverse gap-2 border-t border-slate-100 pt-3 dark:border-slate-800 sm:flex-row sm:justify-end">
+                  <button type="button" onClick={clearFilters} className="min-h-11 rounded-xl px-5 text-sm font-bold text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800">
+                    Clear Filters
+                  </button>
+                  <button type="submit" className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 px-6 text-sm font-bold text-white shadow-lg shadow-emerald-600/30">
+                    <Search className="h-4 w-4" />
+                    Search Properties
+                  </button>
+                </div>
+              </form>
+            )}
+            <nav aria-label="Property categories" className="mt-4 flex snap-x snap-mandatory gap-2 overflow-x-auto scroll-smooth [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+              {[
+                { label: 'Plots', type: 'Plot', Icon: LandPlot },
+                { label: 'Houses', type: 'House', Icon: House },
+                { label: 'Shops', type: 'Commercial', Icon: Store },
+                { label: 'Commercial', type: 'Commercial', Icon: Building2 },
+                { label: 'Apartments', type: 'Flat', Icon: Building },
+              ].map(({ label, type, Icon }) => (
+                <Link
+                  key={label}
+                  href={`/properties?propertyType=${encodeURIComponent(type)}`}
+                  className="flex min-w-[72px] flex-1 shrink-0 snap-start flex-col items-center justify-center gap-1 rounded-xl px-2 py-2 text-xs font-semibold text-slate-700 transition-colors hover:bg-emerald-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 dark:text-slate-200 dark:hover:bg-slate-800"
                 >
-                  <Search className="h-4 w-4 flex-shrink-0" />
-                  <span>Find Properties</span>
-                </button>
-              </div>
-            </form>
+                  <Icon aria-hidden="true" className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                  <span className="whitespace-nowrap">{label}</span>
+                </Link>
+              ))}
+            </nav>
           </div>
         </div>
 
@@ -219,13 +206,13 @@ export default function HeroSearch() {
         <div className="flex items-center justify-start sm:justify-center gap-2 pt-2 text-xs text-slate-400 overflow-x-auto pb-2 sm:pb-0 scrollbar-none -mx-4 px-4 sm:mx-0 sm:px-0">
           <span className="font-semibold text-slate-300 flex-shrink-0">Trending:</span>
           {['DHA Phase 6', 'Bahria Sector C', 'Johar Town G-1', 'Gulberg MM Alam', 'Lake City Golf'].map((tag) => (
-            <a
+            <Link
               key={tag}
-              href="#properties"
+              href={`/properties?city=Lahore&area=${encodeURIComponent(tag)}`}
               className="flex-shrink-0 px-3 py-1.5 rounded-full bg-slate-800/80 hover:bg-emerald-950/80 border border-slate-700 hover:border-emerald-500 text-slate-300 hover:text-emerald-300 transition-colors"
             >
               {tag}
-            </a>
+            </Link>
           ))}
         </div>
       </div>

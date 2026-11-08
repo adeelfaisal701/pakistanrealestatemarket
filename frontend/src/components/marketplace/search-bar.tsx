@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Search, MapPin, Building, ChevronDown } from "lucide-react";
+import { Search, MapPin, Building } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 

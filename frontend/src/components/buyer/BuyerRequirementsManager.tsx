@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 import { AlertTriangle, FilePlus2, MapPin, RefreshCw, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import apiClient, { getApiErrorMessage, type ApiEnvelope } from "@/lib/api-client";
@@ -126,6 +127,8 @@ function RequirementFields({
 }
 
 export function BuyerRequirementsManager() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [items, setItems] = useState<ClientRequirement[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -155,6 +158,18 @@ export function BuyerRequirementsManager() {
     const timer = window.setInterval(() => void load(true), 10_000);
     return () => window.clearInterval(timer);
   }, [load]);
+
+  useEffect(() => {
+    if (searchParams.get("create") !== "1") return;
+    setShowForm(true);
+    const frame = window.requestAnimationFrame(() => {
+      document.getElementById("buyer-requirement-form")?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [searchParams]);
 
   const setField = (field: keyof RequirementForm, value: string) =>
     setForm((current) => ({ ...current, [field]: value }));
@@ -205,6 +220,9 @@ export function BuyerRequirementsManager() {
     setShowForm(false);
     setEditingId("");
     setForm(emptyForm);
+    if (searchParams.get("create") === "1") {
+      router.replace("/buyer/requirements", { scroll: false });
+    }
   };
 
   const act = async (item: ClientRequirement, action: "publish" | "pause" | "close" | "delete") => {
@@ -261,7 +279,7 @@ export function BuyerRequirementsManager() {
       </header>
       {inputError}
       {showForm && (
-        <form onSubmit={save} className="space-y-4 rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
+        <form id="buyer-requirement-form" onSubmit={save} className="scroll-mt-20 space-y-4 rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
           <h2 className="text-lg font-semibold">{editingId ? "Edit draft requirement" : "New client requirement"}</h2>
           <RequirementFields form={form} onChange={setField} />
           <Button type="submit" disabled={saving}>{saving ? "Saving…" : editingId ? "Save changes" : "Save as draft"}</Button>

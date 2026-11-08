@@ -1,4 +1,4 @@
-import { IsIn, IsNotEmpty, IsOptional, IsString, MaxLength, ValidateIf } from 'class-validator';
+import { IsIn, IsNotEmpty, IsString, MaxLength, ValidateIf } from 'class-validator';
 import { PropertyStatus } from '../../properties/schemas/property.schema';
 
 export class ModeratePropertyDto {

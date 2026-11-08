@@ -1,8 +1,7 @@
 'use client';
 
 import React from 'react';
-import { MapPin, TrendingUp, ArrowUpRight, Building2 } from 'lucide-react';
-import { LAHORE_SOCIETIES } from '@/lib/mock-data';
+import { MapPin, ArrowUpRight } from 'lucide-react';
 
 const SOCIETY_DETAILS = [
   {
@@ -65,9 +64,8 @@ const SOCIETY_DETAILS = [
 
 export default function PopularLocations() {
   return (
-    <section id="societies" className="py-16 px-4 sm:px-6 lg:px-8 bg-slate-100/60 dark:bg-slate-900/40 border-t border-slate-200/80 dark:border-slate-800">
+    <section id="popular-locations" className="py-16 px-4 sm:px-6 lg:px-8 bg-slate-100/60 dark:bg-slate-900/40 border-t border-slate-200/80 dark:border-slate-800">
       <div className="max-w-7xl mx-auto">
-        {/* Section Header */}
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-10">
           <div>
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 text-xs font-bold uppercase tracking-wider mb-2">
@@ -83,12 +81,11 @@ export default function PopularLocations() {
           </div>
         </div>
 
-        {/* Societies Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
           {SOCIETY_DETAILS.map((soc) => (
             <a
               key={soc.name}
-              href="#properties"
+              href={`/properties?city=Lahore&area=${encodeURIComponent(soc.name)}`}
               className="group p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 hover:border-emerald-500 dark:hover:border-emerald-500 shadow-xs hover:shadow-lg transition-all duration-200 flex flex-col justify-between"
             >
               <div>
@@ -118,7 +115,6 @@ export default function PopularLocations() {
           ))}
         </div>
 
-        {/* Societies Quick Chips Carousel / Cloud */}
         <div className="mt-8 pt-6 border-t border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-center gap-2 text-xs">
           <span className="font-bold text-slate-700 dark:text-slate-300 mr-2">
             Other Lahore Areas:
@@ -136,7 +132,7 @@ export default function PopularLocations() {
           ].map((area) => (
             <a
               key={area}
-              href="#properties"
+              href={`/properties?city=Lahore&area=${encodeURIComponent(area)}`}
               className="px-3 py-1.5 rounded-xl bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:border-emerald-500 hover:text-emerald-600 transition-colors font-medium shadow-2xs"
             >
               {area}

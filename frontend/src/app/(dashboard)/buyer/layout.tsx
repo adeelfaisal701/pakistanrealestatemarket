@@ -8,9 +8,9 @@ export default function BuyerDashboardLayout({
 }) {
   return (
     <BuyerAccessGuard>
-      <div className="min-h-screen bg-[#061326] text-slate-100">
+      <div className="buyer-shell min-h-screen bg-[#061326] text-slate-100">
         <BuyerNavigation />
-        <main className="mx-auto min-h-screen max-w-[1500px] px-4 pb-8 pt-20 sm:px-6 lg:ml-[212px] lg:px-7 lg:py-7">
+        <main className="buyer-main mx-auto min-h-screen max-w-[1500px] px-4 pb-8 pt-20 sm:px-6 lg:ml-[212px] lg:px-7 lg:py-7">
           {children}
         </main>
       </div>

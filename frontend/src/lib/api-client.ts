@@ -9,6 +9,65 @@ export interface ApiEnvelope<T> {
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "/api/v1";
 
+function normalizeLoopbackImageUrls(value: unknown, seen = new WeakSet<object>()): void {
+  if (!value || typeof value !== "object" || seen.has(value)) return;
+  seen.add(value);
+
+  if (Array.isArray(value)) {
+    for (let index = 0; index < value.length; index += 1) {
+      const item = value[index];
+      if (typeof item === "string") {
+        value[index] = normalizeLoopbackImageUrl(item);
+      } else {
+        normalizeLoopbackImageUrls(item, seen);
+      }
+    }
+    return;
+  }
+
+  for (const [key, item] of Object.entries(value)) {
+    if (typeof item === "string") {
+      (value as Record<string, unknown>)[key] = normalizeLoopbackImageUrl(item);
+    } else {
+      normalizeLoopbackImageUrls(item, seen);
+    }
+  }
+}
+
+function normalizeLoopbackImageUrl(value: string): string {
+  if (!/^https?:\/\//i.test(value)) return value;
+  try {
+    const url = new URL(value);
+    const hostname = url.hostname.replace(/^\[|\]$/g, "").toLowerCase();
+    if (
+      !isLocalNetworkHost(hostname) ||
+      !url.pathname.startsWith("/api/v1/properties/images/")
+    ) {
+      return value;
+    }
+    return `${url.pathname}${url.search}${url.hash}`;
+  } catch {
+    return value;
+  }
+}
+
+function isLocalNetworkHost(hostname: string): boolean {
+  if (["localhost", "127.0.0.1", "::1"].includes(hostname)) return true;
+  const octets = hostname.split(".").map(Number);
+  if (
+    octets.length !== 4 ||
+    octets.some((octet) => !Number.isInteger(octet) || octet < 0 || octet > 255)
+  ) {
+    return false;
+  }
+  return (
+    octets[0] === 10 ||
+    (octets[0] === 172 && octets[1] >= 16 && octets[1] <= 31) ||
+    (octets[0] === 192 && octets[1] === 168) ||
+    (octets[0] === 169 && octets[1] === 254)
+  );
+}
+
 /**
  * Global Axios API Client instance configured with interceptors
  */
@@ -37,7 +96,10 @@ apiClient.interceptors.request.use(
 // A 401 from an individual API can be endpoint-specific. The auth guards
 // validate the session through /users/profile before clearing persisted auth.
 apiClient.interceptors.response.use(
-  (response: AxiosResponse) => response,
+  (response: AxiosResponse) => {
+    normalizeLoopbackImageUrls(response.data);
+    return response;
+  },
   (error) => Promise.reject(error)
 );
 

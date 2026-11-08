@@ -35,6 +35,7 @@ export class PropertyImageStorageService {
   constructor(config: ConfigService) {
     const configuredDirectory = config.get<string>('propertyImages.storageDir');
     const configuredPublicBaseUrl = config.get<string>('propertyImages.publicBaseUrl');
+    const nodeEnv = config.get<string>('nodeEnv');
     if (
       process.env.NODE_ENV === 'production' &&
       (!configuredDirectory || !configuredPublicBaseUrl)
@@ -48,10 +49,26 @@ export class PropertyImageStorageService {
         ? configuredDirectory
         : resolve(process.cwd(), configuredDirectory)
       : resolve(process.cwd(), 'uploads', 'property-images');
-    const baseUrl = (
-      configuredPublicBaseUrl ||
-      `http://localhost:${config.get<number>('port') || 5000}/api/v1`
-    ).replace(/\/+$/, '');
+    const defaultApiPath = '/api/v1';
+    const baseUrl = configuredPublicBaseUrl?.trim()
+      ? configuredPublicBaseUrl.trim().replace(/\/+$/, '')
+      : nodeEnv === 'production'
+        ? ''
+        : defaultApiPath;
+    if (!baseUrl) {
+      throw new Error(
+        'PROPERTY_IMAGE_PUBLIC_BASE_URL is required in production.',
+      );
+    }
+    if (baseUrl.startsWith('/')) {
+      if (nodeEnv === 'production' || baseUrl !== defaultApiPath) {
+        throw new Error(
+          'PROPERTY_IMAGE_PUBLIC_BASE_URL must be an absolute HTTP(S) URL in production.',
+        );
+      }
+      this.publicBaseUrl = baseUrl;
+      return;
+    }
     let parsedBaseUrl: URL;
     try {
       parsedBaseUrl = new URL(baseUrl);
@@ -65,7 +82,14 @@ export class PropertyImageStorageService {
     ) {
       throw new Error('PROPERTY_IMAGE_PUBLIC_BASE_URL must be an absolute HTTP(S) URL without credentials.');
     }
-    this.publicBaseUrl = baseUrl;
+    const isLoopback =
+      parsedBaseUrl.hostname === 'localhost' ||
+      parsedBaseUrl.hostname === '127.0.0.1' ||
+      parsedBaseUrl.hostname === '[::1]';
+    this.publicBaseUrl =
+      nodeEnv !== 'production' && isLoopback
+        ? defaultApiPath
+        : baseUrl;
   }
 
   async save(file: UploadedPropertyImage) {

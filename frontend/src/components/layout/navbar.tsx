@@ -1,6 +1,6 @@
 import React from "react";
 import Link from "next/link";
-import { Building2, Search, PlusCircle, User, ShieldCheck } from "lucide-react";
+import { Building2, PlusCircle, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export function Navbar() {

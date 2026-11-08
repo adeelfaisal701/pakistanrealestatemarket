@@ -11,6 +11,7 @@ import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { UserAccountStatus, UserRole } from '../users/schemas/user.schema';
 import { normalizeAuthEmail } from './auth-rate-limit.service';
+import { isAgentProfileComplete } from '../users/agent-profile.utils';
 
 @Injectable()
 export class AuthService {
@@ -71,6 +72,8 @@ export class AuthService {
         role: user.role,
         agencyName: user.agencyName,
         city: user.city,
+        profileComplete:
+          user.role !== UserRole.AGENT || isAgentProfileComplete(user),
       },
       accessToken,
     };

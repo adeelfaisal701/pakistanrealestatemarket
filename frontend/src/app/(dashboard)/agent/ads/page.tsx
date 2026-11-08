@@ -165,7 +165,7 @@ export default function MyAdsPage() {
           </Link>
         </PageHeader>
 
-        <div className="flex flex-wrap gap-2" role="tablist" aria-label="Filter advertisements by status">
+        <div className="flex flex-wrap gap-2 max-md:flex-nowrap max-md:overflow-x-auto max-md:pb-1" role="tablist" aria-label="Filter advertisements by status">
           {FILTERS.map((status) => (
             <button
               key={status}
@@ -174,10 +174,10 @@ export default function MyAdsPage() {
               aria-selected={filter === status}
               onClick={() => setFilter(status)}
               className={cn(
-                "rounded-full border px-4 py-1.5 text-sm font-medium transition-colors",
+                "shrink-0 rounded-full border px-4 py-1.5 text-sm font-medium transition-colors",
                 filter === status
-                  ? "border-emerald-500 bg-emerald-600/25 text-white"
-                  : "border-[#27405f] bg-[#0b1524] text-slate-300 hover:bg-[#13233b]",
+                  ? "border-emerald-500 bg-emerald-600/25 text-white max-md:bg-[#008F68]"
+                  : "border-[#27405f] bg-[#0b1524] text-slate-300 hover:bg-[#13233b] max-md:border-[#E2E8F0] max-md:bg-white max-md:text-[#64748B]",
               )}
             >
               {status === "All" ? status : LABELS[status]}{" "}
@@ -187,7 +187,7 @@ export default function MyAdsPage() {
         </div>
 
         {error && (
-          <p role="alert" className="rounded-xl border border-red-800/60 bg-red-950/30 px-4 py-3 text-sm text-red-200">
+          <p role="alert" className="rounded-xl border border-red-800/60 bg-red-950/30 px-4 py-3 text-sm text-red-200 max-md:border-red-200 max-md:bg-red-50 max-md:text-red-800">
             {error}
           </p>
         )}
@@ -211,48 +211,51 @@ export default function MyAdsPage() {
                 <li
                   key={ad.id}
                   id={`advertisement-${ad.id}`}
-                  className={cn(PANEL, "flex flex-col gap-4 p-4 sm:flex-row sm:items-center")}
+                  className={cn(PANEL, "flex flex-col gap-4 p-4 sm:flex-row sm:items-center max-md:grid max-md:grid-cols-[88px_minmax(0,1fr)] max-md:gap-x-3 max-md:gap-y-2 max-md:p-3")}
                 >
                   {ad.property.images?.[0] ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
                       src={ad.property.images[0]}
                       alt={ad.property.title}
-                      className="h-24 w-full flex-shrink-0 rounded-xl bg-[#16243a] object-cover sm:w-36"
+                      className="h-24 w-full flex-shrink-0 rounded-xl bg-[#16243a] object-cover sm:w-36 max-md:h-full max-md:min-h-[96px]"
                     />
                   ) : (
-                    <div className="flex h-24 w-full flex-shrink-0 items-center justify-center rounded-xl bg-[#16243a] text-xs text-slate-500 sm:w-36">
+                    <div className="flex h-24 w-full flex-shrink-0 items-center justify-center rounded-xl bg-[#16243a] text-xs text-slate-500 sm:w-36 max-md:min-h-[96px]">
                       No listing image
                     </div>
                   )}
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2.5">
-                      <h2 className="text-base font-semibold text-white">{ad.property.title}</h2>
-                      <span className="rounded-md bg-emerald-500/15 px-2.5 py-0.5 text-xs font-semibold text-emerald-300">
+                      <h2 className="text-base font-semibold text-white max-md:text-sm max-md:text-[#071B2B]">{ad.property.title}</h2>
+                      <span className="rounded-md bg-emerald-500/15 px-2.5 py-0.5 text-xs font-semibold text-emerald-300 max-md:bg-[#EAF7F2] max-md:text-[#008F68]">
                         {LABELS[ad.status]}
                       </span>
                     </div>
-                    <p className="mt-1 text-xs text-slate-400">
+                    <p className="mt-1 text-xs text-slate-400 max-md:text-[#64748B]">
                       {ad.property.location.area}, {ad.property.location.city} · {ad.property.propertyType} · For {ad.property.purpose} · {formatPrice(ad.property.price)}
                     </p>
-                    <p className="mt-1 text-xs text-slate-500">
+                    <p className="mt-1 text-xs text-slate-500 max-md:text-[#64748B]">
                       Submitted {new Date(ad.submittedAt).toLocaleDateString()}
                       {ad.approvedAt ? ` · Approved ${new Date(ad.approvedAt).toLocaleDateString()}` : ""}
                     </p>
                     {ad.status === "rejected" && ad.moderationNotes && (
-                      <p className="mt-1 text-sm text-red-300">Review reason: {ad.moderationNotes}</p>
+                      <p className="mt-1 text-sm text-red-300 max-md:text-red-700">Review reason: {ad.moderationNotes}</p>
                     )}
                     <div className="mt-2"><AdMetricsLine metrics={stats} /></div>
                   </div>
-                  <div className="flex flex-wrap gap-2 sm:w-40 sm:flex-col">
+                  <div className="flex flex-wrap gap-2 sm:w-40 sm:flex-col max-md:col-span-2 max-md:flex-nowrap max-md:gap-1 max-md:border-t max-md:border-[#E2E8F0] max-md:pt-2">
                     {ad.status === "published" && (
                       <button
                         type="button"
                         disabled={updatingId === ad.id}
                         onClick={() => void changeStatus(ad, "paused")}
-                        className={GHOST_BTN}
+                        className={cn(
+                          GHOST_BTN,
+                          "max-md:min-w-0 max-md:flex-[1_1_0%] max-md:whitespace-nowrap max-md:px-1 max-md:text-[clamp(0.625rem,3vw,0.875rem)] min-[360px]:max-md:px-2",
+                        )}
                       >
-                        <Pause className="h-4 w-4" /> Pause
+                        <Pause className="h-4 w-4 shrink-0 max-md:h-3 max-md:w-3 min-[360px]:max-md:h-3.5 min-[360px]:max-md:w-3.5" /> Pause
                       </button>
                     )}
                     {ad.status === "paused" && (
@@ -260,9 +263,12 @@ export default function MyAdsPage() {
                         type="button"
                         disabled={updatingId === ad.id}
                         onClick={() => void changeStatus(ad, "published")}
-                        className={GHOST_BTN}
+                        className={cn(
+                          GHOST_BTN,
+                          "max-md:min-w-0 max-md:flex-[1_1_0%] max-md:whitespace-nowrap max-md:px-1 max-md:text-[clamp(0.625rem,3vw,0.875rem)] min-[360px]:max-md:px-2",
+                        )}
                       >
-                        <Play className="h-4 w-4" /> Resume
+                        <Play className="h-4 w-4 shrink-0 max-md:h-3 max-md:w-3 min-[360px]:max-md:h-3.5 min-[360px]:max-md:w-3.5" /> Resume
                       </button>
                     )}
                     {["published", "paused"].includes(ad.status) && (
@@ -270,16 +276,22 @@ export default function MyAdsPage() {
                         type="button"
                         disabled={updatingId === ad.id}
                         onClick={() => void changeStatus(ad, "ended")}
-                        className={GHOST_BTN}
+                        className={cn(
+                          GHOST_BTN,
+                          "max-md:min-w-0 max-md:flex-[1_1_0%] max-md:whitespace-nowrap max-md:px-1 max-md:text-[clamp(0.625rem,3vw,0.875rem)] min-[360px]:max-md:px-2",
+                        )}
                       >
-                        <StopCircle className="h-4 w-4" /> End Ad
+                        <StopCircle className="h-4 w-4 shrink-0 max-md:h-3 max-md:w-3 min-[360px]:max-md:h-3.5 min-[360px]:max-md:w-3.5" /> End Ad
                       </button>
                     )}
                     <Link
                       href={`/agent/listings/${encodeURIComponent(ad.propertyId)}/edit`}
-                      className={GHOST_BTN}
+                      className={cn(
+                        GHOST_BTN,
+                        "max-md:min-w-0 max-md:flex-[1_1_0%] max-md:whitespace-nowrap max-md:px-1 max-md:text-[clamp(0.625rem,3vw,0.875rem)] min-[360px]:max-md:px-2",
+                      )}
                     >
-                      Edit listing
+                      Edit Listing
                     </Link>
                   </div>
                 </li>

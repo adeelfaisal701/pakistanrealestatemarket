@@ -20,6 +20,16 @@ export default function Navbar({ showSearch = false }: NavbarProps) {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  useEffect(() => {
+    if (!mobileMenuOpen) return;
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setMobileMenuOpen(false);
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [mobileMenuOpen]);
+
   return (
     <header
       className={`sticky top-0 z-50 transition-all duration-300 ${
@@ -28,16 +38,16 @@ export default function Navbar({ showSearch = false }: NavbarProps) {
           : 'bg-white/80 dark:bg-slate-950/80 backdrop-blur-sm border-b border-slate-100 dark:border-slate-900'
       }`}
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-18 sm:h-20">
+      <div className="max-w-7xl mx-auto px-3 sm:px-5 lg:px-6 xl:px-8">
+        <div className="flex items-center justify-between h-16 sm:h-18 xl:h-20">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2.5 sm:gap-3 group flex-shrink-0">
-            <div className="h-10 w-10 sm:h-11 sm:w-11 rounded-xl bg-gradient-to-tr from-emerald-700 to-teal-500 flex items-center justify-center text-white shadow-md shadow-emerald-500/20 group-hover:scale-105 transition-transform duration-200 flex-shrink-0">
-              <Building2 className="h-5 w-5 sm:h-6 sm:w-6 flex-shrink-0" />
+          <Link href="/" className="flex items-center gap-2 sm:gap-2.5 xl:gap-3 group flex-shrink-0">
+            <div className="h-9 w-9 sm:h-10 sm:w-10 xl:h-11 xl:w-11 rounded-xl bg-gradient-to-tr from-emerald-700 to-teal-500 flex items-center justify-center text-white shadow-md shadow-emerald-500/20 group-hover:scale-105 transition-transform duration-200 flex-shrink-0">
+              <Building2 className="h-4 w-4 sm:h-5 sm:w-5 xl:h-6 xl:w-6 flex-shrink-0" />
             </div>
             <div>
               <div className="flex items-center gap-1.5">
-                <span className="text-xl sm:text-2xl font-black tracking-tight text-slate-900 dark:text-white">
+                <span className="text-lg sm:text-xl xl:text-2xl font-black tracking-tight text-slate-900 dark:text-white">
                   PRM
                 </span>
                 <span className="px-1.5 py-0.5 text-[9px] sm:text-[10px] font-bold uppercase tracking-wider bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-400 rounded-md border border-emerald-200 dark:border-emerald-800">
@@ -51,24 +61,24 @@ export default function Navbar({ showSearch = false }: NavbarProps) {
           </Link>
 
           {/* Desktop Navigation Links */}
-          <nav className="hidden md:flex items-center gap-1 lg:gap-2">
+          <nav className="hidden xl:flex items-center gap-1 lg:gap-2">
             <Link
-              href={showSearch ? "/properties?purpose=Sale" : "#properties"}
+              href="/properties?purpose=Sale"
               className="px-3.5 py-2 text-sm font-semibold text-slate-700 dark:text-slate-200 hover:text-emerald-600 dark:hover:text-emerald-400 rounded-lg hover:bg-emerald-50/60 dark:hover:bg-emerald-950/40 transition-colors"
             >
               Buy
             </Link>
             <Link
-              href={showSearch ? "/properties?purpose=Rent" : "#properties"}
+              href="/properties?purpose=Rent"
               className="px-3.5 py-2 text-sm font-semibold text-slate-700 dark:text-slate-200 hover:text-emerald-600 dark:hover:text-emerald-400 rounded-lg hover:bg-emerald-50/60 dark:hover:bg-emerald-950/40 transition-colors"
             >
               Rent
             </Link>
             <Link
-              href={showSearch ? "/#societies" : "#societies"}
+              href={showSearch ? "/#popular-locations" : "#popular-locations"}
               className="px-3.5 py-2 text-sm font-semibold text-slate-700 dark:text-slate-200 hover:text-emerald-600 dark:hover:text-emerald-400 rounded-lg hover:bg-emerald-50/60 dark:hover:bg-emerald-950/40 transition-colors"
             >
-              Lahore Societies
+              Popular Locations
             </Link>
             <Link
               href="/agent"
@@ -104,7 +114,7 @@ export default function Navbar({ showSearch = false }: NavbarProps) {
           )}
 
           {/* Desktop Actions */}
-          <div className="hidden md:flex items-center gap-3">
+          <div className="hidden xl:flex items-center gap-3">
             <Link
               href="/login"
               className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white rounded-xl border border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 transition-all hover:shadow-xs"
@@ -122,7 +132,7 @@ export default function Navbar({ showSearch = false }: NavbarProps) {
           </div>
 
           {/* Mobile Menu Button & Quick Post Action */}
-          <div className="flex md:hidden items-center gap-2">
+          <div className="flex xl:hidden items-center gap-1.5 sm:gap-2">
             <Link
               href="/agent/add-property"
               className="inline-flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl shadow-sm min-h-[40px] flex-shrink-0"
@@ -131,9 +141,12 @@ export default function Navbar({ showSearch = false }: NavbarProps) {
               <span>Post Free</span>
             </Link>
             <button
+              type="button"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-              aria-label="Toggle menu"
+              aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
+              aria-expanded={mobileMenuOpen}
+              aria-controls="marketplace-mobile-menu"
             >
               {mobileMenuOpen ? <X className="h-6 w-6 flex-shrink-0" /> : <Menu className="h-6 w-6 flex-shrink-0" />}
             </button>
@@ -142,7 +155,10 @@ export default function Navbar({ showSearch = false }: NavbarProps) {
 
         {/* Mobile Dropdown Menu */}
         {mobileMenuOpen && (
-          <div className="md:hidden py-4 px-2 border-t border-slate-200 dark:border-slate-800 space-y-1.5 animate-in fade-in slide-in-from-top-2 duration-200">
+          <div
+            id="marketplace-mobile-menu"
+            className="xl:hidden py-4 px-2 border-t border-slate-200 dark:border-slate-800 space-y-1.5 animate-in fade-in slide-in-from-top-2 duration-200"
+          >
             {showSearch && (
               <form action="/properties" method="get" role="search" className="mb-3 flex items-center rounded-xl border border-slate-200 bg-slate-50 p-1 dark:border-slate-800 dark:bg-slate-900">
                 <Search className="ml-2 h-4 w-4 flex-shrink-0 text-slate-400" />
@@ -159,7 +175,7 @@ export default function Navbar({ showSearch = false }: NavbarProps) {
               </form>
             )}
             <Link
-              href={showSearch ? "/properties?purpose=Sale" : "#properties"}
+              href="/properties?purpose=Sale"
               onClick={() => setMobileMenuOpen(false)}
               className="flex items-center justify-between px-3.5 py-3 rounded-xl text-sm font-semibold text-slate-800 dark:text-slate-200 hover:bg-emerald-50 dark:hover:bg-emerald-950/50 min-h-[44px]"
             >
@@ -167,7 +183,7 @@ export default function Navbar({ showSearch = false }: NavbarProps) {
               <ArrowRight className="h-4 w-4 text-slate-400" />
             </Link>
             <Link
-              href={showSearch ? "/properties?purpose=Rent" : "#properties"}
+              href="/properties?purpose=Rent"
               onClick={() => setMobileMenuOpen(false)}
               className="flex items-center justify-between px-3.5 py-3 rounded-xl text-sm font-semibold text-slate-800 dark:text-slate-200 hover:bg-emerald-50 dark:hover:bg-emerald-950/50 min-h-[44px]"
             >

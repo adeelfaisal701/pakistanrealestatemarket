@@ -106,6 +106,43 @@ function makeService(overrides: {
   };
 }
 
+test('public property results expose the lifetime published-ad view total', async () => {
+  const state = makeService();
+  const advertisementId = new Types.ObjectId();
+  state.advertisementsModel.find = () =>
+    query([{ _id: advertisementId, propertyId: state.propertyId }]);
+  let aggregationPipeline: unknown;
+  Object.assign(state.eventsModel, {
+    aggregate: (pipeline: unknown) => {
+      aggregationPipeline = pipeline;
+      return query([{ _id: advertisementId, count: 1247 }]);
+    },
+  });
+
+  const response = (await state.service.findAll({} as never)) as {
+    data: Array<Record<string, unknown>>;
+  };
+
+  assert.equal(response.data[0].viewsCount, 1247);
+  assert.match(JSON.stringify(aggregationPipeline), /property_view/);
+  assert.match(JSON.stringify(aggregationPipeline), new RegExp(String(advertisementId)));
+});
+
+test('public property results default to zero views when an ad has no events', async () => {
+  const state = makeService();
+  state.advertisementsModel.find = () =>
+    query([{ _id: new Types.ObjectId(), propertyId: state.propertyId }]);
+  Object.assign(state.eventsModel, {
+    aggregate: () => query([]),
+  });
+
+  const response = (await state.service.findAll({} as never)) as {
+    data: Array<Record<string, unknown>>;
+  };
+
+  assert.equal(response.data[0].viewsCount, 0);
+});
+
 test('private inventory submission creates one linked pending ad and updates existing property', async () => {
   const state = makeService();
   let createdAdvertisement: Record<string, unknown> | undefined;

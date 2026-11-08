@@ -1,6 +1,7 @@
 import type { AreaUnit, PropertyPurpose, PropertyType } from "./index";
 
 export interface PublicPropertyAgent {
+  _id?: string;
   name?: string;
   phone?: string;
   agencyName?: string;

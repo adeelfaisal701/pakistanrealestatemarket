@@ -6,7 +6,6 @@ import {
   IsNumber,
   IsOptional,
   IsString,
-  Max,
   MaxLength,
   Min,
   MinLength,

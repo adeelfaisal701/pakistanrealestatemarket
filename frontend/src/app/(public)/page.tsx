@@ -1,21 +1,36 @@
 import Navbar from '@/components/marketplace/Navbar';
 import HeroSearch from '@/components/marketplace/HeroSearch';
-import TrustBanner from '@/components/marketplace/TrustBanner';
-import PropertyGrid from '@/components/marketplace/PropertyGrid';
+import { FeaturedAgents, FeaturedAgencies } from '@/components/marketplace/FeaturedDirectory';
 import PopularLocations from '@/components/marketplace/PopularLocations';
 import DualCTA from '@/components/marketplace/DualCTA';
-import Footer from '@/components/marketplace/Footer';
+import MobileMarketplace from '@/components/marketplace/MobileMarketplace';
+import DesktopMarketplace, { OurProjects } from '@/components/marketplace/DesktopMarketplace';
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 font-sans text-slate-900 dark:text-slate-100">
-      <Navbar />
-      <HeroSearch />
-      <TrustBanner />
-      <PropertyGrid />
-      <PopularLocations />
-      <DualCTA />
-      <Footer />
-    </div>
+    <>
+      {/* ── Mobile layout (< 768px) ── */}
+      <div className="md:hidden">
+        <MobileMarketplace />
+      </div>
+
+      {/* ── Tablet layout (768px–1279px) ── */}
+      <div className="hidden md:block xl:hidden">
+        <div className="min-h-screen bg-slate-50 dark:bg-slate-950 font-sans text-slate-900 dark:text-slate-100">
+          <Navbar />
+          <HeroSearch />
+          <FeaturedAgents />
+          <FeaturedAgencies />
+          <PopularLocations />
+          <OurProjects />
+          <DualCTA />
+        </div>
+      </div>
+
+      {/* ── Desktop layout (≥ 1280px) ── */}
+      <div className="hidden xl:block">
+        <DesktopMarketplace />
+      </div>
+    </>
   );
 }

@@ -349,7 +349,7 @@ export class RequirementsService {
       status: ClientRequirementStatus.PUBLISHED,
     }).exec();
     if (!requirement) throw new NotFoundException('Published requirement not found.');
-    const property = await this.findEligibleProperty(agentId, dto.propertyId);
+    await this.findEligibleProperty(agentId, dto.propertyId);
     const duplicate = await this.offerModel.findOne({
       requirementId,
       agentId,

@@ -32,7 +32,7 @@ export interface MigrationDatabase {
   collection(name: string): MigrationHistoryCollection;
 }
 
-export const SCHEMA_INDEX_MIGRATION_VERSION = '2026-11-03-schema-indexes-v1';
+export const SCHEMA_INDEX_MIGRATION_VERSION = '2026-11-06-project-management-v1';
 export const SCHEMA_INDEX_MIGRATION_HISTORY = 'schema_index_migrations';
 
 export class SchemaIndexMigrationError extends Error {}

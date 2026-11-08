@@ -9,11 +9,13 @@ import {
   CalendarDays,
   Check,
   CheckCircle2,
+  ChevronDown,
   ChevronLeft,
   ChevronRight,
   ExternalLink,
   Eye,
   Home,
+  MessageCircle,
   MapPin,
   Maximize2,
   Phone,
@@ -22,7 +24,6 @@ import {
   X,
 } from "lucide-react";
 import Navbar from "@/components/marketplace/Navbar";
-import Footer from "@/components/marketplace/Footer";
 import { Card } from "@/components/ui/card";
 import { WhatsAppButton } from "@/components/crm/whatsapp-button";
 import { TrackedCallLink } from "@/components/marketplace/TrackedCallLink";
@@ -171,7 +172,9 @@ function makeSelectedRows(
   values: string[] | undefined,
   labels: Record<string, string>,
 ): string[] {
-  return (values ?? []).map((value) => labels[value] ?? value);
+  return (values ?? [])
+    .filter((value) => value.trim().length > 0)
+    .map((value) => labels[value] ?? value);
 }
 
 function similarityScore(
@@ -214,13 +217,53 @@ function FeatureList({
       <h3 className="text-sm font-bold text-slate-900 dark:text-white">{title}</h3>
       <ul className="grid gap-2 sm:grid-cols-2">
         {rows.map((row) => (
-          <li key={row} className="flex items-start gap-2 text-sm text-slate-600 dark:text-slate-300">
-            <Check className="mt-0.5 h-4 w-4 shrink-0 text-blue-700 dark:text-blue-400" />
+          <li key={row} className="flex min-w-0 items-center gap-2 rounded-xl bg-slate-50 p-2.5 text-sm text-slate-600 dark:bg-slate-800/70 dark:text-slate-300 max-md:text-xs">
+            <Check className="h-4 w-4 shrink-0 text-emerald-700 dark:text-emerald-400" />
             <span>{row}</span>
           </li>
         ))}
       </ul>
     </section>
+  );
+}
+
+function MobilePropertyHeader({
+  propertyId,
+  onShare,
+}: {
+  propertyId: string;
+  onShare: () => void;
+}) {
+  return (
+    <header className="fixed inset-x-0 top-0 z-[60] flex h-16 items-center justify-between border-b border-slate-200/70 bg-white/90 px-3 pt-[env(safe-area-inset-top)] shadow-sm backdrop-blur-xl md:hidden dark:border-slate-800/70 dark:bg-slate-950/90">
+      <div className="flex min-w-0 items-center gap-2">
+        <button
+          type="button"
+          aria-label="Go back"
+          onClick={() => {
+            if (window.history.length > 1) window.history.back();
+            else window.location.assign("/");
+          }}
+          className="-ml-1 flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-slate-800 transition-colors hover:bg-slate-100 dark:text-slate-100 dark:hover:bg-slate-800"
+        >
+          <ChevronLeft className="h-6 w-6" />
+        </button>
+        <span className="truncate text-base font-bold tracking-tight text-slate-900 dark:text-white">
+          Property Details
+        </span>
+      </div>
+      <div className="flex shrink-0 items-center gap-1">
+        <button
+          type="button"
+          aria-label="Share listing"
+          onClick={onShare}
+          className="flex h-10 w-10 items-center justify-center rounded-full text-slate-600 transition-colors hover:bg-slate-100 hover:text-emerald-700 dark:text-slate-300 dark:hover:bg-slate-800"
+        >
+          <Share2 className="h-5 w-5" />
+        </button>
+        <SavePropertyButton propertyId={propertyId} compact />
+      </div>
+    </header>
   );
 }
 
@@ -237,11 +280,15 @@ export default function PropertyDetailsClient({
   const [similarProperties, setSimilarProperties] = useState<MarketplaceProperty[]>([]);
   const [similarError, setSimilarError] = useState("");
   const [showFullDescription, setShowFullDescription] = useState(false);
+  const [expandedFeatureCategory, setExpandedFeatureCategory] = useState<string | null>(null);
   const [activeSection, setActiveSection] = useState("overview");
+  const [activeMobileSection, setActiveMobileSection] = useState("overview");
+  const [showStickyContactActions, setShowStickyContactActions] = useState(false);
   const touchStartX = useRef<number | null>(null);
 
   useEffect(() => {
     let active = true;
+    setExpandedFeatureCategory(null);
     setLoading(true);
     setError("");
 
@@ -384,13 +431,50 @@ export default function PropertyDetailsClient({
           .sort((left, right) => left.boundingClientRect.top - right.boundingClientRect.top)[0];
         if (visible?.target instanceof HTMLElement) {
           setActiveSection(visible.target.id);
-        }
+            if (["overview", "attributes", "features", "location", "similar-properties"].includes(visible.target.id)) {
+              setActiveMobileSection(visible.target.id);
+            }
+          }
       },
       { rootMargin: "-100px 0px -65% 0px", threshold: 0 },
     );
     sections.forEach((section) => observer.observe(section));
     return () => observer.disconnect();
   }, [property, similarProperties]);
+
+  useEffect(() => {
+    const agentSection = document.getElementById("agent");
+    if (!agentSection) return;
+
+    const mobileQuery = window.matchMedia("(max-width: 767px)");
+    let observer: IntersectionObserver | null = null;
+
+    const observeAgentSection = () => {
+      observer?.disconnect();
+      if (!mobileQuery.matches) {
+        setShowStickyContactActions(false);
+        return;
+      }
+
+      observer = new IntersectionObserver(
+        ([entry]) => {
+          if (!entry) return;
+          setShowStickyContactActions(
+            !entry.isIntersecting && entry.boundingClientRect.bottom <= 0,
+          );
+        },
+        { threshold: 0 },
+      );
+      observer.observe(agentSection);
+    };
+
+    observeAgentSection();
+    mobileQuery.addEventListener("change", observeAgentSection);
+    return () => {
+      observer?.disconnect();
+      mobileQuery.removeEventListener("change", observeAgentSection);
+    };
+  }, [property]);
 
   const markImageBroken = (image: string) => {
     setBrokenImages((current) => new Set(current).add(image));
@@ -414,6 +498,20 @@ export default function PropertyDetailsClient({
     }
   };
 
+  const navigateToSection = (
+    event: React.MouseEvent<HTMLAnchorElement>,
+    sectionId: string,
+  ) => {
+    const section = document.getElementById(sectionId);
+    if (!section) return;
+    event.preventDefault();
+    if (window.location.hash !== `#${sectionId}`) {
+      window.history.pushState(null, "", `#${sectionId}`);
+    }
+    setActiveMobileSection(sectionId);
+    section.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
   const handleTouchStart = (event: React.TouchEvent<HTMLDivElement>) => {
     touchStartX.current = event.changedTouches[0]?.clientX ?? null;
   };
@@ -428,9 +526,12 @@ export default function PropertyDetailsClient({
 
   const pageShell = (content: React.ReactNode) => (
     <>
-      <Navbar showSearch />
+      <MobilePropertyHeader propertyId={propertyId} onShare={() => void copyPageLink()} />
+      <div className="hidden md:block">
+        <Navbar showSearch />
+      </div>
       {content}
-      <Footer />
+      <div className="pb-[calc(3.75rem+env(safe-area-inset-bottom))] md:pb-0" />
     </>
   );
 
@@ -439,7 +540,7 @@ export default function PropertyDetailsClient({
       <main className="min-h-[65vh] bg-slate-50 px-4 py-10 sm:px-6 lg:px-8">
         <p
           role="status"
-          className="mx-auto max-w-7xl animate-pulse rounded-2xl border border-slate-200 bg-white p-10 text-center text-sm text-slate-500"
+          className="mx-auto max-w-7xl animate-pulse rounded-2xl border border-slate-200 bg-white p-10 pt-24 text-center text-sm text-slate-500 md:pt-10"
         >
           Loading property details…
         </p>
@@ -449,7 +550,7 @@ export default function PropertyDetailsClient({
 
   if (error || !property) {
     return pageShell(
-      <main className="min-h-[65vh] bg-slate-50 px-4 py-16 text-center">
+      <main className="min-h-[65vh] bg-slate-50 px-4 py-16 pt-24 text-center md:pt-16">
         <h1 className="text-2xl font-bold text-slate-900">Property unavailable</h1>
         <p role="alert" className="mx-auto mt-3 max-w-xl text-sm text-slate-600">
           {error || "This property listing could not be found or is no longer available."}
@@ -465,6 +566,9 @@ export default function PropertyDetailsClient({
   }
 
   const agent = property.agent;
+  const agentProfileHref = agent?._id
+    ? `/agents/${encodeURIComponent(agent._id)}`
+    : undefined;
   const phone = agent?.phone?.trim();
   const availability = property.availabilityStatus ?? "available";
   const availabilityLabel = availability
@@ -494,24 +598,69 @@ export default function PropertyDetailsClient({
     ...(property.features?.waterSupply ? ["Water supply"] : []),
     ...selectedInterior,
   ];
+  const featureCategories: Array<{
+    id: string;
+    title: string;
+    features: Array<{ label: string; value?: number | string }>;
+  }> = [
+    {
+      id: "construction",
+      title: "Construction, interior & utilities",
+      features: [
+        ...featureRows.map((label) => ({ label })),
+        ...(isResidential && property.features?.furnishing
+          ? [{ label: "Furnishing", value: property.features.furnishing }]
+          : []),
+      ],
+    },
+    {
+      id: "community",
+      title: "Community facilities",
+      features: selectedCommunity.map((label) => ({ label })),
+    },
+    {
+      id: "nearby",
+      title: "Nearby facilities",
+      features: selectedNearby.map((label) => ({ label })),
+    },
+    {
+      id: "rooms",
+      title: "Rooms & spaces",
+      features: roomRows.map(({ label, value }) => ({ label, value })),
+    },
+    {
+      id: "outdoor",
+      title: "Outdoor spaces",
+      features: outdoorRows.map(({ label, value }) => ({ label, value })),
+    },
+  ].filter((category) => category.features.length > 0);
+  const totalFeatureCount = featureCategories.reduce(
+    (total, category) => total + category.features.length,
+    0,
+  );
   const sectionLinks = [
     { id: "overview", label: "Overview" },
-    ...(property.description.trim() ? [{ id: "description", label: "Description" }] : []),
-    ...(featureRows.length || selectedCommunity.length || selectedNearby.length
+    { id: "attributes", label: "Attributes" },
+    ...(featureRows.length || selectedCommunity.length || selectedNearby.length ||
+    roomRows.length || outdoorRows.length ||
+    (isResidential && property.features?.furnishing)
       ? [{ id: "features", label: "Features" }]
       : []),
-    ...(roomRows.length || outdoorRows.length || property.features?.bedrooms || property.features?.bathrooms
-      ? [{ id: "rooms", label: "Rooms & spaces" }]
-      : []),
     ...(approximateLocation ? [{ id: "location", label: "Location" }] : []),
-    { id: "agent", label: "Agent" },
     { id: "similar-properties", label: "Similar properties" },
+  ];
+  const mobileSectionLinks = [
+    { id: "overview", label: "Overview" },
+    { id: "attributes", label: "Attributes" },
+    { id: "features", label: "Features" },
+    { id: "location", label: "Location" },
+    { id: "similar-properties", label: "Similar Properties" },
   ];
 
   return pageShell(
-    <main className="min-h-screen bg-slate-50 pb-14 text-slate-900 dark:bg-slate-950 dark:text-slate-100">
-      <div className="mx-auto max-w-[1440px] px-4 pb-10 pt-4 sm:px-6 lg:px-8">
-        <nav aria-label="Breadcrumb" className="mb-4 flex min-w-0 items-center gap-2 overflow-hidden text-xs text-slate-500 sm:text-sm">
+    <main className="min-h-screen bg-[#faf8ff] pb-14 pt-16 text-slate-900 dark:bg-slate-950 dark:text-slate-100">
+      <div className="mx-auto max-w-[1440px] px-4 pb-10 pt-4 sm:px-6 lg:px-8 max-md:px-0 max-md:pb-8 max-md:pt-0">
+        <nav aria-label="Breadcrumb" className="mb-4 flex min-w-0 items-center gap-2 overflow-hidden text-xs text-slate-500 sm:text-sm max-md:hidden">
           <Link href="/" className="shrink-0 hover:text-blue-700">Home</Link>
           <span aria-hidden="true">/</span>
           {property.location.city && (
@@ -537,15 +686,55 @@ export default function PropertyDetailsClient({
         </nav>
 
         <section
+          id="overview"
+          data-property-section
           aria-label="Property summary"
-          className="grid gap-4 md:grid-cols-2 lg:grid-cols-[minmax(0,1.35fr)_minmax(280px,0.9fr)_minmax(260px,0.8fr)]"
+          className="scroll-mt-24 grid gap-4 md:grid-cols-2 lg:grid-cols-[minmax(0,1.35fr)_minmax(280px,0.9fr)_minmax(260px,0.8fr)] max-md:gap-0 max-md:scroll-mt-16"
         >
-          <Card className="min-w-0 overflow-hidden rounded-2xl border-slate-200 p-0 dark:border-slate-800">
-            <div
-              className="group relative aspect-[16/10] min-h-64 overflow-hidden bg-slate-200 dark:bg-slate-800 sm:aspect-[1.65/1] lg:aspect-[1.28/1]"
-              onTouchStart={handleTouchStart}
-              onTouchEnd={handleTouchEnd}
-            >
+          <Card className="min-w-0 overflow-hidden rounded-2xl border-slate-200 p-0 dark:border-slate-800 max-md:rounded-none max-md:border-0 max-md:shadow-none">
+            <div className="group relative aspect-[4/3] min-h-64 overflow-hidden bg-slate-200 dark:bg-slate-800 max-xl:min-h-0 xl:aspect-[1.28/1] max-md:aspect-[4/3]">
+              <div
+                className="absolute inset-0 flex snap-x snap-mandatory overflow-x-auto scroll-smooth md:hidden"
+                onScroll={(event) => {
+                  const index = Math.round(
+                    event.currentTarget.scrollLeft / event.currentTarget.clientWidth,
+                  );
+                  const image = validImages[index];
+                  if (image) setActiveImage(images.indexOf(image));
+                }}
+              >
+                {validImages.length > 0 ? validImages.map((image, index) => (
+                  <button
+                    key={image}
+                    type="button"
+                    aria-label={`Open property photo ${index + 1} of ${validImages.length}`}
+                    onClick={() => {
+                      setActiveImage(images.indexOf(image));
+                      setLightboxOpen(true);
+                    }}
+                    className="h-full w-full shrink-0 snap-center"
+                  >
+                    <img
+                      src={image}
+                      alt={`${property.title} property photo ${index + 1}`}
+                      className="h-full w-full object-cover"
+                      onError={() => markImageBroken(image)}
+                    />
+                  </button>
+                )) : (
+                  <div className="flex h-full w-full shrink-0 items-center justify-center text-slate-400">
+                    <div className="text-center">
+                      <Building2 className="mx-auto h-10 w-10" />
+                      <p className="mt-2 text-sm">No property photo available</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+              <div
+                className="relative hidden h-full w-full md:block"
+                onTouchStart={handleTouchStart}
+                onTouchEnd={handleTouchEnd}
+              >
               {currentImageIsAvailable ? (
                 <button
                   type="button"
@@ -584,7 +773,7 @@ export default function PropertyDetailsClient({
                     type="button"
                     onClick={() => moveImage(-1)}
                     aria-label="Previous property photo"
-                    className="absolute left-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-slate-800 shadow transition hover:bg-white"
+                    className="absolute left-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-slate-800 shadow transition hover:bg-white max-xl:h-11 max-xl:w-11"
                   >
                     <ChevronLeft className="h-5 w-5" />
                   </button>
@@ -592,15 +781,35 @@ export default function PropertyDetailsClient({
                     type="button"
                     onClick={() => moveImage(1)}
                     aria-label="Next property photo"
-                    className="absolute right-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-slate-800 shadow transition hover:bg-white"
+                    className="absolute right-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-slate-800 shadow transition hover:bg-white max-xl:h-11 max-xl:w-11"
                   >
                     <ChevronRight className="h-5 w-5" />
                   </button>
                 </>
               )}
+              </div>
+              <div className="pointer-events-none absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+              <div className="absolute left-3 right-3 top-3 flex items-start justify-between md:hidden">
+                <span className="rounded-full bg-emerald-700 px-3 py-1.5 text-[11px] font-bold text-white shadow">
+                  For {property.purpose}
+                </span>
+                <span className="rounded-full bg-slate-950/65 px-3 py-1.5 text-xs font-semibold text-white backdrop-blur">
+                  {Math.max(1, validImages.indexOf(currentImage ?? "") + 1)} / {validImages.length}
+                </span>
+              </div>
+              {validImages.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => setLightboxOpen(true)}
+                  className="absolute bottom-3 right-3 inline-flex min-h-9 items-center gap-1.5 rounded-full bg-white/95 px-3 text-xs font-bold text-slate-800 shadow md:hidden"
+                >
+                  <Eye className="h-4 w-4" />
+                  View all photos
+                </button>
+              )}
             </div>
             {validImages.length > 0 && (
-              <div className="flex items-center gap-2 overflow-x-auto p-3 sm:p-4">
+              <div className="hidden items-center gap-2 overflow-x-auto p-3 sm:p-4 md:flex">
                 {validImages.slice(0, 4).map((image) => {
                   const imageIndex = images.indexOf(image);
                   return (
@@ -646,9 +855,15 @@ export default function PropertyDetailsClient({
             )}
           </Card>
 
-          <Card className="flex min-w-0 flex-col justify-between rounded-2xl border-slate-200 p-5 dark:border-slate-800 sm:p-6">
-            <div>
-              <div className="mb-3 flex flex-wrap gap-2">
+          <Card className="flex min-w-0 flex-col justify-between rounded-2xl border-slate-200 p-5 dark:border-slate-800 sm:p-6 max-md:rounded-none max-md:border-0 max-md:px-4 max-md:py-5 max-md:shadow-none">
+            <div className="flex flex-col">
+              <p className="order-1 text-[26px] font-extrabold leading-8 tracking-tight text-[#005c55] dark:text-emerald-300 md:order-4 md:mt-5 md:text-2xl md:text-blue-800 dark:md:text-blue-300">
+                {formatPrice(property.price)}
+                {property.purpose === "Rent" && (
+                  <span className="ml-1 text-sm font-medium text-slate-500">/ month</span>
+                )}
+              </p>
+              <div className="order-2 mb-3 flex flex-wrap gap-2 max-md:mt-3">
                 <span className="rounded-full bg-blue-50 px-3 py-1 text-[11px] font-bold uppercase text-blue-800 dark:bg-blue-950/50 dark:text-blue-300">
                   {property.propertyType}
                 </span>
@@ -656,47 +871,41 @@ export default function PropertyDetailsClient({
                   {availabilityLabel}
                 </span>
               </div>
-              <h1 className="text-xl font-bold leading-snug text-slate-900 dark:text-white sm:text-2xl">
+              <h1 className="text-xl font-bold leading-snug text-slate-900 dark:text-white sm:text-2xl max-md:order-3 max-md:mt-2">
                 {property.title}
               </h1>
               {approximateLocation && (
-                <p className="mt-2 flex items-start gap-2 text-sm text-slate-500 dark:text-slate-400">
-                  <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-blue-700" />
+                <p className="mt-2 flex items-start gap-2 text-sm text-slate-500 dark:text-slate-400 max-md:order-4">
+                  <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-emerald-700" />
                   <span>{approximateLocation}</span>
                 </p>
               )}
-              <p className="mt-5 text-2xl font-extrabold tracking-tight text-blue-800 dark:text-blue-300 sm:text-3xl">
-                {formatPrice(property.price)}
-                {property.purpose === "Rent" && (
-                  <span className="ml-1 text-sm font-medium text-slate-500">/ month</span>
-                )}
-              </p>
             </div>
 
-            <div className="mt-5 grid grid-cols-2 gap-2 border-y border-slate-100 py-4 dark:border-slate-800">
-              <div className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
-                <Maximize2 className="h-4 w-4 shrink-0 text-blue-700" />
+            <div className="mt-5 grid grid-cols-2 gap-2 border-y border-slate-100 py-4 dark:border-slate-800 max-md:mt-4 max-md:grid-cols-4 max-md:gap-1.5 max-md:border-0 max-md:py-0">
+              <div className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300 max-md:flex-col max-md:gap-1 max-md:rounded-xl max-md:bg-[#f2f3ff] max-md:px-1 max-md:py-2 max-md:text-center max-md:text-[11px] dark:max-md:bg-slate-800">
+                <Maximize2 className="h-4 w-4 shrink-0 text-emerald-700 dark:text-emerald-400" />
                 <span>{formatLandArea(property.areaSize, property.areaUnit)}</span>
               </div>
-              <div className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
-                <Home className="h-4 w-4 shrink-0 text-blue-700" />
+              <div className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300 max-md:flex-col max-md:gap-1 max-md:rounded-xl max-md:bg-[#f2f3ff] max-md:px-1 max-md:py-2 max-md:text-center max-md:text-[11px] dark:max-md:bg-slate-800">
+                <Home className="h-4 w-4 shrink-0 text-emerald-700 dark:text-emerald-400" />
                 <span>{property.propertyType}</span>
               </div>
               {isResidential && typeof property.features?.bedrooms === "number" && property.features.bedrooms > 0 && (
-                <div className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
-                  <Bed className="h-4 w-4 shrink-0 text-blue-700" />
+                <div className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300 max-md:flex-col max-md:gap-1 max-md:rounded-xl max-md:bg-[#f2f3ff] max-md:px-1 max-md:py-2 max-md:text-center max-md:text-[11px] dark:max-md:bg-slate-800">
+                  <Bed className="h-4 w-4 shrink-0 text-emerald-700 dark:text-emerald-400" />
                   <span>{property.features.bedrooms} bedrooms</span>
                 </div>
               )}
               {isResidential && typeof property.features?.bathrooms === "number" && property.features.bathrooms > 0 && (
-                <div className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
-                  <Bath className="h-4 w-4 shrink-0 text-blue-700" />
+                <div className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300 max-md:flex-col max-md:gap-1 max-md:rounded-xl max-md:bg-[#f2f3ff] max-md:px-1 max-md:py-2 max-md:text-center max-md:text-[11px] dark:max-md:bg-slate-800">
+                  <Bath className="h-4 w-4 shrink-0 text-emerald-700 dark:text-emerald-400" />
                   <span>{property.features.bathrooms} bathrooms</span>
                 </div>
               )}
             </div>
 
-            <div className="mt-4 flex flex-wrap items-center justify-between gap-2">
+            <div className="mt-4 flex flex-wrap items-center justify-between gap-2 max-md:hidden">
               <span className="text-xs text-slate-500">
                 {listedDate ? `Listed ${listedDate}` : "Listing date unavailable"}
               </span>
@@ -713,17 +922,31 @@ export default function PropertyDetailsClient({
               </div>
             </div>
             {shareMessage && (
-              <p role="status" className="mt-2 text-right text-xs text-slate-500">
+              <p role="status" className="mt-2 text-right text-xs text-slate-500 max-md:hidden">
                 {shareMessage}
               </p>
             )}
-            <p className="mt-2 text-xs text-slate-500">Property ID: {property.id}</p>
+            <p className="mt-2 text-xs text-slate-500 max-md:hidden">Property ID: {property.id}</p>
           </Card>
 
-          <aside id="agent" data-property-section className="min-w-0 scroll-mt-28 md:col-span-2 lg:col-span-1">
-            <Card className="h-full rounded-2xl border-slate-200 p-5 dark:border-slate-800 sm:p-6 lg:sticky lg:top-24">
+          <aside id="agent" data-property-section className="min-w-0 scroll-mt-28 md:col-span-2 lg:col-span-1 max-md:px-4">
+            <Card className="h-full rounded-2xl border-slate-200 p-5 dark:border-slate-800 sm:p-6 lg:sticky lg:top-24 max-md:gap-3 max-md:border-slate-100 max-md:p-4 max-md:shadow-sm">
               <div className="flex items-center gap-3">
-                {agent?.avatarUrl ? (
+                {agentProfileHref ? (
+                  <Link href={agentProfileHref} aria-label={`View ${agent?.name ?? "agent"} profile`}>
+                    {agent?.avatarUrl ? (
+                      <img
+                        src={agent.avatarUrl}
+                        alt={`${agent.name ?? "Agent"} profile`}
+                        className="h-14 w-14 shrink-0 rounded-full bg-slate-100 object-cover"
+                      />
+                    ) : (
+                      <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-blue-50 text-xl font-bold text-blue-800 dark:bg-blue-950 dark:text-blue-300">
+                        {(agent?.name || "A").charAt(0).toUpperCase()}
+                      </div>
+                    )}
+                  </Link>
+                ) : agent?.avatarUrl ? (
                   <img
                     src={agent.avatarUrl}
                     alt={`${agent.name ?? "Agent"} profile`}
@@ -736,7 +959,13 @@ export default function PropertyDetailsClient({
                 )}
                 <div className="min-w-0">
                   <h2 className="flex items-center gap-1.5 text-base font-bold text-slate-900 dark:text-white">
-                    <span className="truncate">{agent?.name || "Agent details unavailable"}</span>
+                    {agentProfileHref ? (
+                      <Link href={agentProfileHref} className="truncate hover:text-emerald-700 dark:hover:text-emerald-300">
+                        {agent?.name || "Agent details unavailable"}
+                      </Link>
+                    ) : (
+                      <span className="truncate">{agent?.name || "Agent details unavailable"}</span>
+                    )}
                     {agent?.isVerified === true && (
                       <span title="Verified agent" aria-label="Verified agent">
                         <CheckCircle2 className="h-4 w-4 shrink-0 fill-blue-700 text-white dark:fill-blue-400 dark:text-slate-950" />
@@ -744,9 +973,9 @@ export default function PropertyDetailsClient({
                     )}
                   </h2>
                   {agent?.agencyName && (
-                    <p className="mt-0.5 truncate text-xs text-slate-600 dark:text-slate-300">
+                    <Link href={`/agencies?name=${encodeURIComponent(agent.agencyName)}`} className="mt-0.5 block truncate text-xs text-slate-600 hover:text-emerald-700 dark:text-slate-300 dark:hover:text-emerald-300">
                       {agent.agencyName}
-                    </p>
+                    </Link>
                   )}
                   {agent?.city && (
                     <p className="mt-0.5 text-xs text-slate-500">{agent.city}</p>
@@ -765,42 +994,55 @@ export default function PropertyDetailsClient({
                       <Phone className="h-4 w-4" />
                       Call agent
                     </TrackedCallLink>
-                    <WhatsAppButton
-                      propertyId={property.id}
-                      phoneNumber={phone}
-                      message={`Salam, I am interested in "${property.title}" listed for ${formatPrice(property.price)} in ${approximateLocation}.`}
-                      className="min-h-11"
-                    >
-                      WhatsApp agent
-                    </WhatsAppButton>
                   </>
                 ) : (
                   <p className="rounded-lg bg-slate-50 p-3 text-sm text-slate-500 dark:bg-slate-800">
                     Contact details are not available for this listing.
                   </p>
                 )}
-                {canChat && (
-                  <>
-                    <PropertyConversationChat
-                      propertyId={property.id}
-                      propertyTitle={property.title}
-                      coverImage={images[0]}
-                      location={approximateLocation}
-                      price={property.price}
-                      availability={availability}
-                      disabled={!isAvailable}
-                    />
-                    <PropertyConversationChat
-                      propertyId={property.id}
-                      propertyTitle={property.title}
-                      coverImage={images[0]}
-                      location={approximateLocation}
-                      price={property.price}
-                      availability={availability}
-                      disabled={!isAvailable}
-                      buttonLabel="Send inquiry"
-                    />
-                  </>
+                {(phone || canChat) && (
+                  <div
+                    className={`grid min-w-0 grid-cols-3 gap-2 [&>button]:h-10 [&>button]:min-h-10 [&>button]:min-w-0 [&>button]:gap-1 [&>button]:rounded-xl [&>button]:px-1 [&>button]:text-[11px] [&>button]:font-semibold [&>button]:whitespace-nowrap [&>button>svg]:h-3.5 [&>button>svg]:w-3.5 ${
+                      showStickyContactActions
+                        ? "max-md:!fixed max-md:!inset-x-0 max-md:!top-16 max-md:!mt-0 max-md:z-[55] max-md:mx-auto max-md:max-w-lg max-md:!border-b max-md:border-slate-200 max-md:bg-white/95 max-md:px-3 max-md:py-2 max-md:shadow-md max-md:backdrop-blur-xl dark:max-md:border-slate-800 dark:max-md:bg-slate-950/95"
+                        : ""
+                    }`}
+                  >
+                    {phone && (
+                      <WhatsAppButton
+                        propertyId={property.id}
+                        phoneNumber={phone}
+                        message={`Salam, I am interested in "${property.title}" listed for ${formatPrice(property.price)} in ${approximateLocation}.`}
+                        className="h-10 min-h-10 min-w-0 gap-1 rounded-xl px-1 text-[11px] font-semibold [&>svg]:h-3.5 [&>svg]:w-3.5"
+                      >
+                        WhatsApp
+                      </WhatsAppButton>
+                    )}
+                    {canChat && (
+                      <>
+                        <PropertyConversationChat
+                          propertyId={property.id}
+                          propertyTitle={property.title}
+                          coverImage={images[0]}
+                          location={approximateLocation}
+                          price={property.price}
+                          availability={availability}
+                          disabled={!isAvailable}
+                          buttonLabel="Chat"
+                        />
+                        <PropertyConversationChat
+                          propertyId={property.id}
+                          propertyTitle={property.title}
+                          coverImage={images[0]}
+                          location={approximateLocation}
+                          price={property.price}
+                          availability={availability}
+                          disabled={!isAvailable}
+                          buttonLabel="Enquiry"
+                        />
+                      </>
+                    )}
+                  </div>
                 )}
               </div>
 
@@ -829,7 +1071,7 @@ export default function PropertyDetailsClient({
 
         <nav
           aria-label="Property detail sections"
-          className="sticky top-20 z-30 -mx-4 mt-6 overflow-x-auto border-y border-slate-200 bg-slate-50/95 px-4 backdrop-blur sm:mx-0 sm:rounded-xl sm:border sm:px-2 dark:border-slate-800 dark:bg-slate-950/95"
+          className="sticky top-20 z-30 -mx-4 mt-6 overflow-x-auto border-y border-slate-200 bg-slate-50/95 px-4 backdrop-blur sm:mx-0 sm:rounded-xl sm:border sm:px-2 dark:border-slate-800 dark:bg-slate-950/95 max-md:hidden"
         >
           <div className="flex min-w-max items-center gap-1 py-2">
             {sectionLinks.map(({ id, label }) => (
@@ -837,10 +1079,10 @@ export default function PropertyDetailsClient({
                 key={id}
                 href={`#${id}`}
                 aria-current={activeSection === id ? "location" : undefined}
-                className={`rounded-lg px-3 py-2 text-xs font-semibold transition-colors sm:text-sm ${
+                className={`rounded-full px-3 py-2 text-xs font-semibold transition-colors sm:text-sm ${
                   activeSection === id
-                    ? "bg-blue-700 text-white"
-                    : "text-slate-600 hover:bg-blue-50 hover:text-blue-800 dark:text-slate-300 dark:hover:bg-blue-950/40 dark:hover:text-blue-300"
+                    ? "bg-emerald-800 text-white"
+                    : "text-slate-600 hover:bg-emerald-50 hover:text-emerald-800 dark:text-slate-300 dark:hover:bg-emerald-950/40 dark:hover:text-emerald-300"
                 }`}
               >
                 {label}
@@ -848,23 +1090,81 @@ export default function PropertyDetailsClient({
             ))}
           </div>
         </nav>
+        <nav
+          aria-label="Property detail sections"
+          className={`fixed inset-x-0 bottom-0 z-[70] border-t border-slate-200 bg-white/95 px-2 pt-2 pb-[calc(env(safe-area-inset-bottom)+0.25rem)] shadow-[0_-8px_24px_rgba(15,23,42,0.08)] backdrop-blur-xl md:hidden dark:border-slate-800 dark:bg-slate-950/95 ${
+            showStickyContactActions ? "" : "hidden"
+          }`}
+        >
+          <div
+            className="mx-auto grid max-w-lg items-center gap-0.5"
+            style={{
+              gridTemplateColumns: "repeat(5, minmax(0, 1fr))",
+            }}
+          >
+            {mobileSectionLinks.map(({ id, label }) => (
+              <a
+                key={id}
+                href={`#${id}`}
+                aria-current={activeMobileSection === id ? "location" : undefined}
+                onClick={(event) => navigateToSection(event, id)}
+                className={`flex min-h-11 min-w-0 items-center justify-center rounded-lg px-0.5 text-center text-[10px] font-semibold leading-tight transition-colors ${
+                  activeMobileSection === id
+                    ? "bg-emerald-800 text-white"
+                    : "text-slate-600 hover:bg-emerald-50 hover:text-emerald-800 dark:text-slate-300 dark:hover:bg-emerald-950/40 dark:hover:text-emerald-300"
+                }`}
+              >
+                <span>{label}</span>
+              </a>
+            ))}
+          </div>
+        </nav>
+
+        {property.description.trim() && (
+          <section
+            id="description"
+            data-property-section
+            className="mt-6 scroll-mt-28 max-md:mx-4 max-md:mt-4"
+          >
+            <Card className="rounded-2xl border-slate-200 p-5 dark:border-slate-800 sm:p-6 max-md:border-0 max-md:p-4 max-md:shadow-sm">
+              <h2 className="text-base font-bold text-slate-900 dark:text-white">Property Description</h2>
+              <p
+                className={`mt-3 whitespace-pre-line text-sm leading-6 text-slate-600 dark:text-slate-300 ${
+                  !showFullDescription ? "line-clamp-7" : ""
+                }`}
+              >
+                {property.description}
+              </p>
+              {property.description.length > 420 && (
+                <button
+                  type="button"
+                  onClick={() => setShowFullDescription((current) => !current)}
+                  className="mt-3 inline-flex items-center gap-1 text-sm font-bold text-emerald-800 hover:text-emerald-900 dark:text-emerald-300"
+                >
+                  {showFullDescription ? "Show Less" : "Read More"}
+                  <ChevronRight className={`h-4 w-4 transition-transform ${showFullDescription ? "-rotate-90" : "rotate-90"}`} />
+                </button>
+              )}
+            </Card>
+          </section>
+        )}
 
         <section
-          id="overview"
+          id="attributes"
           data-property-section
-          className="mt-6 scroll-mt-28"
+          className="mt-6 scroll-mt-28 max-md:mx-4 max-md:mt-4"
         >
-          <Card className="rounded-2xl border-slate-200 p-5 dark:border-slate-800 sm:p-6">
+          <Card className="rounded-2xl border-slate-200 p-5 dark:border-slate-800 sm:p-6 max-md:border-0 max-md:p-4 max-md:shadow-sm">
             <div className="mb-5 flex items-center justify-between gap-3">
               <div>
-                <h2 className="text-lg font-bold text-slate-900 dark:text-white">Property overview</h2>
-                <p className="mt-1 text-sm text-slate-500">Listing details and specifications</p>
+                <h2 className="text-lg font-bold text-slate-900 dark:text-white">Property Specifications</h2>
+                <p className="mt-1 text-sm text-slate-500">Listing details and attributes</p>
               </div>
-              <span className="hidden rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-800 sm:inline-flex dark:bg-blue-950/50 dark:text-blue-300">
+              <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300">
                 {property.purpose}
               </span>
             </div>
-            <dl className="grid grid-cols-2 gap-x-4 gap-y-5 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+            <dl className="grid grid-cols-2 gap-x-4 gap-y-5 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 max-md:gap-x-3 max-md:gap-y-4">
               <div>
                 <dt className="text-xs text-slate-500">Property type</dt>
                 <dd className="mt-1 font-semibold text-slate-900 dark:text-white">{property.propertyType}</dd>
@@ -929,32 +1229,8 @@ export default function PropertyDetailsClient({
           </Card>
         </section>
 
-        <div className="mt-6 grid items-start gap-6 lg:grid-cols-[minmax(0,1.6fr)_minmax(300px,0.9fr)]">
+        <div className="mt-6 grid items-start gap-6 lg:grid-cols-[minmax(0,1.6fr)_minmax(300px,0.9fr)] max-md:mx-4 max-md:mt-4 max-md:grid-cols-1">
           <div className="space-y-6">
-            {property.description.trim() && (
-              <section id="description" data-property-section className="scroll-mt-28">
-                <Card className="rounded-2xl border-slate-200 p-5 dark:border-slate-800 sm:p-6">
-                  <h2 className="text-lg font-bold text-slate-900 dark:text-white">Description</h2>
-                  <p
-                    className={`mt-4 whitespace-pre-line text-sm leading-7 text-slate-600 dark:text-slate-300 ${
-                      !showFullDescription ? "line-clamp-7" : ""
-                    }`}
-                  >
-                    {property.description}
-                  </p>
-                  {property.description.length > 420 && (
-                    <button
-                      type="button"
-                      onClick={() => setShowFullDescription((current) => !current)}
-                      className="mt-3 text-sm font-semibold text-blue-700 hover:text-blue-800 dark:text-blue-300"
-                    >
-                      {showFullDescription ? "Show less" : "Read full description"}
-                    </button>
-                  )}
-                </Card>
-              </section>
-            )}
-
             <Card className="rounded-2xl border-blue-100 bg-blue-50/70 p-5 dark:border-blue-900/60 dark:bg-blue-950/20 sm:p-6">
               <div className="flex items-center gap-2">
                 <ShieldCheck className="h-5 w-5 text-blue-700 dark:text-blue-300" />
@@ -977,48 +1253,119 @@ export default function PropertyDetailsClient({
           </div>
 
           <div className="space-y-6">
-            {(featureRows.length > 0 || selectedCommunity.length > 0 || selectedNearby.length > 0) && (
+            {(featureRows.length > 0 ||
+              selectedCommunity.length > 0 ||
+              selectedNearby.length > 0 ||
+              roomRows.length > 0 ||
+              outdoorRows.length > 0 ||
+              (isResidential && property.features?.furnishing)) && (
               <section id="features" data-property-section className="scroll-mt-28">
-                <Card className="space-y-5 rounded-2xl border-slate-200 p-5 dark:border-slate-800 sm:p-6">
-                  <h2 className="text-lg font-bold text-slate-900 dark:text-white">Amenities & features</h2>
+                  <Card className="space-y-5 rounded-2xl border-slate-200 p-5 dark:border-slate-800 sm:p-6 max-md:space-y-3 max-md:border-0 max-md:p-4 max-md:shadow-sm">
+                    <div className="md:hidden">
+                      <h2 className="text-lg font-bold text-slate-900 dark:text-white">
+                        {totalFeatureCount} Features & amenities
+                      </h2>
+                      <div className="mt-3 space-y-2">
+                        {featureCategories.map((category) => {
+                          const expanded = expandedFeatureCategory === category.id;
+                          const contentId = `feature-category-${category.id}`;
+                          return (
+                            <section
+                              key={category.id}
+                              className="overflow-hidden rounded-xl border border-slate-200 dark:border-slate-800"
+                            >
+                              <button
+                                type="button"
+                                aria-expanded={expanded}
+                                aria-controls={contentId}
+                                onClick={() =>
+                                  setExpandedFeatureCategory(expanded ? null : category.id)
+                                }
+                                className="flex min-h-12 w-full items-center gap-3 px-3 py-2.5 text-left"
+                              >
+                                <span className="min-w-0 flex-1 text-sm font-semibold text-slate-900 dark:text-white">
+                                  {category.title}
+                                </span>
+                                <span className="shrink-0 rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-semibold text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
+                                  {category.features.length}
+                                </span>
+                                <ChevronDown
+                                  aria-hidden="true"
+                                  className={`h-4 w-4 shrink-0 text-slate-500 transition-transform duration-300 ${
+                                    expanded ? "rotate-180" : ""
+                                  }`}
+                                />
+                              </button>
+                              <div
+                                id={contentId}
+                                className={`grid transition-[grid-template-rows] duration-300 ease-in-out ${
+                                  expanded ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
+                                }`}
+                              >
+                                <div className="min-h-0 overflow-hidden">
+                                  <ul className="flex flex-wrap gap-2 border-t border-slate-100 px-3 py-3 dark:border-slate-800">
+                                    {category.features.map((feature) => (
+                                      <li
+                                        key={`${feature.label}-${feature.value ?? ""}`}
+                                        className="max-w-full rounded-lg bg-slate-50 px-2.5 py-1.5 text-xs leading-5 text-slate-700 dark:bg-slate-800/70 dark:text-slate-200"
+                                      >
+                                        <span className="break-words">
+                                          {feature.value !== undefined
+                                            ? `${feature.label} · ${feature.value}`
+                                            : feature.label}
+                                        </span>
+                                      </li>
+                                    ))}
+                                  </ul>
+                                </div>
+                              </div>
+                            </section>
+                          );
+                        })}
+                      </div>
+                    </div>
+                    <div className="hidden md:block">
+                    <div className="flex items-center justify-between gap-2">
+                      <h2 className="text-lg font-bold text-slate-900 dark:text-white">Features & amenities</h2>
+                      <span className="text-xs font-bold text-emerald-800 dark:text-emerald-300">
+                      {featureRows.length + selectedCommunity.length + selectedNearby.length + roomRows.length + outdoorRows.length}
+                    </span>
+                  </div>
                   <FeatureList title="Construction, interior & utilities" rows={featureRows} />
                   <FeatureList title="Community facilities" rows={selectedCommunity} />
                   <FeatureList title="Nearby facilities" rows={selectedNearby} />
-                </Card>
-              </section>
-            )}
-
-            {(roomRows.length > 0 ||
-              outdoorRows.length > 0 ||
-              (isResidential && property.features?.furnishing)) && (
-              <section id="rooms" data-property-section className="scroll-mt-28">
-                <Card className="space-y-5 rounded-2xl border-slate-200 p-5 dark:border-slate-800 sm:p-6">
-                  <h2 className="text-lg font-bold text-slate-900 dark:text-white">Rooms & spaces</h2>
                   {isResidential && property.features?.furnishing && (
                     <p className="text-sm text-slate-600 dark:text-slate-300">
                       Furnishing: <span className="font-semibold text-slate-900 dark:text-white">{property.features.furnishing}</span>
                     </p>
                   )}
                   {roomRows.length > 0 && (
-                    <ul className="grid gap-2 sm:grid-cols-2">
-                      {roomRows.map(({ label, value }) => (
-                        <li key={label} className="flex items-center justify-between gap-2 rounded-lg bg-slate-50 px-3 py-2 text-sm dark:bg-slate-800/70">
-                          <span className="text-slate-600 dark:text-slate-300">{label}</span>
-                          <span className="font-semibold text-slate-900 dark:text-white">{value}</span>
-                        </li>
-                      ))}
-                    </ul>
+                    <div className="space-y-3">
+                      <h3 className="text-sm font-bold text-slate-900 dark:text-white">Rooms & spaces</h3>
+                      <ul className="grid gap-2 sm:grid-cols-2">
+                        {roomRows.map(({ label, value }) => (
+                          <li key={label} className="flex items-center justify-between gap-2 rounded-xl bg-slate-50 px-3 py-2 text-sm dark:bg-slate-800/70">
+                            <span className="text-slate-600 dark:text-slate-300">{label}</span>
+                            <span className="font-semibold text-slate-900 dark:text-white">{value}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
                   )}
                   {outdoorRows.length > 0 && (
-                    <ul className="grid gap-2 sm:grid-cols-2">
-                      {outdoorRows.map(({ label, value }) => (
-                        <li key={label} className="flex items-center justify-between gap-2 rounded-lg bg-slate-50 px-3 py-2 text-sm dark:bg-slate-800/70">
-                          <span className="text-slate-600 dark:text-slate-300">{label}</span>
-                          <span className="font-semibold text-slate-900 dark:text-white">{value}</span>
-                        </li>
-                      ))}
-                    </ul>
+                    <div className="space-y-3">
+                      <h3 className="text-sm font-bold text-slate-900 dark:text-white">Outdoor spaces</h3>
+                      <ul className="grid gap-2 sm:grid-cols-2">
+                        {outdoorRows.map(({ label, value }) => (
+                          <li key={label} className="flex items-center justify-between gap-2 rounded-xl bg-slate-50 px-3 py-2 text-sm dark:bg-slate-800/70">
+                            <span className="text-slate-600 dark:text-slate-300">{label}</span>
+                            <span className="font-semibold text-slate-900 dark:text-white">{value}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
                   )}
+                  </div>
                 </Card>
               </section>
             )}
@@ -1072,12 +1419,12 @@ export default function PropertyDetailsClient({
         <section
           id="similar-properties"
           data-property-section
-          className="mt-10 scroll-mt-28 space-y-4"
+          className="mt-10 scroll-mt-28 space-y-4 max-md:mt-6"
         >
-          <div className="flex flex-wrap items-end justify-between gap-3">
+          <div className="flex flex-wrap items-end justify-between gap-3 max-md:px-4">
             <div>
-              <h2 className="text-xl font-bold text-slate-900 dark:text-white">Similar properties</h2>
-              <p className="mt-1 text-sm text-slate-500">
+              <h2 className="text-xl font-bold text-slate-900 dark:text-white">Similar Properties</h2>
+              <p className="mt-1 text-sm text-slate-500 max-md:text-xs">
                 Published listings in a similar locality, type and price range.
               </p>
             </div>
@@ -1093,13 +1440,13 @@ export default function PropertyDetailsClient({
               Similar properties could not be loaded: {similarError}
             </p>
           ) : similarProperties.length > 0 ? (
-            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4 max-md:-mx-4 max-md:flex max-md:snap-x max-md:snap-mandatory max-md:gap-3 max-md:overflow-x-auto max-md:px-4 max-md:pb-2">
               {similarProperties.map((similarProperty) => (
                 <Card
                   key={similarProperty.id}
-                  className="group min-w-0 overflow-hidden rounded-2xl border-slate-200 p-0 transition-shadow hover:shadow-md dark:border-slate-800"
+                  className="group min-w-0 overflow-hidden rounded-2xl border-slate-200 p-0 transition-shadow hover:shadow-md dark:border-slate-800 max-md:w-[260px] max-md:flex-none max-md:snap-start"
                 >
-                  <div className="relative aspect-[16/10] bg-slate-200 dark:bg-slate-800">
+                  <div className="relative aspect-[16/10] bg-slate-200 dark:bg-slate-800 max-md:h-36 max-md:aspect-auto">
                     {similarProperty.images[0] ? (
                       <img
                         src={similarProperty.images[0]}
@@ -1112,15 +1459,15 @@ export default function PropertyDetailsClient({
                         <Building2 className="h-8 w-8" />
                       </div>
                     )}
-                    <span className="absolute left-3 top-3 rounded-md bg-blue-700 px-2.5 py-1 text-[10px] font-bold uppercase text-white">
+                    <span className="absolute left-3 top-3 rounded-full bg-emerald-800 px-2.5 py-1 text-[10px] font-bold uppercase text-white">
                       For {similarProperty.purpose}
                     </span>
                     <div className="absolute right-3 top-3">
                       <SavePropertyButton propertyId={similarProperty.id} compact />
                     </div>
                   </div>
-                  <div className="space-y-3 p-4">
-                    <p className="truncate text-lg font-bold text-blue-800 dark:text-blue-300">
+                  <div className="space-y-2.5 p-4 max-md:p-3">
+                    <p className="truncate text-lg font-bold text-emerald-800 dark:text-emerald-300 max-md:text-base">
                       {formatPrice(similarProperty.price)}
                       {similarProperty.purpose === "Rent" && (
                         <span className="ml-1 text-xs font-medium text-slate-500">/ month</span>
@@ -1128,7 +1475,7 @@ export default function PropertyDetailsClient({
                     </p>
                     <Link
                       href={`/property/${encodeURIComponent(similarProperty.id)}`}
-                      className="line-clamp-2 min-h-10 text-sm font-semibold text-slate-900 hover:text-blue-700 dark:text-white dark:hover:text-blue-300"
+                      className="line-clamp-2 min-h-10 text-sm font-semibold text-slate-900 hover:text-emerald-700 dark:text-white dark:hover:text-emerald-300"
                     >
                       {similarProperty.title}
                     </Link>
@@ -1149,7 +1496,7 @@ export default function PropertyDetailsClient({
                     </p>
                     <Link
                       href={`/property/${encodeURIComponent(similarProperty.id)}`}
-                      className="inline-flex min-h-10 w-full items-center justify-center rounded-lg border border-blue-200 text-sm font-semibold text-blue-800 transition-colors hover:bg-blue-50 dark:border-blue-900 dark:text-blue-300 dark:hover:bg-blue-950/40"
+                      className="inline-flex min-h-10 w-full items-center justify-center rounded-lg border border-emerald-200 text-sm font-semibold text-emerald-800 transition-colors hover:bg-emerald-50 dark:border-emerald-900 dark:text-emerald-300 dark:hover:bg-emerald-950/40"
                     >
                       View details
                     </Link>

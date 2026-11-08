@@ -9,7 +9,7 @@ export interface FilterPanelProps {
   onFilterChange?: (filters: Record<string, any>) => void;
 }
 
-export function FilterPanel({ onFilterChange }: FilterPanelProps) {
+export function FilterPanel({ onFilterChange: _onFilterChange }: FilterPanelProps) {
   return (
     <Card className="p-5 space-y-6">
       <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">

@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { BuyerRequirementsManager } from "@/components/buyer/BuyerRequirementsManager";
 
 export const metadata = {
@@ -6,5 +7,9 @@ export const metadata = {
 };
 
 export default function BuyerRequirementsPage() {
-  return <BuyerRequirementsManager />;
+  return (
+    <Suspense fallback={<p role="status" className="text-sm text-slate-500">Loading requirements…</p>}>
+      <BuyerRequirementsManager />
+    </Suspense>
+  );
 }

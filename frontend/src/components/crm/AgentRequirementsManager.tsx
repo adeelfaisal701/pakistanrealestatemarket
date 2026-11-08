@@ -37,11 +37,11 @@ function ListingOption({
       className={`w-full rounded-xl border p-3 text-left transition-colors ${
         selected
           ? "border-emerald-500 bg-emerald-500/10"
-          : "border-[#263952] bg-[#08101d] hover:border-[#49627f]"
+          : "border-[#263952] bg-[#08101d] hover:border-[#49627f] max-md:border-[#E2E8F0] max-md:bg-[#F7F9FC]"
       }`}
     >
       <span className="flex flex-wrap items-start justify-between gap-2">
-        <span className="font-semibold text-white">{property.title}</span>
+        <span className="font-semibold text-white max-md:text-[#071B2B]">{property.title}</span>
         {match && (
           <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${
             match === "strong"
@@ -52,10 +52,10 @@ function ListingOption({
           </span>
         )}
       </span>
-      <span className="mt-1 block text-sm text-slate-300">
+      <span className="mt-1 block text-sm text-slate-300 max-md:text-[#475569]">
         {formatPkr(property.price)} · {property.purpose} · {property.propertyType}
       </span>
-      <span className="mt-1 block text-sm text-slate-400">
+      <span className="mt-1 block text-sm text-slate-400 max-md:text-[#64748B]">
         {property.location.area}, {property.location.city} · {property.areaSize} {property.areaUnit}
         {bedrooms != null ? ` · ${bedrooms} beds` : ""}
         {bathrooms != null ? ` · ${bathrooms} baths` : ""}
@@ -147,9 +147,9 @@ export function AgentRequirementsManager() {
     <section className="space-y-5">
       <header className="flex flex-wrap items-end justify-between gap-3">
         <div>
-        <p className="mb-2 text-xs text-slate-400">Agent Workspace / Client Requirements</p>
-        <h1 className="text-2xl font-bold tracking-tight text-white sm:text-3xl">Client Requirements</h1>
-        <p className="mt-1 text-sm text-slate-400">Browse buyer requests and submit existing eligible listings. Buyer identity and contact details are not shared.</p>
+        <p className="mb-2 text-xs text-slate-400 max-md:text-[#64748B]">Agent Workspace / Client Requirements</p>
+        <h1 className="text-2xl font-bold tracking-tight text-white sm:text-3xl max-md:text-[#071B2B]">Client Requirements</h1>
+        <p className="mt-1 text-sm text-slate-400 max-md:text-[#64748B]">Browse buyer requests and submit existing eligible listings. Buyer identity and contact details are not shared.</p>
         </div>
         <Button type="button" variant="outline" disabled={loading} onClick={() => void load()}><RefreshCw className="mr-2 h-4 w-4" />Refresh</Button>
       </header>
@@ -158,29 +158,29 @@ export function AgentRequirementsManager() {
         <Button type="button" variant={tab === "requirements" ? "default" : "outline"} onClick={() => setTab("requirements")}>Available requirements</Button>
         <Button type="button" variant={tab === "offers" ? "default" : "outline"} onClick={() => setTab("offers")}>My offers ({offers.length})</Button>
       </div>
-      {loading ? <p role="status" className="rounded-2xl border border-[#1b2b42] bg-[#0b1626] p-12 text-center text-sm text-slate-400">Loading…</p> : tab === "requirements" ? (
+      {loading ? <p role="status" className="rounded-2xl border border-[#1b2b42] bg-[#0b1626] p-12 text-center text-sm text-slate-400 max-md:border-[#E2E8F0] max-md:bg-white max-md:text-[#64748B]">Loading…</p> : tab === "requirements" ? (
         requirements.length ? <div className="space-y-3">
           {requirements.map((item) => {
             const form = forms[item.id] ?? { propertyId: "", message: "" };
             const { matching, other } = rankRequirementProperties(item, properties);
             return (
-              <article key={item.id} className="rounded-2xl border border-[#1b2b42] bg-[#0b1626] p-5 text-slate-200">
+              <article key={item.id} className="rounded-2xl border border-[#1b2b42] bg-[#0b1626] p-5 text-slate-200 max-md:border-[#E2E8F0] max-md:bg-white max-md:p-4 max-md:text-[#101D32]">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <h2 className="text-lg font-semibold text-white">{item.title}</h2>
-                    <p className="mt-1 flex items-center gap-1.5 text-sm text-slate-400"><MapPin className="h-4 w-4" />{item.location.area}, {item.location.city} · {item.purpose} · {item.propertyType}</p>
-                    <p className="mt-2 text-sm text-slate-300">{[item.minBudget != null && `From ${formatPkr(item.minBudget)}`, item.maxBudget != null && `Up to ${formatPkr(item.maxBudget)}`, item.minArea != null && `${item.minArea}+ ${item.areaUnit ?? ""}`, item.maxArea != null && `max ${item.maxArea} ${item.areaUnit ?? ""}`, item.bedrooms != null && `${item.bedrooms}+ bedrooms`, item.bathrooms != null && `${item.bathrooms}+ bathrooms`].filter(Boolean).join(" · ") || "No budget or area range"}</p>
+                    <h2 className="text-lg font-semibold text-white max-md:text-[#071B2B]">{item.title}</h2>
+                    <p className="mt-1 flex items-center gap-1.5 text-sm text-slate-400 max-md:text-[#64748B]"><MapPin className="h-4 w-4" />{item.location.area}, {item.location.city} · {item.purpose} · {item.propertyType}</p>
+                    <p className="mt-2 text-sm text-slate-300 max-md:text-[#475569]">{[item.minBudget != null && `From ${formatPkr(item.minBudget)}`, item.maxBudget != null && `Up to ${formatPkr(item.maxBudget)}`, item.minArea != null && `${item.minArea}+ ${item.areaUnit ?? ""}`, item.maxArea != null && `max ${item.maxArea} ${item.areaUnit ?? ""}`, item.bedrooms != null && `${item.bedrooms}+ bedrooms`, item.bathrooms != null && `${item.bathrooms}+ bathrooms`].filter(Boolean).join(" · ") || "No budget or area range"}</p>
                   </div>
                   <span className="rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-xs text-emerald-300">{item.offerCount ?? 0} offers</span>
                 </div>
-                <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-slate-300">{item.description}</p>
+                <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-slate-300 max-md:text-[#475569]">{item.description}</p>
                 <div className="mt-4">
                   {item.hasSubmittedOffer ? <p className="text-sm font-medium text-emerald-300">You have already submitted an offer.</p> : properties.length === 0 ? <p className="text-sm text-amber-300">You need an active published listing before you can offer a property.</p> : (
                     <>
                       {!openId || openId !== item.id ? <Button size="sm" onClick={() => setOpenId(item.id)}>Offer a listing</Button> : (
-                        <div className="space-y-3 rounded-xl border border-[#263952] bg-[#08101d] p-4">
+                        <div className="space-y-3 rounded-xl border border-[#263952] bg-[#08101d] p-4 max-md:border-[#E2E8F0] max-md:bg-[#F7F9FC]">
                           <section className="space-y-2" aria-label="Matching listings">
-                            <h3 className="font-semibold text-white">Matching Listings</h3>
+                            <h3 className="font-semibold text-white max-md:text-[#071B2B]">Matching Listings</h3>
                             {!matching.some(({ strength }) => strength === "strong") && (
                               <p className="rounded-lg bg-amber-500/10 p-3 text-sm text-amber-200">
                                 No exact matches found. You can still offer other available properties below.
@@ -199,8 +199,8 @@ export function AgentRequirementsManager() {
                             )}
                           </section>
                           <section className="space-y-2" aria-label="Other available listings">
-                            <h3 className="font-semibold text-white">Other Available Listings</h3>
-                            <p className="text-xs text-slate-400">These listings may not fully match the buyer’s requirements, but you can still offer any of them.</p>
+                            <h3 className="font-semibold text-white max-md:text-[#071B2B]">Other Available Listings</h3>
+                            <p className="text-xs text-slate-400 max-md:text-[#64748B]">These listings may not fully match the buyer’s requirements, but you can still offer any of them.</p>
                             {other.length ? other.map((property) => (
                               <ListingOption
                                 key={property.id}
@@ -213,7 +213,7 @@ export function AgentRequirementsManager() {
                             )}
                           </section>
                           <label className="block text-sm font-medium">Optional message
-                            <textarea maxLength={1500} rows={3} className="mt-1.5 w-full rounded-xl border border-[#33455d] bg-[#0b1626] p-3 text-sm text-white" value={form.message} onChange={(event) => updateForm(item.id, "message", event.target.value)} />
+                            <textarea maxLength={1500} rows={3} className="mt-1.5 w-full rounded-xl border border-[#33455d] bg-[#0b1626] p-3 text-sm text-white max-md:border-[#CBD5E1] max-md:bg-white max-md:text-[#101D32]" value={form.message} onChange={(event) => updateForm(item.id, "message", event.target.value)} />
                           </label>
                           <div className="flex gap-2"><Button size="sm" disabled={submitting === item.id || !form.propertyId} onClick={() => void submit(item)}><Send className="mr-1.5 h-4 w-4" />{submitting === item.id ? "Sending…" : "Submit offer"}</Button><Button size="sm" variant="outline" onClick={() => setOpenId("")}>Cancel</Button></div>
                         </div>
@@ -224,10 +224,10 @@ export function AgentRequirementsManager() {
               </article>
             );
           })}
-        </div> : <p className="rounded-2xl border border-[#1b2b42] bg-[#0b1626] p-12 text-center text-sm text-slate-400">No published requirements are currently available.</p>
+        </div> : <p className="rounded-2xl border border-[#1b2b42] bg-[#0b1626] p-12 text-center text-sm text-slate-400 max-md:border-[#E2E8F0] max-md:bg-white max-md:text-[#64748B]">No published requirements are currently available.</p>
       ) : offers.length ? (
-        <div className="space-y-3">{offers.map((offer) => <article key={offer.id} className="rounded-2xl border border-[#1b2b42] bg-[#0b1626] p-5"><div className="flex flex-wrap justify-between gap-2"><h2 className="font-semibold text-white">{offer.property?.title ?? "Property offer"}</h2><span className="rounded-full bg-slate-800 px-3 py-1 text-xs capitalize text-slate-300">{offer.status}</span></div><p className="mt-1 text-sm text-slate-400">For: {offer.requirement?.title ?? "Requirement"}</p><p className="mt-2 whitespace-pre-wrap text-sm text-slate-300">{offer.message || "No message included."}</p><p className="mt-2 text-xs text-slate-500">Submitted {new Date(offer.createdAt).toLocaleString()}</p>{offer.status === "accepted" && offer.conversationId && <Link href={`/agent/calls?conversation=${encodeURIComponent(offer.conversationId)}`} className="mt-3 inline-flex min-h-9 items-center rounded-md border border-[#49627f] px-3 text-sm font-medium text-white hover:bg-[#13243a]">Continue conversation</Link>}</article>)}</div>
-      ) : <p className="rounded-2xl border border-[#1b2b42] bg-[#0b1626] p-12 text-center text-sm text-slate-400">You haven’t submitted any offers.</p>}
+        <div className="space-y-3">{offers.map((offer) => <article key={offer.id} className="rounded-2xl border border-[#1b2b42] bg-[#0b1626] p-5 max-md:border-[#E2E8F0] max-md:bg-white max-md:p-4 max-md:shadow-sm"><div className="flex flex-wrap justify-between gap-2"><h2 className="font-semibold text-white max-md:text-[#071B2B]">{offer.property?.title ?? "Property offer"}</h2><span className="rounded-full bg-slate-800 px-3 py-1 text-xs capitalize text-slate-300 max-md:bg-[#F1F5F9] max-md:text-[#475569]">{offer.status}</span></div><p className="mt-1 text-sm text-slate-400 max-md:text-[#64748B]">For: {offer.requirement?.title ?? "Requirement"}</p><p className="mt-2 whitespace-pre-wrap text-sm text-slate-300 max-md:text-[#475569]">{offer.message || "No message included."}</p><p className="mt-2 text-xs text-slate-500 max-md:text-[#64748B]">Submitted {new Date(offer.createdAt).toLocaleString()}</p>{offer.status === "accepted" && offer.conversationId && <Link href={`/agent/calls?conversation=${encodeURIComponent(offer.conversationId)}`} className="mt-3 inline-flex min-h-10 items-center rounded-md border border-[#49627f] px-3 text-sm font-medium text-white hover:bg-[#13243a] max-md:border-[#E2E8F0] max-md:text-[#0B2538]">Continue conversation</Link>}</article>)}</div>
+      ) : <p className="rounded-2xl border border-[#1b2b42] bg-[#0b1626] p-12 text-center text-sm text-slate-400 max-md:border-[#E2E8F0] max-md:bg-white max-md:text-[#64748B]">You haven’t submitted any offers.</p>}
     </section>
   );
 }

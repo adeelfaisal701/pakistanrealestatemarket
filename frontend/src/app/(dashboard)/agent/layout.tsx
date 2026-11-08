@@ -17,18 +17,18 @@ export default function AgentDashboardLayout({
 }) {
   return (
     <AgentAccessGuard>
-      <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col">
+      <div className="agent-crm-shell min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col max-md:bg-white">
         {/* Clears legacy local storage and scopes transient data to this account. */}
         <AgentStoreHydrator />
         <AgentDashboardDataLoader />
 
-        {/* Sidebar (desktop) + header and bottom nav (mobile) */}
+        {/* Sidebar (desktop) and menu navigation (mobile) */}
         <AgentSidebar />
 
         {/* Main Agent Area */}
-        <div className="flex-1 lg:pl-72 flex flex-col pb-20 lg:pb-8">
+        <div className="flex-1 lg:pl-72 flex flex-col pb-0 lg:pb-8">
           <AgentTopBar />
-          <main className="flex-1 px-4 sm:px-6 lg:px-8 py-6 max-w-7xl w-full mx-auto">
+          <main className="agent-crm-main mx-auto w-full max-w-7xl flex-1 px-4 py-6 sm:px-6 lg:px-8 max-md:px-3 max-md:py-4">
             {children}
           </main>
         </div>

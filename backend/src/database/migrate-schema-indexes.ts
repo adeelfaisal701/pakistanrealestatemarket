@@ -24,6 +24,11 @@ import { Property, PropertySchema } from '../modules/properties/schemas/property
 import { ClientRequirement, ClientRequirementSchema } from '../modules/requirements/schemas/client-requirement.schema';
 import { RequirementOffer, RequirementOfferSchema } from '../modules/requirements/schemas/requirement-offer.schema';
 import { User, UserSchema } from '../modules/users/schemas/user.schema';
+import { Agency, AgencySchema } from '../modules/agencies/schemas/agency.schema';
+import {
+  DevelopmentProject,
+  DevelopmentProjectSchema,
+} from '../modules/projects/schemas/development-project.schema';
 
 export const APPROVED_INDEX_SCHEMAS = [
   { modelName: AdminActivity.name, schema: AdminActivitySchema, purpose: 'admin activity filtering by actor/action/entity and reverse-chronological audit listing' },
@@ -44,6 +49,8 @@ export const APPROVED_INDEX_SCHEMAS = [
   { modelName: ClientRequirement.name, schema: ClientRequirementSchema, purpose: 'buyer requirement lists and status/purpose matching queries' },
   { modelName: RequirementOffer.name, schema: RequirementOfferSchema, purpose: 'one offer per agent/requirement and agent offer lists' },
   { modelName: User.name, schema: UserSchema, purpose: 'unique normalized email authentication and agent/account-status filtering' },
+  { modelName: Agency.name, schema: AgencySchema, purpose: 'unique normalized agency profile lookup' },
+  { modelName: DevelopmentProject.name, schema: DevelopmentProjectSchema, purpose: 'unique project slug lookup and ordered published/featured project queries' },
 ];
 
 function readArguments(args: string[]) {

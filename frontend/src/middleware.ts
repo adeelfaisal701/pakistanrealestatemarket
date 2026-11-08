@@ -31,19 +31,6 @@ export function middleware(request: NextRequest) {
       return NextResponse.rewrite(loginUrl);
     }
 
-    if (pathname === "/admin-login") {
-      if (!ADMIN_HOST) {
-        return new NextResponse("Admin hostname is not configured.", {
-          status: 404,
-        });
-      }
-
-      const loginUrl = request.nextUrl.clone();
-      loginUrl.hostname = ADMIN_HOST;
-      loginUrl.pathname = "/login";
-      return NextResponse.redirect(loginUrl);
-    }
-
     if (pathname === "/register" || pathname === "/agent/register") {
       const loginUrl = request.nextUrl.clone();
       loginUrl.pathname = "/login";

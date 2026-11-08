@@ -41,6 +41,94 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+.agent-crm-shell {
+  --agent-mobile-nav-height: 69px;
+}
+
+@media (max-width: 1023px) {
+  .agent-crm-shell {
+    min-height: 100vh;
+    min-height: 100dvh;
+  }
+
+  .agent-crm-shell .agent-crm-main {
+    padding-bottom: calc(var(--agent-mobile-nav-height) + env(safe-area-inset-bottom));
+  }
+
+  .agent-crm-shell .agent-mobile-chat-panel {
+    bottom: calc(var(--agent-mobile-nav-height) + env(safe-area-inset-bottom));
+  }
+
+  .buyer-shell {
+    --buyer-mobile-nav-height: 69px;
+    min-height: 100vh;
+    min-height: 100dvh;
+  }
+
+  .buyer-shell .buyer-main {
+    padding-bottom: calc(var(--buyer-mobile-nav-height) + env(safe-area-inset-bottom));
+  }
+
+  .buyer-recommendations {
+    min-width: 0;
+  }
+
+  .buyer-recommendations-list {
+    display: flex;
+    gap: 12px;
+    margin-right: -0.875rem;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    padding-right: 0.875rem;
+    scroll-padding-inline: 0;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .buyer-recommendations-list::-webkit-scrollbar {
+    display: none;
+  }
+
+  .buyer-recommendations-slide {
+    flex: 0 0 84%;
+    min-width: 0;
+    scroll-snap-align: start;
+  }
+
+  .buyer-recommendations-slide > article {
+    display: flex;
+    height: 100%;
+    flex-direction: column;
+  }
+
+  .buyer-recommendations-slide > article > div:first-child {
+    height: 150px;
+    aspect-ratio: auto;
+    flex: none;
+  }
+
+  .buyer-recommendations-slide > article > div:nth-child(2) {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+  }
+
+  .buyer-recommendations-slide > article > div:nth-child(2) > a {
+    margin-top: auto;
+  }
+}
+
+@media (min-width: 640px) and (max-width: 1023px) {
+  .buyer-recommendations-slide {
+    flex-basis: 62%;
+  }
+
+  .buyer-recommendations-slide > article > div:first-child {
+    height: 190px;
+  }
+}
+
 /* Custom scrollbar */
 ::-webkit-scrollbar {
   width: 6px;

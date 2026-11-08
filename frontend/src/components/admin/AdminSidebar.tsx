@@ -12,13 +12,13 @@ import {
   Gavel,
   Home,
   LayoutDashboard,
+  Landmark,
   Menu,
   Megaphone,
   MessageSquareWarning,
   Search,
   Shield,
   ShieldCheck,
-  UserCheck,
   Users,
   X,
 } from "lucide-react";
@@ -45,6 +45,12 @@ const navigation = [
     href: "/admin/properties",
     icon: Gavel,
     description: "Approve or hide listings",
+  },
+  {
+    name: "Project Management",
+    href: "/admin/projects",
+    icon: Landmark,
+    description: "Independent development projects",
   },
   {
     name: "Client Requirements",
@@ -105,6 +111,7 @@ function getStoredAdmin(): AdminIdentity | null {
 export function AdminSidebar() {
   const pathname = usePathname();
   const router = useRouter();
+  const isOverview = pathname === "/admin";
   const [menuOpen, setMenuOpen] = useState(false);
   const [admin, setAdmin] = useState<AdminIdentity | null>(null);
   const [globalSearch, setGlobalSearch] = useState("");
@@ -245,17 +252,42 @@ export function AdminSidebar() {
         </div>
       </aside>
 
-      <header className="sticky top-0 z-30 flex min-h-16 items-center gap-3 border-b border-slate-800/90 bg-[#0b1426]/95 px-3 text-white backdrop-blur lg:ml-64 lg:px-5">
+      <header className={cn(
+        "sticky top-0 z-30 flex min-h-16 items-center gap-3 border-b border-slate-800/90 bg-[#0b1426]/95 px-3 text-white backdrop-blur lg:ml-64 lg:px-5",
+        isOverview && "max-md:min-h-[60px] max-md:border-slate-200 max-md:bg-white max-md:px-3 max-md:text-[#101D32]",
+      )}>
         <button
           type="button"
           aria-label={menuOpen ? "Close admin navigation" : "Open admin navigation"}
           aria-expanded={menuOpen}
           onClick={() => setMenuOpen((current) => !current)}
-          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-slate-300 transition-colors hover:bg-slate-800 hover:text-white lg:hidden"
+          className={cn(
+            "flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-slate-300 transition-colors hover:bg-slate-800 hover:text-white lg:hidden",
+            isOverview && "max-md:order-3 max-md:ml-1 max-md:text-slate-700 max-md:hover:bg-slate-100",
+          )}
         >
           {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
         </button>
-        <form onSubmit={submitSearch} role="search" className="flex min-w-0 max-w-3xl flex-1 items-center">
+        <Link
+          href="/admin"
+          aria-label="EstatePro Admin home"
+          className={cn(
+            "hidden items-center gap-2",
+            isOverview && "max-md:flex max-md:order-1",
+          )}
+        >
+          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#006B45] text-white">
+            <Home className="h-5 w-5" />
+          </span>
+          <span className="leading-tight">
+            <span className="block text-[15px] font-extrabold tracking-tight text-[#006B45]">EstatePro</span>
+            <span className="block text-[10px] text-slate-500">Admin Dashboard</span>
+          </span>
+        </Link>
+        <form onSubmit={submitSearch} role="search" className={cn(
+          "flex min-w-0 max-w-3xl flex-1 items-center",
+          isOverview && "max-md:hidden",
+        )}>
           <label className="flex h-10 w-full items-center gap-2 rounded-full border border-slate-700/80 bg-slate-800/70 px-4 text-slate-400 transition-colors focus-within:border-blue-500/70 focus-within:bg-slate-800">
             <Search className="h-4 w-4 shrink-0" />
             <input
@@ -269,7 +301,10 @@ export function AdminSidebar() {
           </label>
         </form>
 
-        <div className="ml-auto flex shrink-0 items-center gap-2 sm:gap-3">
+        <div className={cn(
+          "ml-auto flex shrink-0 items-center gap-2 sm:gap-3",
+          isOverview && "max-md:order-2 max-md:ml-auto",
+        )}>
           <span className="hidden text-right sm:block">
             <span className="block text-xs font-semibold text-slate-100">{admin?.name ?? "Admin"}</span>
             <span className="block text-[10px] text-slate-400">{admin?.email ?? "Administrator"}</span>

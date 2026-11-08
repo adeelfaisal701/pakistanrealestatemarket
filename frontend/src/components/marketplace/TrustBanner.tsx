@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Clock, ShieldCheck, UserCheck, CheckCircle2, Zap } from 'lucide-react';
+import { Clock, ShieldCheck, UserCheck, Zap } from 'lucide-react';
 
 export default function TrustBanner() {
   const differentiators = [

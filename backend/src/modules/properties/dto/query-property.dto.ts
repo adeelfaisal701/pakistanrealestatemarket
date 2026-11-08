@@ -4,6 +4,7 @@ import {
   IsInt,
   IsNumber,
   IsOptional,
+  IsMongoId,
   IsString,
   Max,
   MaxLength,
@@ -14,6 +15,16 @@ import { Type } from 'class-transformer';
 import { AreaUnit, PropertyPurpose, PropertyType } from '../schemas/property.schema';
 
 export class QueryPropertyDto {
+  @IsOptional()
+  @IsMongoId()
+  agentId?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(150)
+  @Matches(/\S/, { message: 'agencyName must not be blank.' })
+  agencyName?: string;
+
   @IsOptional()
   @IsString()
   @MaxLength(100)
@@ -84,7 +95,7 @@ export class QueryPropertyDto {
   @IsInt()
   @Min(1)
   @Max(100)
-  limit?: number = 10;
+  limit?: number = 20;
 
   @IsOptional()
   @IsIn(['price_asc', 'price_desc', 'newest', 'featured'])

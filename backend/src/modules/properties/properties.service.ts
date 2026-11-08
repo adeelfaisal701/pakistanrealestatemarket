@@ -552,6 +552,8 @@ export class PropertiesService {
     const {
       city,
       area,
+      agentId,
+      agencyName,
       purpose,
       propertyType,
       minPrice,
@@ -562,7 +564,7 @@ export class PropertiesService {
       bedrooms,
       feature,
       page = 1,
-      limit = 10,
+      limit = 20,
       sortBy = 'newest',
     } = queryDto;
 
@@ -575,6 +577,16 @@ export class PropertiesService {
 
     if (city) filter['location.city'] = new RegExp(escapeRegExp(city), 'i');
     if (area) filter['location.area'] = new RegExp(escapeRegExp(area), 'i');
+    if (agentId && agencyName) {
+      throw new BadRequestException('Filter listings by an agent or an agency, not both.');
+    }
+    if (agentId) filter.agentId = new Types.ObjectId(agentId);
+    if (agencyName) {
+      const agentIds = await this.usersService.findPublicAgentIdsForAgency(agencyName);
+      filter.agentId = {
+        $in: agentIds.map((id) => new Types.ObjectId(id)),
+      };
+    }
     if (purpose) filter.purpose = purpose;
     if (propertyType) filter.propertyType = propertyType;
     if (areaUnit) filter.areaUnit = areaUnit;
@@ -625,12 +637,18 @@ export class PropertiesService {
     if (sortBy === 'price_desc') sort = { price: -1 };
     if (sortBy === 'featured') sort = { isFeatured: -1, createdAt: -1 };
 
+    let activeAdvertisements: Array<{
+      _id: Types.ObjectId;
+      propertyId: Types.ObjectId;
+    }> = [];
     if (this.advertisementModel) {
-      const activeAds = await this.advertisementModel
+      activeAdvertisements = await this.advertisementModel
         .find({ status: PropertyAdvertisementStatus.PUBLISHED })
-        .select('propertyId')
+        .select('_id propertyId')
         .exec();
-      filter._id = { $in: activeAds.map((ad) => ad.propertyId) };
+      filter._id = {
+        $in: activeAdvertisements.map((ad) => ad.propertyId),
+      };
     }
 
     const skip = (page - 1) * limit;
@@ -645,9 +663,51 @@ export class PropertiesService {
         .exec(),
       this.propertyModel.countDocuments(filter).exec(),
     ]);
+    const activeAdvertisementByProperty = new Map(
+      activeAdvertisements.map((ad) => [String(ad.propertyId), String(ad._id)]),
+    );
+    const pageAdvertisementIds = items
+      .map((property) => activeAdvertisementByProperty.get(String(property._id)))
+      .filter((id): id is string => id !== undefined)
+      .map((id) => new Types.ObjectId(id));
+    const propertyViewsByAdvertisement = new Map<string, number>();
+    if (pageAdvertisementIds.length > 0) {
+      const propertyViewCounts = await this.analyticsEventModel
+        .aggregate<{
+          _id: Types.ObjectId;
+          count: number;
+        }>([
+          {
+            $match: {
+              advertisementId: { $in: pageAdvertisementIds },
+              type: PropertyAnalyticsEventType.PROPERTY_VIEW,
+            },
+          },
+          {
+            $group: {
+              _id: '$advertisementId',
+              count: { $sum: 1 },
+            },
+          },
+        ])
+        .exec();
+      for (const item of propertyViewCounts) {
+        propertyViewsByAdvertisement.set(String(item._id), item.count);
+      }
+    }
 
     return {
-      data: items.map(toPublicProperty),
+      data: items.map((property): Record<string, unknown> => {
+        const advertisementId = activeAdvertisementByProperty.get(
+          String(property._id),
+        );
+        return {
+          ...toPublicProperty(property),
+          viewsCount: advertisementId
+            ? propertyViewsByAdvertisement.get(advertisementId) ?? 0
+            : 0,
+        };
+      }),
       meta: {
         total,
         page,

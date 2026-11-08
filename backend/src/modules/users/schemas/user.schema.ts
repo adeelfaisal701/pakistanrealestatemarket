@@ -42,6 +42,9 @@ export class User {
   @Prop({ default: null })
   agencyName?: string;
 
+  @Prop({ type: String, trim: true, maxlength: 500 })
+  agencyAddress?: string;
+
   @Prop({ default: null })
   city?: string;
 

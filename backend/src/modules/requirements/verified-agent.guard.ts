@@ -27,6 +27,11 @@ export class VerifiedAgentGuard implements CanActivate {
     if (!userId || request.user?.role !== UserRole.AGENT) {
       throw new ForbiddenException('Only verified agents can access client requirements.');
     }
+    if (request.user.profileComplete !== true) {
+      throw new ForbiddenException(
+        'Complete your agent profile before accessing agent features.',
+      );
+    }
 
     const agent = await this.userModel
       .findOne({

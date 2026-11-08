@@ -93,20 +93,20 @@ const ADVERTISEMENT_LABELS: Record<AdvertisementStatus, string> = {
 };
 
 const INVENTORY_BADGE_STYLES: Record<InventoryStatus, string> = {
-  available: "border-emerald-500/25 bg-emerald-500/10 text-emerald-300",
-  sold: "border-slate-500/30 bg-slate-500/10 text-slate-300",
-  rented: "border-sky-500/25 bg-sky-500/10 text-sky-300",
-  reserved: "border-amber-500/25 bg-amber-500/10 text-amber-300",
-  unavailable: "border-rose-500/25 bg-rose-500/10 text-rose-300",
+  available: "border-emerald-500/25 bg-emerald-500/10 text-emerald-300 max-md:bg-[#EAF7F2] max-md:text-[#008F68]",
+  sold: "border-slate-500/30 bg-slate-500/10 text-slate-300 max-md:bg-slate-100 max-md:text-slate-600",
+  rented: "border-sky-500/25 bg-sky-500/10 text-sky-300 max-md:bg-sky-50 max-md:text-sky-700",
+  reserved: "border-amber-500/25 bg-amber-500/10 text-amber-300 max-md:bg-amber-50 max-md:text-amber-700",
+  unavailable: "border-rose-500/25 bg-rose-500/10 text-rose-300 max-md:bg-rose-50 max-md:text-rose-700",
 };
 
 const ADVERTISEMENT_BADGE_STYLES: Record<AdvertisementStatus, string> = {
-  draft: "border-slate-500/30 bg-slate-500/10 text-slate-300",
-  pending_review: "border-amber-500/25 bg-amber-500/10 text-amber-300",
-  published: "border-blue-500/25 bg-blue-500/10 text-blue-300",
-  rejected: "border-rose-500/25 bg-rose-500/10 text-rose-300",
-  paused: "border-orange-500/25 bg-orange-500/10 text-orange-300",
-  ended: "border-slate-500/30 bg-slate-500/10 text-slate-300",
+  draft: "border-slate-500/30 bg-slate-500/10 text-slate-300 max-md:bg-slate-100 max-md:text-slate-600",
+  pending_review: "border-amber-500/25 bg-amber-500/10 text-amber-300 max-md:bg-amber-50 max-md:text-amber-700",
+  published: "border-blue-500/25 bg-blue-500/10 text-blue-300 max-md:bg-blue-50 max-md:text-blue-700",
+  rejected: "border-rose-500/25 bg-rose-500/10 text-rose-300 max-md:bg-rose-50 max-md:text-rose-700",
+  paused: "border-orange-500/25 bg-orange-500/10 text-orange-300 max-md:bg-orange-50 max-md:text-orange-700",
+  ended: "border-slate-500/30 bg-slate-500/10 text-slate-300 max-md:bg-slate-100 max-md:text-slate-600",
 };
 
 const FIELD_CLASS =
@@ -136,7 +136,7 @@ function PropertyCover({ listing }: { listing: ApiProperty }) {
 
   if (!cover || failed) {
     return (
-      <div className="flex aspect-[16/10] w-full items-center justify-center bg-[#111e2f] text-slate-500 sm:aspect-[4/3] lg:aspect-auto lg:h-full lg:min-h-44">
+      <div className="flex aspect-[16/10] w-full items-center justify-center bg-[#111e2f] text-slate-500 sm:aspect-[4/3] lg:aspect-auto lg:h-full lg:min-h-44 max-md:aspect-auto max-md:min-h-[104px] max-md:rounded-xl max-md:bg-slate-100 max-lg:h-full max-lg:min-h-[120px] max-lg:aspect-auto">
         <div className="flex flex-col items-center gap-2">
           {cover ? (
             <AlertCircle className="h-7 w-7" aria-hidden="true" />
@@ -154,7 +154,7 @@ function PropertyCover({ listing }: { listing: ApiProperty }) {
     <img
       src={cover}
       alt={`${listing.title} property`}
-      className="aspect-[16/10] w-full bg-[#111e2f] object-cover sm:aspect-[4/3] lg:aspect-auto lg:h-full lg:min-h-44"
+      className="aspect-[16/10] w-full bg-[#111e2f] object-cover sm:aspect-[4/3] lg:aspect-auto lg:h-full lg:min-h-44 max-md:aspect-auto max-md:min-h-[104px] max-md:rounded-xl max-lg:h-full max-lg:min-h-[120px] max-lg:aspect-auto"
       onError={() => setFailed(true)}
     />
   );
@@ -346,34 +346,34 @@ export default function AgentListingsPage() {
 
   return (
     <DarkCanvas>
-      <div className="space-y-6 pb-8">
-        <header className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
+      <div className="space-y-6 pb-8 max-lg:space-y-4">
+        <header className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between max-lg:gap-3">
           <div className="min-w-0">
-            <div className="flex flex-wrap items-center gap-3">
-              <h1 className="text-3xl font-bold tracking-tight text-white">My Listings</h1>
+            <div className="flex flex-wrap items-center gap-3 max-lg:gap-2">
+              <h1 className="text-3xl font-bold tracking-tight text-white max-md:text-2xl max-md:text-[#071B2B]">My Listings</h1>
               {!loading && !error && (
-                <span className="inline-flex h-7 items-center rounded-full border border-[#2b405b] bg-[#101c2c] px-2.5 text-xs font-semibold text-slate-300">
+                <span className="inline-flex h-7 items-center rounded-full border border-[#2b405b] bg-[#101c2c] px-2.5 text-xs font-semibold text-slate-300 max-md:border-[#E2E8F0] max-md:bg-[#F7F9FC] max-md:text-[#64748B]">
                   {listings.length} {listings.length === 1 ? "property" : "properties"}
                 </span>
               )}
             </div>
-            <p className="mt-2 text-sm text-slate-400 sm:text-base">
+            <p className="mt-2 text-sm text-slate-400 sm:text-base max-md:text-[#64748B] max-lg:mt-1.5">
               Manage your complete property inventory in one place.
             </p>
           </div>
-          <div className="flex flex-wrap gap-2.5">
+          <div className="flex flex-wrap gap-2.5 max-lg:flex-nowrap max-lg:gap-2">
             <button
               type="button"
               onClick={() => void loadListings()}
               disabled={loading}
-              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-[#2a3d56] bg-[#0d1828] px-4 text-sm font-semibold text-slate-200 transition-colors hover:border-[#3a526f] hover:bg-[#132238] disabled:cursor-not-allowed disabled:opacity-50"
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-[#2a3d56] bg-[#0d1828] px-4 text-sm font-semibold text-slate-200 transition-colors hover:border-[#3a526f] hover:bg-[#132238] disabled:cursor-not-allowed disabled:opacity-50 max-md:border-[#E2E8F0] max-md:bg-white max-md:text-[#0B2538] max-lg:min-w-0 max-lg:flex-1 max-lg:px-3"
             >
               <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
               Refresh
             </button>
             <Link
               href="/agent/add-property"
-              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 text-sm font-semibold text-white shadow-lg shadow-emerald-950/25 transition-colors hover:bg-emerald-500"
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 text-sm font-semibold text-white shadow-lg shadow-emerald-950/25 transition-colors hover:bg-emerald-500 max-lg:min-w-0 max-lg:flex-1 max-lg:px-3"
             >
               <Plus className="h-4 w-4" />
               Add Listing
@@ -384,7 +384,7 @@ export default function AgentListingsPage() {
         {actionError && (
           <p
             role="alert"
-            className="flex items-start gap-2.5 rounded-xl border border-amber-700/40 bg-amber-950/30 px-4 py-3 text-sm text-amber-200"
+            className="flex items-start gap-2.5 rounded-xl border border-amber-700/40 bg-amber-950/30 px-4 py-3 text-sm text-amber-200 max-md:border-amber-200 max-md:bg-amber-50 max-md:text-amber-800"
           >
             <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
             {actionError}
@@ -392,9 +392,9 @@ export default function AgentListingsPage() {
         )}
 
         {!loading && !error && listings.length > 0 && (
-          <section className={`${PANEL} p-4 sm:p-5`} aria-label="Search and filter listings">
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-5">
-              <label className="relative sm:col-span-2 xl:col-span-2">
+          <section className={`${PANEL} p-4 sm:p-5 max-lg:rounded-xl max-lg:p-3`} aria-label="Search and filter listings">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-5 max-lg:grid-cols-2 max-lg:gap-2">
+              <label className="relative sm:col-span-2 xl:col-span-2 max-lg:col-span-2">
                 <span className="sr-only">Search listings</span>
                 <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
                 <input
@@ -402,7 +402,7 @@ export default function AgentListingsPage() {
                   value={search}
                   onChange={(event) => setSearch(event.target.value)}
                   placeholder="Search title, location or property ID"
-                  className={`${FIELD_CLASS} pl-10`}
+                  className={`${FIELD_CLASS} pl-10 max-md:border-[#CBD5E1] max-md:bg-white max-md:text-[#101D32]`}
                 />
               </label>
               <label>
@@ -412,7 +412,7 @@ export default function AgentListingsPage() {
                     aria-label="Filter by inventory status"
                     value={inventoryFilter}
                     onChange={(event) => setInventoryFilter(event.target.value)}
-                    className={`${FIELD_CLASS} appearance-none pr-9`}
+                    className={`${FIELD_CLASS} appearance-none pr-9 max-md:border-[#CBD5E1] max-md:bg-white max-md:text-[#101D32]`}
                   >
                     <option value="all">All inventory statuses</option>
                     {INVENTORY_STATUSES.map((status) => (
@@ -429,7 +429,7 @@ export default function AgentListingsPage() {
                     aria-label="Filter by property type"
                     value={propertyTypeFilter}
                     onChange={(event) => setPropertyTypeFilter(event.target.value)}
-                    className={`${FIELD_CLASS} appearance-none pr-9`}
+                    className={`${FIELD_CLASS} appearance-none pr-9 max-md:border-[#CBD5E1] max-md:bg-white max-md:text-[#101D32]`}
                   >
                     <option value="all">All property types</option>
                     {propertyTypes.map((propertyType) => (
@@ -446,7 +446,7 @@ export default function AgentListingsPage() {
                     aria-label="Filter by purpose"
                     value={purposeFilter}
                     onChange={(event) => setPurposeFilter(event.target.value)}
-                    className={`${FIELD_CLASS} appearance-none pr-9`}
+                    className={`${FIELD_CLASS} appearance-none pr-9 max-md:border-[#CBD5E1] max-md:bg-white max-md:text-[#101D32]`}
                   >
                     <option value="all">Sale and rent</option>
                     {purposes.map((purpose) => (
@@ -456,7 +456,7 @@ export default function AgentListingsPage() {
                   <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
                 </span>
               </label>
-              <label className="sm:col-span-2 xl:col-span-2">
+              <label className="sm:col-span-2 xl:col-span-2 max-lg:col-span-2">
                 <span className="sr-only">Sort listings</span>
                 <span className="relative block">
                   <ArrowDownWideNarrow className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
@@ -464,7 +464,7 @@ export default function AgentListingsPage() {
                     aria-label="Sort listings"
                     value={sortOrder}
                     onChange={(event) => setSortOrder(event.target.value as SortOrder)}
-                    className={`${FIELD_CLASS} appearance-none pl-10 pr-9`}
+                    className={`${FIELD_CLASS} appearance-none pl-10 pr-9 max-md:border-[#CBD5E1] max-md:bg-white max-md:text-[#101D32]`}
                   >
                     <option value="newest">Newest first</option>
                     <option value="oldest">Oldest first</option>
@@ -474,16 +474,16 @@ export default function AgentListingsPage() {
                   <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
                 </span>
               </label>
-              <div className="flex min-h-11 items-center justify-between gap-3 sm:col-span-2 xl:col-span-3 xl:justify-end">
+              <div className="flex min-h-11 items-center justify-between gap-3 sm:col-span-2 xl:col-span-3 xl:justify-end max-lg:col-span-2">
                 <p className="text-sm text-slate-400" aria-live="polite">
-                  Showing <span className="font-semibold text-slate-200">{visibleListings.length}</span> of{" "}
-                  <span className="font-semibold text-slate-200">{listings.length}</span> properties
+                  Showing <span className="font-semibold text-slate-200 max-md:text-[#101D32]">{visibleListings.length}</span> of{" "}
+                  <span className="font-semibold text-slate-200 max-md:text-[#101D32]">{listings.length}</span> properties
                 </p>
                 {(search || inventoryFilter !== "all" || propertyTypeFilter !== "all" || purposeFilter !== "all") && (
                   <button
                     type="button"
                     onClick={clearFilters}
-                    className="min-h-10 rounded-lg px-3 text-sm font-medium text-emerald-300 transition-colors hover:bg-emerald-500/10"
+                    className="min-h-10 rounded-lg px-3 text-sm font-medium text-emerald-300 transition-colors hover:bg-emerald-500/10 max-md:text-emerald-700 max-lg:min-h-11 max-lg:font-semibold"
                   >
                     Clear filters
                   </button>
@@ -571,18 +571,18 @@ export default function AgentListingsPage() {
               return (
                 <li
                   key={listing._id}
-                  className={`${PANEL} overflow-hidden transition-colors hover:border-[#2a405d]`}
+                  className={`${PANEL} overflow-hidden transition-colors hover:border-[#2a405d] max-lg:rounded-xl`}
                 >
-                  <article className="grid grid-cols-1 lg:grid-cols-[minmax(190px,230px)_minmax(0,1fr)_minmax(220px,260px)]">
-                    <div className="overflow-hidden lg:p-3 lg:pr-0">
-                      <div className="overflow-hidden lg:h-full lg:rounded-xl">
+                  <article className="grid grid-cols-1 lg:grid-cols-[minmax(190px,230px)_minmax(0,1fr)_minmax(220px,260px)] max-lg:grid-cols-[112px_minmax(0,1fr)]">
+                    <div className="overflow-hidden p-2 pr-0 lg:p-3 lg:pr-0">
+                      <div className="h-full overflow-hidden rounded-xl lg:rounded-xl">
                         <PropertyCover listing={listing} />
                       </div>
                     </div>
 
-                    <div className="min-w-0 px-4 pb-4 pt-3 sm:px-5 lg:px-6 lg:py-5">
-                      <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] font-medium uppercase tracking-wide text-slate-500">
-                        <span>ID {listing._id}</span>
+                    <div className="min-w-0 px-4 pb-4 pt-3 sm:px-5 lg:px-6 lg:py-5 max-lg:px-3 max-lg:py-2">
+                      <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] font-medium uppercase tracking-wide text-slate-500 max-lg:text-[9px]">
+                        <span className="break-all">ID {listing._id}</span>
                         <span aria-hidden="true">·</span>
                         <span className="inline-flex items-center gap-1">
                           <Clock3 className="h-3 w-3" />
@@ -593,15 +593,25 @@ export default function AgentListingsPage() {
                           })}
                         </span>
                       </div>
-                      <h2 className="mt-2 break-words text-lg font-semibold leading-snug text-white sm:text-xl">
+                      <h2 className="mt-2 break-words text-lg font-semibold leading-snug text-white sm:text-xl max-md:mt-1 max-md:text-sm max-md:text-[#071B2B] max-lg:text-base">
                         {listing.title}
                       </h2>
-                      <p className="mt-2 flex items-center gap-1.5 text-sm text-slate-300">
-                        <MapPin className="h-4 w-4 shrink-0 text-emerald-400" />
-                        <span className="truncate">{listing.location.area}, {listing.location.city}</span>
+                      <p className="mt-2 flex items-center gap-1.5 text-sm text-slate-300 max-md:mt-1 max-md:text-xs max-md:text-[#64748B]">
+                        <MapPin className="h-4 w-4 shrink-0 text-emerald-400 max-md:h-3.5 max-md:w-3.5" />
+                        <span className="truncate max-lg:whitespace-normal max-lg:break-words">{listing.location.area}, {listing.location.city}</span>
+                      </p>
+                      <p className="mt-1 hidden flex-wrap items-center gap-x-1.5 gap-y-0.5 text-[10px] text-slate-400 max-md:block max-md:text-[#64748B] max-lg:flex">
+                        <span>{listing.propertyType}</span>
+                        <span aria-hidden="true">·</span>
+                        <span>For {listing.purpose.toLowerCase()}</span>
+                        <span aria-hidden="true">·</span>
+                        <span className="inline-flex items-center gap-1">
+                          <Ruler className="h-3 w-3" />
+                          {listing.areaSize} {listing.areaUnit}
+                        </span>
                       </p>
 
-                      <div className="mt-4 grid grid-cols-2 gap-3 border-y border-[#1d2c40] py-3 sm:grid-cols-3">
+                      <div className="mt-4 grid grid-cols-2 gap-3 border-y border-[#1d2c40] py-3 sm:grid-cols-3 max-md:hidden">
                         <div className="min-w-0">
                           <p className="text-[11px] font-medium uppercase tracking-wide text-slate-500">Property type</p>
                           <p className="mt-1 truncate text-sm font-medium text-slate-200">{listing.propertyType}</p>
@@ -618,45 +628,55 @@ export default function AgentListingsPage() {
                           </p>
                         </div>
                       </div>
-                      <p className="mt-3 text-xl font-bold tracking-tight text-emerald-300">
+                      <p className="mt-3 text-xl font-bold tracking-tight text-emerald-300 max-md:mt-2 max-md:text-lg max-md:text-[#008F68]">
                         {formatPrice(listing.price)}
                       </p>
                     </div>
 
-                    <div className="flex flex-col gap-4 border-t border-[#1d2c40] bg-[#0a1422]/70 p-4 sm:px-5 lg:border-l lg:border-t-0 lg:p-5">
-                      <div className="space-y-2.5">
+                    <div className="col-span-2 flex min-w-0 flex-col gap-4 border-t border-[#1d2c40] bg-[#0a1422]/70 p-4 sm:px-5 lg:col-span-1 lg:border-l lg:border-t-0 lg:p-5 max-lg:gap-3 max-md:border-[#E2E8F0] max-md:bg-white max-lg:p-3">
+                      <div className="space-y-2.5 max-lg:grid max-lg:grid-cols-2 max-lg:gap-2 max-lg:space-y-0">
                         {listing.agentArchived && (
-                          <div>
+                          <div className="max-lg:col-span-2 max-lg:rounded-xl max-lg:border max-lg:border-slate-200 max-lg:bg-slate-50 max-lg:p-2">
                             <p className="mb-1.5 text-[11px] font-semibold uppercase tracking-wide text-slate-500">
                               Record status
                             </p>
-                            <span className="inline-flex min-h-7 items-center rounded-lg border border-slate-500/30 bg-slate-500/10 px-2.5 text-xs font-semibold text-slate-300">
+                            <span className="inline-flex min-h-7 items-center rounded-lg border border-slate-500/30 bg-slate-500/10 px-2.5 text-xs font-semibold text-slate-300 max-lg:whitespace-normal max-lg:break-words">
                               Archived
                             </span>
                           </div>
                         )}
-                        <div>
-                          <p className="mb-1.5 text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+                        <div className="min-w-0 max-lg:rounded-xl max-lg:border max-lg:border-slate-200 max-lg:bg-slate-50 max-lg:p-2">
+                          <p className="mb-1.5 text-[11px] font-semibold uppercase tracking-wide text-slate-500 max-lg:mb-1 max-lg:text-[9px]">
                             Inventory status
                           </p>
-                          <span className={`inline-flex min-h-7 items-center rounded-lg border px-2.5 text-xs font-semibold ${INVENTORY_BADGE_STYLES[inventoryStatus]}`}>
+                          <span className={`inline-flex min-h-7 max-w-full items-center rounded-lg border px-2.5 text-xs font-semibold max-lg:whitespace-normal max-lg:break-words max-lg:px-2 max-lg:py-1 max-lg:text-[11px] ${INVENTORY_BADGE_STYLES[inventoryStatus]}`}>
                             {INVENTORY_LABELS[inventoryStatus]}
                           </span>
                         </div>
                         {hasAdvertisement && advertisementStatus && (
-                          <div>
-                            <p className="mb-1.5 text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+                          <div className="min-w-0 max-lg:rounded-xl max-lg:border max-lg:border-slate-200 max-lg:bg-slate-50 max-lg:p-2">
+                            <p className="mb-1.5 text-[11px] font-semibold uppercase tracking-wide text-slate-500 max-lg:mb-1 max-lg:text-[9px]">
                               Advertisement status
                             </p>
-                            <span className={`inline-flex min-h-7 items-center rounded-lg border px-2.5 text-xs font-semibold ${ADVERTISEMENT_BADGE_STYLES[advertisementStatus]}`}>
+                            <span className={`inline-flex min-h-7 max-w-full items-center rounded-lg border px-2.5 text-xs font-semibold max-lg:whitespace-normal max-lg:break-words max-lg:px-2 max-lg:py-1 max-lg:text-[11px] ${ADVERTISEMENT_BADGE_STYLES[advertisementStatus]}`}>
                               {ADVERTISEMENT_LABELS[advertisementStatus]}
+                            </span>
+                          </div>
+                        )}
+                        {!hasAdvertisement && (
+                          <div className="hidden min-w-0 max-lg:block max-lg:rounded-xl max-lg:border max-lg:border-slate-200 max-lg:bg-slate-50 max-lg:p-2">
+                            <p className="mb-1 text-[9px] font-semibold uppercase tracking-wide text-slate-500">
+                              Advertisement status
+                            </p>
+                            <span className="inline-flex min-h-7 max-w-full items-center rounded-lg border border-slate-200 bg-white px-2 py-1 text-[11px] font-semibold text-slate-500">
+                              Not advertised
                             </span>
                           </div>
                         )}
                       </div>
 
                       <label className="block">
-                        <span className="mb-1.5 block text-xs font-medium text-slate-400">
+                        <span className="mb-1.5 block text-xs font-medium text-slate-400 max-lg:text-[11px] max-lg:font-semibold max-lg:uppercase max-lg:tracking-wide max-md:text-slate-600">
                           Update availability
                         </span>
                         <span className="relative block">
@@ -670,7 +690,7 @@ export default function AgentListingsPage() {
                                 event.target.value as InventoryStatus,
                               )
                             }
-                            className="h-10 w-full appearance-none rounded-lg border border-[#2a3d56] bg-[#0b1524] pl-3 pr-9 text-sm text-slate-100 outline-none transition-colors focus:border-emerald-500 disabled:cursor-wait disabled:opacity-60"
+                            className="h-10 w-full appearance-none rounded-lg border border-[#2a3d56] bg-[#0b1524] pl-3 pr-9 text-sm text-slate-100 outline-none transition-colors focus:border-emerald-500 disabled:cursor-wait disabled:opacity-60 max-md:border-[#CBD5E1] max-md:bg-white max-md:text-[#101D32] max-lg:h-11"
                           >
                             {INVENTORY_STATUSES.map((status) => (
                               <option key={status} value={status}>{INVENTORY_LABELS[status]}</option>
@@ -684,10 +704,13 @@ export default function AgentListingsPage() {
                         </span>
                       </label>
 
-                      <div className="mt-auto grid grid-cols-2 gap-2">
+                      <div className="mt-auto grid grid-cols-2 gap-2 max-lg:gap-2">
+                        <p className="hidden text-[10px] font-semibold uppercase tracking-wide text-slate-500 max-lg:col-span-2 max-lg:row-start-1 max-lg:block">
+                          Primary actions
+                        </p>
                         <Link
                           href={`/agent/listings/${encodeURIComponent(listing._id)}/edit`}
-                          className="inline-flex min-h-10 items-center justify-center gap-1.5 rounded-lg border border-[#2a3d56] px-2.5 text-sm font-semibold text-slate-200 transition-colors hover:bg-white/5"
+                          className="inline-flex min-h-10 items-center justify-center gap-1.5 rounded-lg border border-[#2a3d56] px-2.5 text-sm font-semibold text-slate-200 transition-colors hover:bg-white/5 max-md:border-[#E2E8F0] max-md:text-[#101D32] max-lg:col-start-1 max-lg:row-start-2 max-lg:min-h-11 max-lg:border-emerald-200 max-lg:bg-emerald-50 max-lg:text-emerald-800 max-lg:hover:bg-emerald-100"
                         >
                           <Pencil className="h-3.5 w-3.5" />
                           Edit
@@ -700,7 +723,7 @@ export default function AgentListingsPage() {
                               : archiveListing(listing))
                           }
                           disabled={deletingId === listing._id}
-                          className={`inline-flex min-h-10 items-center justify-center gap-1.5 rounded-lg border px-2.5 text-sm font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
+                          className={`inline-flex min-h-10 items-center justify-center gap-1.5 rounded-lg border px-2.5 text-sm font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 max-lg:col-start-1 ${canSendToLive ? "max-lg:row-start-5" : "max-lg:row-start-4"} max-lg:min-h-11 max-lg:px-1.5 max-lg:text-xs ${
                             listing.agentArchived
                               ? "border-emerald-500/25 text-emerald-300 hover:bg-emerald-500/10"
                               : "border-rose-900/50 text-rose-300 hover:bg-rose-950/30"
@@ -717,10 +740,13 @@ export default function AgentListingsPage() {
                             ? listing.agentArchived ? "Restoring" : "Archiving"
                             : listing.agentArchived ? "Restore" : "Archive"}
                         </button>
+                        <p className={`hidden text-[10px] font-semibold uppercase tracking-wide text-slate-500 max-lg:col-span-2 max-lg:block ${canSendToLive ? "max-lg:row-start-4" : "max-lg:row-start-3"}`}>
+                            Secondary actions
+                        </p>
                         {hasAdvertisement && (
-                          <Link
-                            href={advertisementHref}
-                            className="col-span-2 inline-flex min-h-10 items-center justify-center gap-1.5 rounded-lg border border-blue-500/25 bg-blue-500/5 px-3 text-sm font-semibold text-blue-200 transition-colors hover:bg-blue-500/10"
+                            <Link
+                              href={advertisementHref}
+                              className="col-span-2 inline-flex min-h-10 items-center justify-center gap-1.5 rounded-lg border border-blue-500/25 bg-blue-500/5 px-3 text-sm font-semibold text-blue-200 transition-colors hover:bg-blue-500/10 max-md:text-blue-700 max-lg:col-span-1 max-lg:col-start-2 max-lg:row-start-2 max-lg:min-h-11 max-lg:px-1.5 max-lg:text-xs"
                           >
                             <ExternalLink className="h-3.5 w-3.5" />
                             View Advertisement
@@ -731,7 +757,7 @@ export default function AgentListingsPage() {
                             type="button"
                             onClick={() => void sendToLive(listing)}
                             disabled={advertisingId === listing._id}
-                            className="col-span-2 inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-emerald-600 px-3 text-sm font-bold text-white shadow-md shadow-emerald-950/20 transition-colors hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-60"
+                            className={`col-span-2 inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-emerald-600 px-3 text-sm font-bold text-white shadow-md shadow-emerald-950/20 transition-colors hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-60 ${hasAdvertisement ? "max-lg:row-start-3 max-lg:col-span-2" : "max-lg:row-start-2 max-lg:col-span-1 max-lg:col-start-2"}`}
                           >
                             {advertisingId === listing._id ? (
                               <LoaderCircle className="h-4 w-4 animate-spin" />
@@ -748,7 +774,7 @@ export default function AgentListingsPage() {
                           </button>
                         )}
                         {listing.status === "published" && (
-                          <div className="col-span-2">
+                          <div className={`col-span-2 max-lg:col-span-1 max-lg:col-start-2 ${canSendToLive ? "max-lg:row-start-5" : "max-lg:row-start-4"}`}>
                             <ShareExactLocationControl
                               propertyId={listing._id}
                               propertyTitle={listing.title}

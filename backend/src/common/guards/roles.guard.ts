@@ -28,6 +28,16 @@ export class RolesGuard implements CanActivate {
       );
     }
 
+    if (
+      user.role === 'agent' &&
+      requiredRoles.includes('agent') &&
+      user.profileComplete !== true
+    ) {
+      throw new ForbiddenException(
+        'Complete your agent profile before accessing agent features.',
+      );
+    }
+
     return true;
   }
 }
