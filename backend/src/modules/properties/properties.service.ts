@@ -9,7 +9,7 @@ import {
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { ConfigService } from '@nestjs/config';
-import { createHash, createHmac } from 'crypto';
+import { createHash, createHmac, randomUUID } from 'crypto';
 import { Model, Types } from 'mongoose';
 import { Property, PropertyDocument, PropertyStatus } from './schemas/property.schema';
 import {
@@ -663,51 +663,10 @@ export class PropertiesService {
         .exec(),
       this.propertyModel.countDocuments(filter).exec(),
     ]);
-    const activeAdvertisementByProperty = new Map(
-      activeAdvertisements.map((ad) => [String(ad.propertyId), String(ad._id)]),
-    );
-    const pageAdvertisementIds = items
-      .map((property) => activeAdvertisementByProperty.get(String(property._id)))
-      .filter((id): id is string => id !== undefined)
-      .map((id) => new Types.ObjectId(id));
-    const propertyViewsByAdvertisement = new Map<string, number>();
-    if (pageAdvertisementIds.length > 0) {
-      const propertyViewCounts = await this.analyticsEventModel
-        .aggregate<{
-          _id: Types.ObjectId;
-          count: number;
-        }>([
-          {
-            $match: {
-              advertisementId: { $in: pageAdvertisementIds },
-              type: PropertyAnalyticsEventType.PROPERTY_VIEW,
-            },
-          },
-          {
-            $group: {
-              _id: '$advertisementId',
-              count: { $sum: 1 },
-            },
-          },
-        ])
-        .exec();
-      for (const item of propertyViewCounts) {
-        propertyViewsByAdvertisement.set(String(item._id), item.count);
-      }
-    }
-
     return {
-      data: items.map((property): Record<string, unknown> => {
-        const advertisementId = activeAdvertisementByProperty.get(
-          String(property._id),
-        );
-        return {
-          ...toPublicProperty(property),
-          viewsCount: advertisementId
-            ? propertyViewsByAdvertisement.get(advertisementId) ?? 0
-            : 0,
-        };
-      }),
+      data: items.map((property): Record<string, unknown> =>
+        toPublicProperty(property),
+      ),
       meta: {
         total,
         page,
@@ -1115,6 +1074,7 @@ export class PropertiesService {
     type: PropertyAnalyticsEventType | 'property_view' | 'call_click' | 'whatsapp_click',
     visitorId: string,
     userAgent = '',
+    viewId?: string,
   ) {
     if (/bot|crawler|spider|headless|preview|facebookexternalhit/i.test(userAgent)) {
       throw new BadRequestException('Automated requests are not counted as public engagement.');
@@ -1144,10 +1104,7 @@ export class PropertiesService {
       .update(visitorId)
       .digest('hex');
     const eventType = type as PropertyAnalyticsEventType;
-    const dedupeWindowMs =
-      eventType === PropertyAnalyticsEventType.PROPERTY_VIEW ? 30 * 60_000 : 5_000;
     const now = new Date();
-    const since = new Date(now.getTime() - dedupeWindowMs);
     const hourlyStart = new Date(now.getTime() - 60 * 60_000);
     const recentVisitorEvents = await this.analyticsEventModel
       .countDocuments({
@@ -1158,6 +1115,51 @@ export class PropertiesService {
     if (recentVisitorEvents >= 60) {
       throw new BadRequestException('Too many analytics events. Try again later.');
     }
+
+    if (eventType === PropertyAnalyticsEventType.PROPERTY_VIEW) {
+      const visitId = viewId ?? randomUUID();
+      const dedupeKey = createHash('sha256')
+        .update(`${property._id}:${eventType}:${visitId}`)
+        .digest('hex');
+      try {
+        await this.analyticsEventModel.create({
+          propertyId: property._id,
+          advertisementId: ad._id,
+          agentId: property.agentId,
+          type: eventType,
+          occurredAt: now,
+          visitorHash,
+          dedupeKey,
+        });
+      } catch (error) {
+        if (!this.isDuplicateKey(error)) throw error;
+        const current = await this.propertyModel
+          .findById(property._id)
+          .select('viewsCount')
+          .exec();
+        return {
+          tracked: false,
+          duplicate: true,
+          viewsCount: current?.viewsCount ?? 0,
+        };
+      }
+
+      const updated = await this.propertyModel
+        .findOneAndUpdate(
+          { _id: property._id },
+          { $inc: { viewsCount: 1 } },
+          { new: true },
+        )
+        .select('viewsCount')
+        .exec();
+      if (!updated) {
+        throw new NotFoundException(`Property with ID '${propertyId}' not found`);
+      }
+      return { tracked: true, viewsCount: updated.viewsCount ?? 0 };
+    }
+
+    const dedupeWindowMs = 5_000;
+    const since = new Date(now.getTime() - dedupeWindowMs);
     const existing = await this.analyticsEventModel
       .exists({
         propertyId: property._id,
@@ -1219,11 +1221,6 @@ export class PropertiesService {
         );
       }
       throw error;
-    }
-    if (eventType === PropertyAnalyticsEventType.PROPERTY_VIEW) {
-      await this.propertyModel
-        .updateOne({ _id: property._id }, { $inc: { viewsCount: 1 } })
-        .exec();
     }
     return { tracked: true };
   }

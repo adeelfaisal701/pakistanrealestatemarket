@@ -9,6 +9,7 @@ import type { MarketplaceProperty } from "@/types/marketplace";
 import { TrackedWhatsAppLink } from "./TrackedWhatsAppLink";
 import { TrackedCallLink } from "./TrackedCallLink";
 import { SavePropertyButton } from "@/components/buyer/SavePropertyButton";
+import { normalizeInternationalPhone } from "@/lib/phone";
 
 export interface PropertyCardProps {
   property: MarketplaceProperty;
@@ -16,7 +17,12 @@ export interface PropertyCardProps {
 
 export function PropertyCard({ property }: PropertyCardProps) {
   const [imageUnavailable, setImageUnavailable] = useState(false);
-  const whatsappNumber = property.agent?.phone?.replace(/[^0-9]/g, "");
+  const whatsappNumber = property.agent?.phone
+    ? normalizeInternationalPhone(property.agent.phone)
+    : undefined;
+  const callNumber = property.agent?.phone
+    ? normalizeInternationalPhone(property.agent.phone)
+    : undefined;
   const whatsappUrl = whatsappNumber ? `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(
     `Salam, I am interested in: "${property.title}" (PKR ${property.price.toLocaleString()}) listed in ${property.location.city}.`
   )}` : "";
@@ -134,12 +140,10 @@ export function PropertyCard({ property }: PropertyCardProps) {
             <TrackedWhatsAppLink
               propertyId={property.id}
               href={whatsappUrl}
-              className="w-full"
+              className="inline-flex h-10 w-full items-center justify-center gap-1.5 rounded-xl bg-emerald-600 px-4 text-xs font-medium text-white shadow-sm transition-all hover:bg-emerald-700 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 max-sm:min-h-11 max-sm:px-1.5 max-sm:text-[10px]"
             >
-            <Button variant="default" size="md" className="w-full bg-emerald-600 hover:bg-emerald-700 text-xs min-h-[42px] font-bold gap-1.5 max-sm:min-h-11 max-sm:px-1.5 max-sm:text-[10px]">
               <MessageCircle className="h-4 w-4 flex-shrink-0" />
               <span>WhatsApp</span>
-            </Button>
             </TrackedWhatsAppLink>
           ) : (
             <Button
@@ -153,10 +157,10 @@ export function PropertyCard({ property }: PropertyCardProps) {
               <span>WhatsApp unavailable</span>
             </Button>
           )}
-          {whatsappUrl && (
+          {whatsappUrl && callNumber && (
             <TrackedCallLink
               propertyId={property.id}
-              href={`tel:${property.agent?.phone?.replace(/[^\d+]/g, "") ?? ""}`}
+              href={`tel:+${callNumber}`}
               className="flex min-h-[42px] w-full items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-slate-100 py-2 text-xs font-semibold text-slate-800 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 max-sm:min-h-11 max-sm:gap-1 max-sm:px-1 max-sm:text-[10px]"
             >
               <Phone className="h-4 w-4 flex-shrink-0" />

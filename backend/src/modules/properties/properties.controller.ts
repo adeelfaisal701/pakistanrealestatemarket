@@ -75,6 +75,7 @@ export class PropertiesController {
       'property_view',
       body.visitorId,
       userAgent,
+      body.viewId,
     );
   }
 

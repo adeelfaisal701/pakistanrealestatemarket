@@ -32,6 +32,7 @@ import { getApiErrorMessage } from "@/lib/api-client";
 import { fetchPublicAgent, type PublicAgent } from "@/lib/public-directory";
 import { fetchPublicPropertiesPage, type PublicPropertiesPage } from "@/lib/public-properties";
 import { formatLandArea, formatPKR } from "@/lib/utils";
+import { normalizeInternationalPhone } from "@/lib/phone";
 
 const PAGE_SIZE = 6;
 type ProfileTab = "overview" | "listings" | "reviews";
@@ -145,7 +146,10 @@ export default function PublicAgentProfilePage() {
   }, [id, loadListings]);
 
   const firstListing = listings?.properties[0];
-  const hasPublicPhone = Boolean(agent?.phone);
+  const agentPhone = agent?.phone
+    ? normalizeInternationalPhone(agent.phone)
+    : undefined;
+  const hasPublicPhone = Boolean(agentPhone);
   const listingCount = listingsLoading ? null : listings?.pagination.total ?? 0;
   const trustIndicators = [
     ...(agent?.isVerified ? ["Verified EstatePro agent"] : []),
@@ -222,18 +226,18 @@ export default function PublicAgentProfilePage() {
                   </p>
                 )}
                 <div className="mt-5 grid grid-cols-3 gap-2 [&>button]:!gap-1 [&>button]:!px-1 [&>button]:!text-[10px] [&>button>svg]:h-3.5 [&>button>svg]:w-3.5">
-                  {agent.phone ? (
+                  {agentPhone ? (
                     firstListing ? (
                       <TrackedCallLink
                         propertyId={firstListing.id}
-                        href={`tel:${agent.phone.replace(/[^\d+]/g, "")}`}
+                        href={`tel:+${agentPhone}`}
                         className="inline-flex min-h-12 min-w-0 flex-col items-center justify-center gap-0.5 rounded-xl bg-emerald-600 px-1 text-[11px] font-bold text-white shadow-sm"
                       >
                         <Phone className="h-4 w-4" />
                         <span>Call Agent</span>
                       </TrackedCallLink>
                     ) : (
-                      <a href={`tel:${agent.phone}`} className="inline-flex min-h-12 min-w-0 flex-col items-center justify-center gap-0.5 rounded-xl bg-emerald-600 px-1 text-[11px] font-bold text-white shadow-sm">
+                      <a href={`tel:+${agentPhone}`} className="inline-flex min-h-12 min-w-0 flex-col items-center justify-center gap-0.5 rounded-xl bg-emerald-600 px-1 text-[11px] font-bold text-white shadow-sm">
                         <Phone className="h-4 w-4" />
                         <span>Call Agent</span>
                       </a>
@@ -424,10 +428,10 @@ export default function PublicAgentProfilePage() {
                                   Availability: {availabilityLabel(property.availabilityStatus)}
                                 </p>
                               )}
-                              {property.agent?.phone && (
+                              {property.agent?.phone && normalizeInternationalPhone(property.agent.phone) && (
                                 <TrackedCallLink
                                   propertyId={property.id}
-                                  href={`tel:${property.agent.phone.replace(/[^\d+]/g, "")}`}
+                                  href={`tel:+${normalizeInternationalPhone(property.agent.phone) ?? ""}`}
                                   className="mt-2 inline-flex min-h-9 items-center justify-center gap-1.5 rounded-lg border border-emerald-600 px-2 text-xs font-bold text-emerald-700"
                                 >
                                   <Phone className="h-3.5 w-3.5" /> Call
@@ -531,10 +535,19 @@ export default function PublicAgentProfilePage() {
                   {agent.agencyName && <Link href={`/agencies?name=${encodeURIComponent(agent.agencyName)}`} className="inline-flex items-center gap-1.5 font-semibold text-emerald-700 hover:underline dark:text-emerald-300"><Building2 className="h-4 w-4" />{agent.agencyName}</Link>}
                 </div>
                 {agent.agencyAddress && <p className="mt-3 text-sm text-slate-600 dark:text-slate-300"><span className="font-semibold text-slate-800 dark:text-slate-100">Office address:</span> {agent.agencyAddress}</p>}
-                {agent.phone && (
+                {agentPhone && (
                   <div className="mt-5 flex flex-wrap gap-2">
-                    <a href={`tel:${agent.phone}`} className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-slate-300 px-4 text-sm font-medium text-slate-800 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"><Phone className="h-4 w-4" />Call Agent</a>
-                    <WhatsAppButton phoneNumber={agent.phone} className="w-auto">WhatsApp</WhatsAppButton>
+                    <a href={`tel:+${agentPhone}`} className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-slate-300 px-4 text-sm font-medium text-slate-800 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"><Phone className="h-4 w-4" />Call Agent</a>
+                    <WhatsAppButton
+                      phoneNumber={agentPhone}
+                      propertyId={firstListing?.id}
+                      message={firstListing
+                        ? `Salam, I am interested in "${firstListing.title}" listed in ${firstListing.location.city}.`
+                        : undefined}
+                      className="w-auto"
+                    >
+                      WhatsApp
+                    </WhatsAppButton>
                     {firstListing && (
                       <>
                         <PropertyConversationChat

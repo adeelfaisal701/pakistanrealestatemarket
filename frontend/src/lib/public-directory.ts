@@ -16,6 +16,8 @@ export interface PublicAgency {
   agentCount: number;
   locations: string[];
   officeAddresses?: string[];
+  logoUrl?: string;
+  coverImageUrl?: string;
 }
 
 export interface PublicAgencyProfile extends PublicAgency {
@@ -101,6 +103,7 @@ export async function updateManagedAgencyProfile(
     formData,
     { headers: { "Content-Type": "multipart/form-data" } },
   );
+  requestCache.delete("featured-agencies");
   return response.data.data;
 }
 

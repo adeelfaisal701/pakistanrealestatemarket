@@ -63,14 +63,14 @@ export default function ProjectDetailsPage() {
         ) : (
           <>
             <section className="mt-5 overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
-              <div className="relative min-h-64 bg-gradient-to-br from-emerald-50 to-slate-200 sm:aspect-[2.4/1] sm:min-h-0">
+              <div className="relative m-3 aspect-[4/3] overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-50 to-slate-200 md:m-0 md:aspect-[2.4/1] md:rounded-none md:min-h-0">
                 {project.coverImage ? (
                   <img src={project.coverImage} alt={project.name} className="absolute inset-0 h-full w-full object-cover" />
                 ) : (
                   <div className="absolute inset-0 flex items-center justify-center"><Building2 className="h-14 w-14 text-emerald-700" /></div>
                 )}
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-slate-950/20 to-transparent" />
-                <div className="absolute inset-x-0 bottom-0 p-5 text-white sm:p-8">
+                <div className="absolute inset-0 hidden bg-gradient-to-t from-slate-950/85 via-slate-950/20 to-transparent md:block" />
+                <div className="absolute inset-x-0 bottom-0 hidden p-8 text-white md:block">
                   <span className="inline-flex rounded-full bg-emerald-500 px-3 py-1 text-xs font-bold text-slate-950">{project.status}</span>
                   <h1 className="mt-3 text-3xl font-extrabold sm:text-4xl">{project.name}</h1>
                   <p className="mt-2 text-sm text-white/85">{project.developer}</p>
@@ -79,6 +79,17 @@ export default function ProjectDetailsPage() {
                   </p>
                   {project.priceRange && <p className="mt-3 text-lg font-bold text-emerald-200">{project.priceRange}</p>}
                 </div>
+              </div>
+
+              <div className="min-w-0 px-5 pb-5 pt-2 md:hidden">
+                <span className="inline-flex rounded-full bg-emerald-500 px-3 py-1 text-xs font-bold text-slate-950">{project.status}</span>
+                <h1 className="mt-4 min-w-0 break-words text-3xl font-extrabold leading-tight [overflow-wrap:anywhere]">{project.name}</h1>
+                <p className="mt-2 break-words text-sm text-slate-600 [overflow-wrap:anywhere] dark:text-slate-300">{project.developer}</p>
+                <p className="mt-3 flex min-w-0 items-start gap-2 text-sm text-slate-700 dark:text-slate-200">
+                  <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-emerald-500" />
+                  <span className="min-w-0 break-words [overflow-wrap:anywhere]">{project.location}</span>
+                </p>
+                {project.priceRange && <p className="mt-3 break-words text-lg font-bold text-emerald-600 [overflow-wrap:anywhere] dark:text-emerald-300">{project.priceRange}</p>}
               </div>
 
               <div className="grid gap-8 p-5 sm:p-8 lg:grid-cols-[minmax(0,1fr)_18rem]">

@@ -6,18 +6,22 @@ import { Property } from '@/types/property';
 import { TrackedWhatsAppLink } from './TrackedWhatsAppLink';
 import { TrackedCallLink } from './TrackedCallLink';
 import { SavePropertyButton } from '@/components/buyer/SavePropertyButton';
+import { normalizeInternationalPhone } from '@/lib/phone';
 
 interface PropertyCardProps {
   property: Property;
 }
 
 export default function PropertyCard({ property }: PropertyCardProps) {
+  const phoneNumber = normalizeInternationalPhone(property.agentPhone);
   const whatsappMessage = encodeURIComponent(
     `Assalam o Alaikum, I am interested in this listing on PRM: "${property.title}" priced at ${property.price} located in ${property.location}, ${property.society}. Please share more details.`
   );
 
-  const whatsappUrl = `https://wa.me/${property.agentPhone.replace(/[^0-9]/g, '')}?text=${whatsappMessage}`;
-  const callUrl = `tel:+${property.agentPhone.replace(/[^0-9]/g, '')}`;
+  const whatsappUrl = phoneNumber
+    ? `https://wa.me/${phoneNumber}?text=${whatsappMessage}`
+    : "";
+  const callUrl = phoneNumber ? `tel:+${phoneNumber}` : "";
 
   return (
     <div className="group bg-white dark:bg-slate-900 rounded-2xl overflow-hidden border border-slate-200/90 dark:border-slate-800 shadow-sm hover:shadow-xl hover:border-emerald-500/40 transition-all duration-300 flex flex-col justify-between w-full">
@@ -134,22 +138,34 @@ export default function PropertyCard({ property }: PropertyCardProps) {
 
       {/* Action Buttons: Direct WhatsApp & Call with touch-friendly min-h-[44px] */}
       <div className="p-4 sm:p-5 pt-0 grid grid-cols-2 gap-2">
-        <TrackedWhatsAppLink
-          propertyId={property.id}
-          href={whatsappUrl}
-          className="inline-flex items-center justify-center gap-1.5 py-3 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-sm transition-all active:scale-[0.98] min-h-[44px]"
-        >
-          <MessageCircle className="h-4 w-4 flex-shrink-0" />
-          <span>WhatsApp</span>
-        </TrackedWhatsAppLink>
-        <TrackedCallLink
-          propertyId={property.id}
-          href={callUrl}
-          className="inline-flex items-center justify-center gap-1.5 py-3 px-3 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-bold text-xs border border-slate-200 dark:border-slate-700 transition-all active:scale-[0.98] min-h-[44px]"
-        >
-          <Phone className="h-3.5 w-3.5 text-slate-600 dark:text-slate-300 flex-shrink-0" />
-          <span>Call Agent</span>
-        </TrackedCallLink>
+        {whatsappUrl ? (
+          <TrackedWhatsAppLink
+            propertyId={property.id}
+            href={whatsappUrl}
+            className="inline-flex items-center justify-center gap-1.5 py-3 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-sm transition-all active:scale-[0.98] min-h-[44px]"
+          >
+            <MessageCircle className="h-4 w-4 flex-shrink-0" />
+            <span>WhatsApp</span>
+          </TrackedWhatsAppLink>
+        ) : (
+          <span className="inline-flex min-h-[44px] items-center justify-center rounded-xl bg-emerald-600/50 px-3 text-xs font-bold text-white/80">
+            WhatsApp unavailable
+          </span>
+        )}
+        {callUrl ? (
+          <TrackedCallLink
+            propertyId={property.id}
+            href={callUrl}
+            className="inline-flex items-center justify-center gap-1.5 py-3 px-3 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-bold text-xs border border-slate-200 dark:border-slate-700 transition-all active:scale-[0.98] min-h-[44px]"
+          >
+            <Phone className="h-3.5 w-3.5 text-slate-600 dark:text-slate-300 flex-shrink-0" />
+            <span>Call Agent</span>
+          </TrackedCallLink>
+        ) : (
+          <span className="inline-flex min-h-[44px] items-center justify-center rounded-xl bg-slate-100 px-3 text-xs font-bold text-slate-500 dark:bg-slate-800 dark:text-slate-400">
+            Call unavailable
+          </span>
+        )}
       </div>
     </div>
   );

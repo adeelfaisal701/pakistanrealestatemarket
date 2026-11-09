@@ -12,8 +12,18 @@ import {
   UserDocument,
   UserRole,
 } from './schemas/user.schema';
+import { Agency, AgencyDocument } from '../agencies/schemas/agency.schema';
 import { CreateUserDto } from './dto/create-user.dto';
 import { isAgentProfileComplete } from './agent-profile.utils';
+
+export interface PublicAgencyRecord {
+  name: string;
+  agentCount: number;
+  locations: string[];
+  officeAddresses: string[];
+  logoUrl?: string;
+  coverImageUrl?: string;
+}
 
 export interface PublicAgentRecord {
   id: string;
@@ -30,6 +40,7 @@ export interface PublicAgentRecord {
 export class UsersService {
   constructor(
     @InjectModel(User.name) private userModel: Model<UserDocument>,
+    @InjectModel(Agency.name) private agencyModel: Model<AgencyDocument>,
   ) {}
 
   async create(createUserDto: CreateUserDto, passwordHash: string): Promise<UserDocument> {
@@ -126,7 +137,7 @@ export class UsersService {
     return agent ? this.toPublicAgent(agent) : null;
   }
 
-  async findPublicAgencies() {
+  async findPublicAgencies(): Promise<PublicAgencyRecord[]> {
     const agencies = await this.userModel
       .aggregate<{
         name: string;
@@ -183,7 +194,26 @@ export class UsersService {
       ])
       .exec();
 
-    return agencies;
+    if (!agencies.length) return agencies;
+
+    const normalizeName = (name: string) => name.trim().replace(/\s+/g, ' ').toLowerCase();
+    const profiles = await this.agencyModel
+      .find({ normalizedName: { $in: agencies.map(({ name }) => normalizeName(name)) } })
+      .select('normalizedName logoUrl coverImageUrl')
+      .lean()
+      .exec();
+    const profilesByName = new Map(
+      profiles.map((profile) => [profile.normalizedName, profile]),
+    );
+
+    return agencies.map((agency) => {
+      const profile = profilesByName.get(normalizeName(agency.name));
+      return {
+        ...agency,
+        ...(profile?.logoUrl ? { logoUrl: profile.logoUrl } : {}),
+        ...(profile?.coverImageUrl ? { coverImageUrl: profile.coverImageUrl } : {}),
+      };
+    });
   }
 
   async findPublicAgency(name: string) {

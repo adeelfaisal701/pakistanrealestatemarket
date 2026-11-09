@@ -59,6 +59,16 @@ function CommercialIcon({ className }: { className?: string }) {
   );
 }
 
+const searchLabels = [
+  'Search Properties',
+  'Search Flats',
+  'Search Houses',
+  'Search Apartments',
+  'Search Plazas',
+  'Search Shops',
+  'Search Plots',
+];
+
 /* ─────────────────────── MOBILE HEADER ─────────────────────── */
 function MobileHeader() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -129,6 +139,8 @@ function MobileHero() {
   const router = useRouter();
   const [selectedHeroOption, setSelectedHeroOption] = useState<'Property' | 'Maintenance'>('Property');
   const [filtersOpen, setFiltersOpen] = useState(false);
+  const [searchLabelIndex, setSearchLabelIndex] = useState(0);
+  const [searchLabelVisible, setSearchLabelVisible] = useState(true);
   const [city, setCity] = useState('');
   const [location, setLocation] = useState('');
   const [propertyType, setPropertyType] = useState('');
@@ -137,6 +149,22 @@ function MobileHero() {
   const [minArea, setMinArea] = useState('');
   const [maxArea, setMaxArea] = useState('');
   const [areaUnit, setAreaUnit] = useState('');
+
+  useEffect(() => {
+    let transitionTimeout: number | undefined;
+    const intervalId = window.setInterval(() => {
+      setSearchLabelVisible(false);
+      transitionTimeout = window.setTimeout(() => {
+        setSearchLabelIndex((index) => (index + 1) % searchLabels.length);
+        setSearchLabelVisible(true);
+      }, 180);
+    }, 3500);
+
+    return () => {
+      window.clearInterval(intervalId);
+      if (transitionTimeout !== undefined) window.clearTimeout(transitionTimeout);
+    };
+  }, []);
 
   function handleSearch(e: React.FormEvent) {
     e.preventDefault();
@@ -190,22 +218,25 @@ function MobileHero() {
           <span className="truncate">Pakistan&apos;s Trusted Real Estate Platform</span>
         </p>
         <h1 className="mb-1 max-w-[360px] text-[clamp(2rem,9vw,2.7rem)] font-black leading-[1.02] tracking-tight text-white">
-          Find Your
+          Har Khawab
           <br />
-          <span className="text-[#00B889]">Dream</span> Property
+          <span className="text-[#00B889]">Ki Manzil</span> Apna Ghar.
         </h1>
         <p className="mb-4 text-sm font-medium text-white/90">
           Buy, Rent or Invest with Confidence
         </p>
 
-        {/* UI-only hero options */}
+        {/* Switch between the Property and Maintenance experiences. */}
         <div className="mb-3 flex items-center gap-2">
           <div className="flex w-fit items-center gap-1 rounded-full border border-white/10 bg-[#071B2B]/75 p-1 backdrop-blur">
             {(['Property', 'Maintenance'] as const).map((opt) => (
               <button
                 key={opt}
                 type="button"
-                onClick={() => setSelectedHeroOption(opt)}
+                onClick={() => {
+                  setSelectedHeroOption(opt);
+                  if (opt === 'Maintenance') router.push('/maintenance');
+                }}
                 className={`flex min-h-10 items-center gap-1.5 rounded-full px-4 text-sm font-bold transition-all ${
                   selectedHeroOption === opt
                     ? 'bg-[#00B889] text-white shadow'
@@ -230,7 +261,12 @@ function MobileHero() {
             className="mb-2 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#00B889] to-[#008F68] px-4 text-sm font-bold text-white shadow-md transition-transform active:scale-[0.99]"
           >
             <Search className="h-4 w-4" />
-            Search Properties
+            <span className="relative inline-block whitespace-nowrap text-center" aria-live="off">
+              <span className="invisible" aria-hidden="true">Search Apartments</span>
+              <span className={`absolute inset-0 transition-all duration-300 ${searchLabelVisible ? 'translate-y-0 opacity-100' : '-translate-y-1 opacity-0'}`}>
+                {searchLabels[searchLabelIndex]}
+              </span>
+            </span>
           </button>
         ) : (
           <form onSubmit={handleSearch} className="rounded-2xl border border-white/70 bg-white p-3 text-[#101D32] shadow-xl shadow-[#071B2B]/25">

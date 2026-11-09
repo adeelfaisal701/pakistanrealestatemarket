@@ -219,7 +219,7 @@ export function FeaturedAgencies() {
         {loading ? (
           <div className="grid grid-cols-2 gap-2 md:grid-cols-2 md:gap-3 lg:grid-cols-3">
             {[1, 2, 3, 4].map((item) => (
-              <div key={item} className="h-[88px] animate-pulse rounded-2xl bg-white md:h-36 md:dark:bg-slate-950" />
+              <div key={item} className="h-[198px] animate-pulse rounded-2xl bg-white md:h-[220px] md:dark:bg-slate-950" />
             ))}
           </div>
         ) : error ? (
@@ -229,20 +229,7 @@ export function FeaturedAgencies() {
         ) : agencies.length ? (
           <div className="grid grid-cols-2 gap-2 md:grid-cols-2 md:gap-3 lg:grid-cols-3">
             {agencies.map((agency) => (
-              <Link key={agency.name} href={`/agencies?name=${encodeURIComponent(agency.name)}`} className="flex min-w-0 items-center gap-2 rounded-xl border border-white bg-white p-2 shadow-sm hover:border-emerald-300 md:gap-4 md:rounded-2xl md:border-slate-200 md:p-4 md:dark:border-slate-800 md:dark:bg-slate-950">
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#EAF7F2] text-[#008F68] md:h-14 md:w-14 md:rounded-xl md:bg-emerald-50 md:text-emerald-700 md:dark:bg-emerald-950 md:dark:text-emerald-300" aria-hidden="true">
-                  <Building2 className="h-5 w-5 md:h-7 md:w-7" />
-                </span>
-                <div className="min-w-0 flex-1">
-                  <h3 className="truncate text-[10px] font-bold leading-tight text-[#101D32] md:text-base md:dark:text-white">{agency.name}</h3>
-                  <p className="mt-1 text-[10px] leading-tight text-[#64748B] md:text-xs md:dark:text-slate-400">
-                    {agency.agentCount} {agency.agentCount === 1 ? "agent" : "agents"}
-                  </p>
-                  <span className="mt-1 inline-flex min-h-6 items-center gap-1 text-[9px] font-semibold text-[#008F68] hover:text-emerald-800 md:mt-2 md:min-h-9 md:text-sm md:text-emerald-700 md:dark:text-emerald-300">
-                    View Agency <ArrowRight className="h-3 w-3 md:h-4 md:w-4" />
-                  </span>
-                </div>
-              </Link>
+              <FeaturedAgencyCard key={agency.name} agency={agency} />
             ))}
           </div>
         ) : (
@@ -252,5 +239,54 @@ export function FeaturedAgencies() {
         )}
       </div>
     </section>
+  );
+}
+
+function FeaturedAgencyCard({ agency }: { agency: PublicAgency }) {
+  const [logoFailed, setLogoFailed] = useState(false);
+  const [coverFailed, setCoverFailed] = useState(false);
+
+  return (
+    <Link
+      href={`/agencies?name=${encodeURIComponent(agency.name)}`}
+      className="relative flex min-h-[198px] min-w-0 flex-col overflow-hidden rounded-xl border border-white bg-white shadow-sm hover:border-emerald-300 md:min-h-[220px] md:rounded-2xl md:border-slate-200 md:dark:border-slate-800 md:dark:bg-slate-950"
+    >
+      <div className="relative h-[72px] w-full shrink-0 bg-gradient-to-br from-emerald-800 via-teal-700 to-slate-700 md:h-[88px]">
+        {agency.coverImageUrl && !coverFailed && (
+          <img
+            src={agency.coverImageUrl}
+            alt=""
+            aria-hidden="true"
+            loading="lazy"
+            onError={() => setCoverFailed(true)}
+            className="absolute inset-0 h-full w-full object-cover object-center"
+          />
+        )}
+      </div>
+      <div className="relative flex flex-1 flex-col bg-white px-3 pb-2 pt-2 md:px-4 md:pb-3 md:pt-3">
+        <span className="absolute -top-7 left-3 flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-white bg-[#EAF7F2] text-[#008F68] shadow-sm md:-top-8 md:left-4 md:h-16 md:w-16 md:rounded-2xl md:bg-emerald-50 md:text-emerald-700 md:dark:bg-emerald-950 md:dark:text-emerald-300">
+          {agency.logoUrl && !logoFailed ? (
+            <img
+              src={agency.logoUrl}
+              alt={`${agency.name} logo`}
+              loading="lazy"
+              onError={() => setLogoFailed(true)}
+              className="h-full w-full object-contain"
+            />
+          ) : (
+            <Building2 className="h-6 w-6 md:h-8 md:w-8" aria-hidden="true" />
+          )}
+        </span>
+        <div className="min-w-0 pl-[4.25rem]">
+          <h3 className="truncate text-[10px] font-bold leading-tight text-[#101D32] md:text-base md:dark:text-white">{agency.name}</h3>
+          <p className="mt-1 text-[10px] leading-tight text-[#64748B] md:text-xs md:dark:text-slate-400">
+            {agency.agentCount} {agency.agentCount === 1 ? "agent" : "agents"}
+          </p>
+        </div>
+        <span className="mt-auto inline-flex min-h-8 items-center gap-1 text-[9px] font-semibold text-[#008F68] hover:text-emerald-800 md:min-h-10 md:text-sm md:text-emerald-700 md:dark:text-emerald-300">
+          View Agency <ArrowRight className="h-3 w-3 md:h-4 md:w-4" />
+        </span>
+      </div>
+    </Link>
   );
 }

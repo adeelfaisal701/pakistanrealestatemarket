@@ -97,13 +97,16 @@ export default function HeroSearch({ desktop = false }: { desktop?: boolean }) {
 
         <div className="pt-2 sm:pt-4 max-w-4xl mx-auto">
           <div className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-md rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-2xl border border-white/20 dark:border-slate-800 text-slate-900 dark:text-white text-left">
-            {/* UI-only hero options */}
+            {/* Switch between the Property and Maintenance experiences. */}
             <div className="flex items-center gap-1.5 p-1 bg-slate-100 dark:bg-slate-800/80 rounded-2xl w-full sm:w-fit mb-5">
               {(['Property', 'Maintenance'] as const).map((option) => (
                 <button
                   key={option}
                   type="button"
-                  onClick={() => setSelectedHeroOption(option)}
+                  onClick={() => {
+                    setSelectedHeroOption(option);
+                    if (option === 'Maintenance') router.push('/maintenance');
+                  }}
                   className={`flex-1 sm:flex-initial px-5 py-3 sm:py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all min-h-[44px] flex items-center justify-center ${
                     selectedHeroOption === option
                       ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/30'

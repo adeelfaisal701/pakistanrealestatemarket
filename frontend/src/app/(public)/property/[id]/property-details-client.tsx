@@ -32,7 +32,8 @@ import { PropertyReportForm } from "@/components/marketplace/PropertyReportForm"
 import { SavePropertyButton } from "@/components/buyer/SavePropertyButton";
 import { getApiErrorMessage } from "@/lib/api-client";
 import { fetchPublicProperties, fetchPublicProperty } from "@/lib/public-properties";
-import { recordPropertyEvent } from "@/lib/property-analytics";
+import { createAnalyticsId, recordPropertyEvent } from "@/lib/property-analytics";
+import { normalizeInternationalPhone } from "@/lib/phone";
 import { formatLandArea } from "@/lib/utils";
 import type { MarketplaceProperty, PropertyFeatureData } from "@/types/marketplace";
 
@@ -285,9 +286,14 @@ export default function PropertyDetailsClient({
   const [activeMobileSection, setActiveMobileSection] = useState("overview");
   const [showStickyContactActions, setShowStickyContactActions] = useState(false);
   const touchStartX = useRef<number | null>(null);
+  const viewVisit = useRef<{ propertyId: string; viewId: string } | null>(null);
 
   useEffect(() => {
     let active = true;
+    if (viewVisit.current?.propertyId !== propertyId) {
+      viewVisit.current = { propertyId, viewId: createAnalyticsId() };
+    }
+    const visitId = viewVisit.current.viewId;
     setExpandedFeatureCategory(null);
     setLoading(true);
     setError("");
@@ -298,9 +304,19 @@ export default function PropertyDetailsClient({
         setProperty(result);
         setActiveImage(0);
         setBrokenImages(new Set());
-        void recordPropertyEvent(propertyId, "view").catch((requestError: unknown) => {
-          console.error("Unable to record property view analytics.", requestError);
-        });
+        void recordPropertyEvent(propertyId, "view", visitId)
+          .then(({ viewsCount }) => {
+            if (active && typeof viewsCount === "number") {
+              setProperty((current) =>
+                current?.id === propertyId
+                  ? { ...current, viewsCount }
+                  : current,
+              );
+            }
+          })
+          .catch((requestError: unknown) => {
+            console.error("Unable to record property view analytics.", requestError);
+          });
       })
       .catch((requestError: unknown) => {
         if (!active) return;
@@ -569,7 +585,7 @@ export default function PropertyDetailsClient({
   const agentProfileHref = agent?._id
     ? `/agents/${encodeURIComponent(agent._id)}`
     : undefined;
-  const phone = agent?.phone?.trim();
+  const phone = normalizeInternationalPhone(agent?.phone ?? "");
   const availability = property.availabilityStatus ?? "available";
   const availabilityLabel = availability
     .replaceAll("_", " ")
@@ -988,7 +1004,7 @@ export default function PropertyDetailsClient({
                   <>
                     <TrackedCallLink
                       propertyId={property.id}
-                      href={`tel:${phone.replace(/[^\d+]/g, "")}`}
+                      href={`tel:+${phone}`}
                       className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-slate-300 px-4 text-sm font-semibold text-slate-800 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
                     >
                       <Phone className="h-4 w-4" />

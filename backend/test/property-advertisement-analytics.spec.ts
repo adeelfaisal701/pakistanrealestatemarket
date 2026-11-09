@@ -106,36 +106,42 @@ function makeService(overrides: {
   };
 }
 
-test('public property results expose the lifetime published-ad view total', async () => {
-  const state = makeService();
-  const advertisementId = new Types.ObjectId();
-  state.advertisementsModel.find = () =>
-    query([{ _id: advertisementId, propertyId: state.propertyId }]);
-  let aggregationPipeline: unknown;
-  Object.assign(state.eventsModel, {
-    aggregate: (pipeline: unknown) => {
-      aggregationPipeline = pipeline;
-      return query([{ _id: advertisementId, count: 1247 }]);
+test('public property results expose the persisted lifetime view total', async () => {
+  const state = makeService({
+    property: {
+      _id: new Types.ObjectId(),
+      title: 'Private home',
+      agentId: new Types.ObjectId(),
+      status: PropertyStatus.PUBLISHED,
+      inventoryStatus: 'available',
+      images: [],
+      viewsCount: 1247,
     },
   });
+  state.advertisementsModel.find = () =>
+    query([{ _id: new Types.ObjectId(), propertyId: state.propertyId }]);
 
   const response = (await state.service.findAll({} as never)) as {
     data: Array<Record<string, unknown>>;
   };
 
   assert.equal(response.data[0].viewsCount, 1247);
-  assert.match(JSON.stringify(aggregationPipeline), /property_view/);
-  assert.match(JSON.stringify(aggregationPipeline), new RegExp(String(advertisementId)));
 });
 
-test('public property results default to zero views when an ad has no events', async () => {
-  const state = makeService();
+test('public property results preserve the stored zero count when an ad has no views', async () => {
+  const state = makeService({
+    property: {
+      _id: new Types.ObjectId(),
+      title: 'Private home',
+      agentId: new Types.ObjectId(),
+      status: PropertyStatus.PUBLISHED,
+      inventoryStatus: 'available',
+      images: [],
+      viewsCount: 0,
+    },
+  });
   state.advertisementsModel.find = () =>
     query([{ _id: new Types.ObjectId(), propertyId: state.propertyId }]);
-  Object.assign(state.eventsModel, {
-    aggregate: () => query([]),
-  });
-
   const response = (await state.service.findAll({} as never)) as {
     data: Array<Record<string, unknown>>;
   };
@@ -224,10 +230,13 @@ test('analytics events require a published property and advertisement and persis
     event = data;
     return data;
   };
-  let viewsIncremented = false;
-  state.propertyModel.updateOne = () => {
-    viewsIncremented = true;
-    return query({ modifiedCount: 1 });
+  let viewsIncremented = 0;
+  state.propertyModel.findOneAndUpdate = (
+    _filter: unknown,
+    update: Record<string, unknown>,
+  ) => {
+    viewsIncremented += (update.$inc as { viewsCount: number }).viewsCount;
+    return query({ viewsCount: 18 });
   };
 
   const result = await state.service.trackPublicEvent(
@@ -235,23 +244,25 @@ test('analytics events require a published property and advertisement and persis
     PropertyAnalyticsEventType.PROPERTY_VIEW,
     '7981c8b0-bcc9-43f3-aea3-52f80f088718',
     'Mozilla/5.0',
+    'cba82195-1042-4c12-9300-9c2c6e7c2d01',
   );
 
-  assert.deepEqual(result, { tracked: true });
+  assert.deepEqual(result, { tracked: true, viewsCount: 18 });
   assert.equal(event?.type, PropertyAnalyticsEventType.PROPERTY_VIEW);
   assert.equal(String(event?.advertisementId), String(ad._id));
   assert.equal(String(event?.agentId), String((state.property as { agentId: Types.ObjectId }).agentId));
   assert.equal(typeof event?.visitorHash, 'string');
   assert.equal(String(event?.visitorHash).includes('7981c8b0'), false);
-  assert.equal(viewsIncremented, true);
+  assert.equal(viewsIncremented, 1);
 });
 
-test('repeat and bot events are rejected without inserting new analytics', async () => {
+test('repeat page requests are idempotent per visit while the same visitor can generate new views', async () => {
   const state = makeService({
     property: {
       _id: new Types.ObjectId(),
       agentId: new Types.ObjectId(),
       status: PropertyStatus.PUBLISHED,
+      viewsCount: 11,
     },
   });
   state.advertisementsModel.updateOne = () => query({ upsertedCount: 0 });
@@ -259,20 +270,61 @@ test('repeat and bot events are rejected without inserting new analytics', async
     _id: new Types.ObjectId(),
     status: PropertyAdvertisementStatus.PUBLISHED,
   });
-  state.eventsModel.exists = () => query({ _id: new Types.ObjectId() });
-  let inserted = 0;
-  state.eventsModel.create = async () => {
-    inserted += 1;
-    return {};
+  const eventKeys = new Set<string>();
+  state.eventsModel.create = async (data: Record<string, unknown>) => {
+    const key = String(data.dedupeKey);
+    if (eventKeys.has(key)) {
+      const error = new Error('Duplicate visit');
+      Object.assign(error, { code: 11000 });
+      throw error;
+    }
+    eventKeys.add(key);
+    return data;
+  };
+  let increments = 0;
+  state.propertyModel.findOneAndUpdate = (
+    _filter: unknown,
+    update: Record<string, unknown>,
+  ) => {
+    increments += (update.$inc as { viewsCount: number }).viewsCount;
+    (state.property as { viewsCount: number }).viewsCount += 1;
+    return query(state.property);
   };
 
+  const first = await state.service.trackPublicEvent(
+    String((state.property as { _id: Types.ObjectId })._id),
+    PropertyAnalyticsEventType.PROPERTY_VIEW,
+    '7981c8b0-bcc9-43f3-aea3-52f80f088718',
+    'Mozilla/5.0',
+    'cba82195-1042-4c12-9300-9c2c6e7c2d01',
+  );
   const duplicate = await state.service.trackPublicEvent(
     String((state.property as { _id: Types.ObjectId })._id),
     PropertyAnalyticsEventType.PROPERTY_VIEW,
     '7981c8b0-bcc9-43f3-aea3-52f80f088718',
     'Mozilla/5.0',
+    'cba82195-1042-4c12-9300-9c2c6e7c2d01',
   );
-  assert.deepEqual(duplicate, { tracked: false, duplicate: true });
+  const second = await state.service.trackPublicEvent(
+    String((state.property as { _id: Types.ObjectId })._id),
+    PropertyAnalyticsEventType.PROPERTY_VIEW,
+    '7981c8b0-bcc9-43f3-aea3-52f80f088718',
+    'Mozilla/5.0',
+    '8c3d3de8-7a9e-4d05-b5a3-4fcd2a2ee79d',
+  );
+  const third = await state.service.trackPublicEvent(
+    String((state.property as { _id: Types.ObjectId })._id),
+    PropertyAnalyticsEventType.PROPERTY_VIEW,
+    '7981c8b0-bcc9-43f3-aea3-52f80f088718',
+    'Mozilla/5.0',
+    'fd0c0174-1bee-4f17-a639-3579024f3a5b',
+  );
+
+  assert.deepEqual(first, { tracked: true, viewsCount: 12 });
+  assert.deepEqual(duplicate, { tracked: false, duplicate: true, viewsCount: 12 });
+  assert.deepEqual(second, { tracked: true, viewsCount: 13 });
+  assert.deepEqual(third, { tracked: true, viewsCount: 14 });
+  assert.equal(increments, 3);
   await assert.rejects(
     state.service.trackPublicEvent(
       String((state.property as { _id: Types.ObjectId })._id),
@@ -282,7 +334,6 @@ test('repeat and bot events are rejected without inserting new analytics', async
     ),
     /Automated requests/,
   );
-  assert.equal(inserted, 0);
 });
 
 test('analytics deduplication schemas declare atomic and expiry indexes', () => {
@@ -308,39 +359,38 @@ test('analytics deduplication schemas declare atomic and expiry indexes', () => 
   assert.equal(PropertyAnalyticsDeduplication.name, 'PropertyAnalyticsDeduplication');
 });
 
-test('concurrent analytics events are serialized by the atomic reservation', async () => {
+test('simultaneous retries for one page view increment the stored count once', async () => {
   const state = makeService({
     property: {
       _id: new Types.ObjectId(),
       agentId: new Types.ObjectId(),
       status: PropertyStatus.PUBLISHED,
+      viewsCount: 0,
     },
   });
   state.advertisementsModel.findOne = () => query({
     _id: new Types.ObjectId(),
     status: PropertyAdvertisementStatus.PUBLISHED,
   });
-  let reservationActive = false;
-  let reservationFilter: Record<string, unknown> | undefined;
-  let reservationUpdate: Record<string, unknown> | undefined;
-  state.analyticsDeduplicationModel.findOneAndUpdate = (
-    filter?: Record<string, unknown>,
-    update?: Record<string, unknown>,
-  ) => {
-    if (filter) reservationFilter = filter;
-    if (update) reservationUpdate = update;
-    if (reservationActive) {
+  const eventKeys = new Set<string>();
+  state.eventsModel.create = async (data: Record<string, unknown>) => {
+    const key = String(data.dedupeKey);
+    if (eventKeys.has(key)) {
       const error = new Error('Duplicate reservation');
       Object.assign(error, { code: 11000 });
       throw error;
     }
-    reservationActive = true;
-    return query({});
+    eventKeys.add(key);
+    return data;
   };
-  let eventInsertions = 0;
-  state.eventsModel.create = async () => {
-    eventInsertions += 1;
-    return {};
+  let increments = 0;
+  state.propertyModel.findOneAndUpdate = (
+    _filter: unknown,
+    update: Record<string, unknown>,
+  ) => {
+    increments += (update.$inc as { viewsCount: number }).viewsCount;
+    (state.property as { viewsCount: number }).viewsCount += 1;
+    return query(state.property);
   };
   const track = () =>
     state.service.trackPublicEvent(
@@ -348,20 +398,59 @@ test('concurrent analytics events are serialized by the atomic reservation', asy
       PropertyAnalyticsEventType.PROPERTY_VIEW,
       'b6f7a201-1050-4b3b-b596-b4e51d303ffa',
       'Mozilla/5.0',
+      'f02431c8-9680-48f4-9233-324aa041eb5f',
     );
 
   const results = await Promise.all([track(), track()]);
 
-  assert.equal(eventInsertions, 1);
+  assert.equal(increments, 1);
   assert.equal(results.filter((result) => result.tracked).length, 1);
   assert.equal(results.filter((result) => result.duplicate).length, 1);
-  assert.equal(typeof reservationFilter?.key, 'string');
-  assert.ok(
-    (reservationFilter?.expiresAt as { $lte?: Date })?.$lte instanceof Date,
+});
+
+test('simultaneous visits with distinct IDs atomically increment the same property', async () => {
+  const state = makeService({
+    property: {
+      _id: new Types.ObjectId(),
+      agentId: new Types.ObjectId(),
+      status: PropertyStatus.PUBLISHED,
+      viewsCount: 0,
+    },
+  });
+  state.advertisementsModel.findOne = () => query({
+    _id: new Types.ObjectId(),
+    status: PropertyAdvertisementStatus.PUBLISHED,
+  });
+  state.eventsModel.create = async (data: Record<string, unknown>) => data;
+  state.propertyModel.findOneAndUpdate = (
+    _filter: unknown,
+    update: Record<string, unknown>,
+  ) => {
+    (state.property as { viewsCount: number }).viewsCount +=
+      (update.$inc as { viewsCount: number }).viewsCount;
+    return query(state.property);
+  };
+
+  const visitIds = [
+    'f02431c8-9680-48f4-9233-324aa041eb5f',
+    'cba82195-1042-4c12-9300-9c2c6e7c2d01',
+    '8c3d3de8-7a9e-4d05-b5a3-4fcd2a2ee79d',
+    'fd0c0174-1bee-4f17-a639-3579024f3a5b',
+  ];
+  const results = await Promise.all(
+    visitIds.map((viewId) =>
+      state.service.trackPublicEvent(
+        String(state.propertyId),
+        PropertyAnalyticsEventType.PROPERTY_VIEW,
+        'b6f7a201-1050-4b3b-b596-b4e51d303ffa',
+        'Mozilla/5.0',
+        viewId,
+      ),
+    ),
   );
-  assert.ok(
-    (reservationUpdate?.$set as { expiresAt?: Date })?.expiresAt instanceof Date,
-  );
+
+  assert.equal(results.filter((result) => result.tracked).length, visitIds.length);
+  assert.equal((state.property as { viewsCount: number }).viewsCount, visitIds.length);
 });
 
 test('failed analytics event insertion releases its deduplication reservation', async () => {
