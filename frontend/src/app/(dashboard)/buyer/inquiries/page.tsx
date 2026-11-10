@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import { BuyerInquiries } from "@/components/buyer/BuyerInquiries";
 
 export const metadata = {
-  title: "Buyer Inquiries | EstatePro",
+  title: "Buyer Inquiries | Ghar Safar",
 };
 
 export default function BuyerInquiriesPage() {

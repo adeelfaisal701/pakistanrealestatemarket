@@ -1,7 +1,7 @@
 import { BuyerSavedProperties } from "@/components/buyer/BuyerSavedProperties";
 
 export const metadata = {
-  title: "Saved Properties | EstatePro",
+  title: "Saved Properties | Ghar Safar",
 };
 
 export default function BuyerSavedPropertiesPage() {

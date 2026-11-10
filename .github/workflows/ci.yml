@@ -58,4 +58,10 @@ jobs:
 
       - name: Build frontend
         working-directory: frontend
+        env:
+          NEXT_PUBLIC_API_BASE_URL: /api/v1
+          API_PROXY_TARGET: https://api.example.invalid/api/v1
+          NEXT_PUBLIC_SITE_URL: https://frontend.example.invalid
+          NEXT_PUBLIC_ADMIN_HOSTNAME: admin.frontend.example.invalid
+          CSP_IMAGE_ORIGINS: https://api.example.invalid
         run: npm run build

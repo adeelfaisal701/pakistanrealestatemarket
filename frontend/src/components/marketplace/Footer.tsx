@@ -2,10 +2,11 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { House, MessageCircle, Phone, Mail, MapPin } from 'lucide-react';
+import Image from 'next/image';
+import { MessageCircle, Phone, Mail, MapPin } from 'lucide-react';
 
 interface FooterProps {
-  brandName?: 'PRM' | 'EstatePro';
+  brandName?: 'Ghar Safar';
 }
 
 function SocialIcon({ label }: { label: 'Facebook' | 'Instagram' | 'YouTube' | 'LinkedIn' }) {
@@ -45,13 +46,20 @@ export function HomepageFooter({ showBackToTop = false }: { showBackToTop?: bool
 
       <div className="mx-auto grid max-w-7xl grid-cols-2 gap-x-5 gap-y-7 px-5 py-7 sm:px-8 sm:py-9 lg:grid-cols-[1.55fr_0.78fr_0.9fr_1.5fr] lg:gap-8 lg:py-8 max-sm:gap-x-4 max-sm:gap-y-5 max-sm:px-4 max-sm:py-5">
         <section className="col-span-2 lg:col-span-1">
-          <Link href="/" className="inline-flex items-center gap-2.5" aria-label="EstatePro home">
-            <House className="h-11 w-11 shrink-0 fill-emerald-500 text-emerald-500" strokeWidth={2.4} />
+          <Link href="/" className="inline-flex items-center gap-2.5" aria-label="Ghar Safar home">
+            <Image
+              src="/images/ghar-safar-logo.png"
+              unoptimized
+              alt="Ghar Safar logo"
+              width={78}
+              height={75}
+              className="h-[4.5rem] w-[4.7rem] shrink-0 object-contain"
+            />
             <span className="text-[25px] font-extrabold tracking-tight text-white">
-              Estate<span className="text-emerald-500">Pro</span>
+              Ghar Safar
             </span>
           </Link>
-          <p className="mt-1 text-[15px] leading-6 text-slate-100 max-sm:text-[13px] max-sm:leading-5">Your Trusted Real Estate Partner</p>
+          <p className="mt-1 text-[15px] leading-6 text-slate-100 max-sm:text-[13px] max-sm:leading-5">Har Khwab Ki Manzil, Apna Ghar.</p>
           <div className="mt-4 flex flex-wrap items-center gap-3 max-sm:mt-3 max-sm:gap-2.5" aria-label="Social networks">
             <SocialIcon label="Facebook" />
             <SocialIcon label="Instagram" />
@@ -87,7 +95,7 @@ export function HomepageFooter({ showBackToTop = false }: { showBackToTop?: bool
             </li>
             <li className="flex min-w-0 items-center gap-3">
               <Mail className="h-5 w-5 shrink-0 text-emerald-500 max-sm:h-4 max-sm:w-4" />
-              <a href="mailto:support@zameenconnect.pk" className="break-all transition-colors hover:text-emerald-300 max-sm:whitespace-nowrap max-sm:break-normal">support@zameenconnect.pk</a>
+              <a href="mailto:support@zameenconnect.pk" className="break-all transition-colors hover:text-emerald-300 max-sm:whitespace-nowrap max-sm:break-normal">Ghar Safar Support</a>
             </li>
             <li className="flex min-w-0 items-center gap-3">
               <MapPin className="h-5 w-5 shrink-0 text-emerald-500 max-sm:h-4 max-sm:w-4" />
@@ -95,7 +103,7 @@ export function HomepageFooter({ showBackToTop = false }: { showBackToTop?: bool
             </li>
             <li>
               <a
-                href="https://wa.me/923007589188?text=Assalam%20o%20Alaikum%20PRM%20Support"
+                href="https://wa.me/923007589188?text=Assalam%20o%20Alaikum%20Ghar%20Safar%20Support"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 text-xs font-semibold text-emerald-300 transition-colors hover:text-white"
@@ -109,7 +117,7 @@ export function HomepageFooter({ showBackToTop = false }: { showBackToTop?: bool
 
       <div className="border-t border-emerald-500/90">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-5 py-5 text-sm text-slate-200 sm:px-8 max-sm:flex-col max-sm:gap-1 max-sm:px-4 max-sm:py-3 max-sm:text-center max-sm:text-xs">
-          <p>© {new Date().getFullYear()} EstatePro. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} Ghar Safar. All rights reserved.</p>
           {showBackToTop && (
             <button
               type="button"
@@ -125,7 +133,7 @@ export function HomepageFooter({ showBackToTop = false }: { showBackToTop?: bool
   );
 }
 
-export default function Footer({ brandName = 'PRM' }: FooterProps) {
+export default function Footer({ brandName = 'Ghar Safar' }: FooterProps) {
   void brandName;
   return <HomepageFooter />;
 }

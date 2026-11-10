@@ -48,6 +48,66 @@ function requireJwtSecret(): string {
   return secret;
 }
 
+function requireMongoUri(): string {
+  const uri = process.env.MONGODB_URI?.trim();
+  if (process.env.NODE_ENV === 'production') {
+    if (!uri) {
+      throw new Error('MONGODB_URI must be explicitly configured in production.');
+    }
+    let parsedUri: URL;
+    try {
+      parsedUri = new URL(uri);
+    } catch {
+      throw new Error('MONGODB_URI must be a valid production MongoDB URI.');
+    }
+    if (
+      !['mongodb:', 'mongodb+srv:'].includes(parsedUri.protocol) ||
+      isLocalHostname(parsedUri.hostname)
+    ) {
+      throw new Error('MONGODB_URI must not use a loopback host in production.');
+    }
+  }
+  return uri || 'mongodb://127.0.0.1:27017/pak_real_estate';
+}
+
+function getFrontendBaseUrl(): string {
+  const frontendBaseUrl = process.env.FRONTEND_BASE_URL?.trim();
+  if (process.env.NODE_ENV === 'production') {
+    if (!frontendBaseUrl) {
+      throw new Error('FRONTEND_BASE_URL must be explicitly configured in production.');
+    }
+    let parsedUrl: URL;
+    try {
+      parsedUrl = new URL(frontendBaseUrl);
+    } catch {
+      throw new Error('FRONTEND_BASE_URL must be an HTTPS origin in production.');
+    }
+    if (
+      parsedUrl.protocol !== 'https:' ||
+      parsedUrl.username ||
+      parsedUrl.password ||
+      parsedUrl.pathname !== '/' ||
+      parsedUrl.search ||
+      parsedUrl.hash ||
+      isLocalHostname(parsedUrl.hostname)
+    ) {
+      throw new Error('FRONTEND_BASE_URL must be an HTTPS origin without a loopback host in production.');
+    }
+  }
+  return frontendBaseUrl || 'http://localhost:3000';
+}
+
+function isLocalHostname(hostname: string): boolean {
+  const normalized = hostname.replace(/^\[|\]$/g, '').toLowerCase();
+  return (
+    normalized === 'localhost' ||
+    normalized.endsWith('.localhost') ||
+    normalized === '::1' ||
+    normalized === '0.0.0.0' ||
+    normalized.startsWith('127.')
+  );
+}
+
 export default () => {
   const corsPolicy = createCorsPolicy(
     process.env.NODE_ENV,
@@ -58,7 +118,7 @@ export default () => {
     nodeEnv: process.env.NODE_ENV,
     appName: process.env.APP_NAME || 'Pakistan Real Estate & Agent CRM API',
     database: {
-      uri: process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/pak_real_estate',
+      uri: requireMongoUri(),
     },
     jwt: {
       secret: requireJwtSecret(),
@@ -76,7 +136,7 @@ export default () => {
     },
     propertyLocationShare: {
       ttlHours: getLocationShareTtlHours(),
-      frontendBaseUrl: process.env.FRONTEND_BASE_URL || 'http://localhost:3000',
+      frontendBaseUrl: getFrontendBaseUrl(),
       encryptionKey: getPropertyLocationEncryptionKey(),
     },
   };

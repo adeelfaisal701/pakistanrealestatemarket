@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import axios from "axios";
 import apiClient, {
@@ -10,7 +11,7 @@ import apiClient, {
 } from "@/lib/api-client";
 import { clearAgentDashboardData } from "@/lib/agent-session-data";
 import { useAgentStore } from "@/lib/agent-store";
-import { Building2, LoaderCircle } from "lucide-react";
+import { LoaderCircle } from "lucide-react";
 
 interface Profile {
   id?: string;
@@ -116,10 +117,15 @@ export function AgentAccessGuard({ children }: { children: React.ReactNode }) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-[#F7F9FC] px-4">
         <section className="flex w-full max-w-sm flex-col items-center rounded-3xl border border-[#E2E8F0] bg-white p-8 text-center shadow-sm">
-          <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#EAF7F2] text-[#008F68]">
-            <Building2 className="h-6 w-6" />
-          </span>
-          <h1 className="mt-4 text-lg font-bold text-[#071B2B]">EstatePro Agent CRM</h1>
+          <Image
+            src="/images/ghar-safar-logo.png"
+            unoptimized
+            alt="Ghar Safar logo"
+            width={50}
+            height={48}
+            className="h-12 w-12 object-contain"
+          />
+          <h1 className="mt-4 text-lg font-bold text-[#071B2B]">Ghar Safar Agent CRM</h1>
           <p role="status" className="mt-2 inline-flex items-center gap-2 text-sm text-[#64748B]">
             <LoaderCircle className="h-4 w-4 animate-spin text-[#00B889]" />
             Verifying agent account access…

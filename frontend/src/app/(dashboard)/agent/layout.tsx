@@ -6,7 +6,7 @@ import { AgentAccessGuard } from "@/components/crm/AgentAccessGuard";
 import { AgentDashboardDataLoader } from "@/components/crm/AgentDashboardDataLoader";
 
 export const metadata = {
-  title: "Agent CRM & Dashboard | EstatePro Lahore",
+  title: "Agent CRM & Dashboard | Ghar Safar",
   description: "Manage your ads, leads, calls and WhatsApp inquiries.",
 };
 

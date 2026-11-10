@@ -4,9 +4,9 @@ import './globals.css';
 import { BuyerSavedPropertiesProvider } from '@/components/buyer/BuyerSavedPropertiesProvider';
 
 export const metadata: Metadata = {
-  title: 'PRM | Pakistan Real Estate Marketplace & Agent CRM (Lahore)',
+  title: 'Ghar Safar | Pakistan Real Estate Marketplace',
   description:
-    'Find fresh, 14-day verified houses, plots, and apartments in Lahore. Connect directly with owners and Level 2 verified agents with 1-tap WhatsApp.',
+    'Ghar Safar — Har Khwab Ki Manzil, Apna Ghar. Find verified houses, plots, and apartments across Pakistan.',
   keywords: [
     'Lahore Real Estate',
     'Pakistan Property',
@@ -16,6 +16,8 @@ export const metadata: Metadata = {
     'Agent CRM Pakistan',
   ],
 };
+
+export const dynamic = 'force-dynamic';
 
 export default function RootLayout({
   children,

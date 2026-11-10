@@ -1,7 +1,7 @@
 import { AdminAgencyDirectory } from "@/components/admin/AdminAgencyDirectory";
 
 export const metadata = {
-  title: "Agency Directory | EstatePro Admin",
+  title: "Agency Directory | Ghar Safar Admin",
   description: "Review agencies associated with registered agent records.",
 };
 

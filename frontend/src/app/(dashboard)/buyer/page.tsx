@@ -1,7 +1,7 @@
 import { BuyerDashboard } from "@/components/buyer/BuyerDashboard";
 
 export const metadata = {
-  title: "Buyer Dashboard | EstatePro",
+  title: "Buyer Dashboard | Ghar Safar",
   description: "Manage saved properties, alerts and agent conversations.",
 };
 

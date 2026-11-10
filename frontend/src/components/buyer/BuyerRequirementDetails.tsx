@@ -138,7 +138,7 @@ export function BuyerRequirementDetails({ id }: { id: string }) {
             )}
             {offer.message && <p className="mt-3 text-sm text-slate-700 dark:text-slate-300">{offer.message}</p>}
             <p className="mt-2 text-xs text-slate-500">Submitted {new Date(offer.createdAt).toLocaleString()}</p>
-            <p className="mt-3 text-sm text-slate-500">Verified agent: <span className="font-medium text-slate-800 dark:text-slate-200">{offer.agent?.name ?? "EstatePro agent"}</span>{offer.agent?.agencyName ? ` · ${offer.agent.agencyName}` : ""}</p>
+            <p className="mt-3 text-sm text-slate-500">Verified agent: <span className="font-medium text-slate-800 dark:text-slate-200">{offer.agent?.name ?? "Ghar Safar agent"}</span>{offer.agent?.agencyName ? ` · ${offer.agent.agencyName}` : ""}</p>
             <div className="mt-4 flex flex-wrap gap-2">
               {offer.property && <Link href={`/property/${encodeURIComponent(offer.property.id)}`} className="inline-flex min-h-9 items-center rounded-md border border-slate-300 px-3 text-sm font-medium hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800">View listing</Link>}
               {offer.status === "pending" && item.status === "published" && <><Button size="sm" disabled={actingId === offer.id} onClick={() => void respond(offer, "accept")}>Accept offer</Button><Button size="sm" variant="outline" disabled={actingId === offer.id} onClick={() => void respond(offer, "reject")}>Reject</Button></>}

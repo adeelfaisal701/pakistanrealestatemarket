@@ -114,7 +114,7 @@ export default function PublicAgenciesPage() {
       <Navbar />
       <main className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
         <Link href="/" className="inline-flex items-center gap-2 text-sm font-semibold text-emerald-700 hover:text-emerald-800 dark:text-emerald-300">
-          <ArrowLeft className="h-4 w-4" /> Back to EstatePro
+          <ArrowLeft className="h-4 w-4" /> Back to Ghar Safar
         </Link>
 
         {loading ? (

@@ -37,28 +37,6 @@ function HouseIcon({ className }: { className?: string }) {
     </svg>
   );
 }
-function PlotIcon({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" fill="currentColor" className={className}>
-      <path d="M20 2H4c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 18H4V4h16v16zm-2-2H6V6h12v12z" />
-    </svg>
-  );
-}
-function ApartmentIcon({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" fill="currentColor" className={className}>
-      <path d="M17 11V3H7v4H3v14h8v-4h2v4h8V11h-4zM7 19H5v-2h2v2zm0-4H5v-2h2v2zm0-4H5v-2h2v2zm4 4H9v-2h2v2zm0-4H9v-2h2v2zm0-4H9V7h2v2zm4 8h-2v-2h2v2zm0-4h-2v-2h2v2zm0-4h-2V7h2v2zm4 8h-2v-2h2v2zm0-4h-2v-2h2v2z" />
-    </svg>
-  );
-}
-function CommercialIcon({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" fill="currentColor" className={className}>
-      <path d="M20 4H4v2h16V4zm1 10v-2l-1-5H4l-1 5v2h1v6h10v-6h4v6h2v-6h1zm-9 4H6v-4h6v4z" />
-    </svg>
-  );
-}
-
 const searchLabels = [
   'Search Properties',
   'Search Flats',
@@ -74,24 +52,34 @@ function MobileHeader() {
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
-    <header className="absolute inset-x-0 top-0 z-30 border-b border-white/60 bg-white/90 px-4 pb-2 pt-[max(0.75rem,env(safe-area-inset-top))] backdrop-blur-md">
+    <header className="absolute inset-x-0 top-0 z-30 border-b border-slate-200/80 bg-white/95 px-3 pb-2 pt-[max(0.75rem,env(safe-area-inset-top))] shadow-sm backdrop-blur-md min-[360px]:px-4">
       <div className="flex items-center justify-between">
         {/* Logo */}
-        <Link href="/" className="flex min-h-11 items-center gap-2">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#00B889] text-white shadow-sm">
-            <HouseIcon className="h-4 w-4" />
-          </div>
-          <span className="text-lg font-black tracking-tight text-[#101D32]">
-            Estate<span className="text-[#00B889]">Pro</span>
+        <Link href="/" className="flex min-h-12 min-w-0 items-center gap-2">
+          <Image
+            src="/images/ghar-safar-logo.png"
+            unoptimized
+            alt="Ghar Safar logo"
+            width={798}
+            height={768}
+            className="h-[70px] w-[72px] shrink-0 object-contain max-[359px]:h-[62px] max-[359px]:w-16"
+          />
+          <span className="flex min-w-0 flex-col">
+            <span className="whitespace-nowrap text-[19px] font-extrabold leading-5 text-[#101D32] max-[359px]:text-[18px]">
+              Ghar <span className="text-[#00B889]">Safar</span>
+            </span>
+            <span className="whitespace-nowrap text-[8px] font-medium leading-3 tracking-[0.1em] text-[#101D32]/70 max-[359px]:text-[7px] max-[359px]:tracking-[0.06em]">
+              YOUR PROPERTY DESTINATION
+            </span>
           </span>
         </Link>
 
         {/* Right icons */}
-        <div className="flex items-center gap-2">
+        <div className="flex shrink-0 items-center gap-1.5">
           <Link
             href="/buyer/notifications"
             aria-label="Notifications"
-            className="relative flex h-10 w-10 items-center justify-center rounded-xl text-[#101D32] transition-colors hover:bg-slate-100"
+            className="relative flex h-10 w-10 items-center justify-center rounded-xl text-[#101D32] transition-colors hover:bg-slate-100 active:bg-slate-200/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00B889]"
           >
             <Bell className="h-5 w-5" />
           </Link>
@@ -101,7 +89,7 @@ function MobileHeader() {
             onClick={() => setMenuOpen(!menuOpen)}
             aria-expanded={menuOpen}
             aria-label={menuOpen ? 'Close menu' : 'Open menu'}
-            className="flex h-10 w-10 items-center justify-center rounded-xl text-[#101D32] transition-colors hover:bg-slate-100"
+            className="flex h-10 w-10 items-center justify-center rounded-xl text-[#101D32] transition-colors hover:bg-slate-100 active:bg-slate-200/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00B889]"
           >
             {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>
@@ -218,9 +206,9 @@ function MobileHero() {
           <span className="truncate">Pakistan&apos;s Trusted Real Estate Platform</span>
         </p>
         <h1 className="mb-1 max-w-[360px] text-[clamp(2rem,9vw,2.7rem)] font-black leading-[1.02] tracking-tight text-white">
-          Har Khawab
+          Har Khwab
           <br />
-          <span className="text-[#00B889]">Ki Manzil</span> Apna Ghar.
+          <span className="text-[#00B889]">Ki Manzil,</span> Apna Ghar.
         </h1>
         <p className="mb-4 text-sm font-medium text-white/90">
           Buy, Rent or Invest with Confidence
@@ -329,19 +317,25 @@ function MobileHero() {
         )}
         <nav aria-label="Property categories" className="mt-auto -mx-1 grid min-h-0 max-h-[145px] w-[calc(100%+0.5rem)] flex-1 grid-cols-3 grid-rows-2 gap-2">
           {[
-            { label: 'Plots', type: 'Plot', icon: <PlotIcon className="h-8 w-8" /> },
-            { label: 'Houses', type: 'House', icon: <HouseIcon className="h-8 w-8" /> },
-            { label: 'Shops', type: 'Commercial', icon: <Building2 className="h-8 w-8" /> },
-            { label: 'Commercial', type: 'Commercial', icon: <CommercialIcon className="h-8 w-8" /> },
-            { label: 'Apartments', type: 'Flat', icon: <ApartmentIcon className="h-8 w-8" /> },
-            { label: 'Plaza', type: 'Commercial', icon: <Building2 className="h-8 w-8" /> },
+            { label: 'Plots', type: 'Plot', icon: '/images/icons/plots.svg' },
+            { label: 'Houses', type: 'House', icon: '/images/icons/houses.svg' },
+            { label: 'Shops', type: 'Commercial', icon: '/images/icons/shops.svg' },
+            { label: 'Commercial', type: 'Commercial', icon: '/images/icons/commercial.svg' },
+            { label: 'Apartments', type: 'Flat', icon: '/images/icons/apartments.svg' },
+            { label: 'Plaza', type: 'Commercial', icon: '/images/icons/plaza.svg' },
           ].map((category) => (
             <Link
               key={category.label}
               href={`/properties?propertyType=${encodeURIComponent(category.type)}`}
               className="flex min-w-0 flex-col items-center justify-center gap-1 rounded-xl border border-white/15 bg-white/5 px-1 py-1 text-sm font-semibold leading-tight text-white/95 transition-colors hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00B889]"
             >
-              <span className="text-[#00B889]">{category.icon}</span>
+              <Image
+                src={category.icon}
+                alt=""
+                width={32}
+                height={32}
+                className="h-8 w-8 object-contain"
+              />
               <span className="whitespace-nowrap">{category.label}</span>
             </Link>
           ))}
@@ -692,7 +686,7 @@ function MobileListCTA() {
           </div>
           <div className="min-w-0">
             <h2 className="text-sm font-extrabold leading-tight text-white sm:text-base">
-              List Your Property with EstatePro
+              List Your Property with Ghar Safar
             </h2>
             <p className="mt-1 text-[11px] leading-snug text-white/75 sm:text-xs">
               Get more visibility and reach serious buyers

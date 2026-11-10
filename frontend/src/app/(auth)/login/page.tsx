@@ -2,8 +2,9 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { Building2, Lock, Mail, ArrowRight } from "lucide-react";
+import { Lock, Mail, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
@@ -83,9 +84,14 @@ export default function LoginPage() {
     <div className="min-h-[calc(100vh-160px)] flex items-center justify-center px-4 py-12">
       <Card className="w-full max-w-md shadow-xl border-slate-200 dark:border-slate-800">
         <CardHeader className="text-center space-y-2">
-          <div className="mx-auto h-12 w-12 rounded-2xl bg-emerald-600 flex items-center justify-center text-white shadow-md shadow-emerald-600/20">
-            <Building2 className="h-6 w-6" />
-          </div>
+          <Image
+            src="/images/ghar-safar-logo.png"
+            unoptimized
+            alt="Ghar Safar logo"
+            width={50}
+            height={48}
+            className="mx-auto h-12 w-12 object-contain"
+          />
           <CardTitle className="text-2xl font-bold">Welcome Back</CardTitle>
           <CardDescription>
             Log in to manage your real estate listings, CRM leads, and inquiries.

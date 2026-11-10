@@ -1,7 +1,7 @@
 import { AdminActivityLog } from "@/components/admin/AdminActivityLog";
 
 export const metadata = {
-  title: "Admin Activity Log | EstatePro",
+  title: "Admin Activity Log | Ghar Safar",
   description: "Search the persistent audit trail of admin moderation actions.",
 };
 

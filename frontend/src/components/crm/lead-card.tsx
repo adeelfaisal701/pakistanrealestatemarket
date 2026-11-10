@@ -58,7 +58,7 @@ export function LeadCard({ lead }: LeadCardProps) {
       <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex gap-2">
         <WhatsAppButton
           phoneNumber={lead.clientPhone}
-          message={`Salam ${lead.clientName}, regarding your property query on ZameenConnect...`}
+          message={`Salam ${lead.clientName}, regarding your property query on Ghar Safar...`}
           size="sm"
           className="w-full text-xs"
         />

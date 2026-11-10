@@ -56,10 +56,10 @@ const steps = [
 ];
 
 const workGallery = [
-  { title: 'Plumbing & repairs', position: '7% 55%' },
-  { title: 'Electrical work', position: '35% 52%' },
-  { title: 'AC maintenance', position: '67% 44%' },
-  { title: 'Painting & finishing', position: '83% 56%' },
+  { title: 'Plumbing & repairs', positionClass: 'object-[7%_55%]' },
+  { title: 'Electrical work', positionClass: 'object-[35%_52%]' },
+  { title: 'AC maintenance', positionClass: 'object-[67%_44%]' },
+  { title: 'Painting & finishing', positionClass: 'object-[83%_56%]' },
 ];
 
 const faqs = [
@@ -137,9 +137,16 @@ export default function MaintenanceLandingPage() {
     <main className="overflow-hidden bg-white text-[#102b55]">
       <header className="bg-white">
         <div className="mx-auto flex min-h-[62px] max-w-[1180px] items-center justify-between gap-2 px-4 sm:min-h-[72px] sm:px-6 lg:px-8">
-          <Link href="/maintenance" className="inline-flex min-w-0 items-center gap-2" aria-label="EstatePro home">
-            <House aria-hidden="true" className="h-8 w-8 shrink-0 fill-[#0d57ad] text-[#0d57ad] sm:h-9 sm:w-9" strokeWidth={2.2} />
-            <span className="truncate text-[17px] font-black tracking-[-0.04em] text-[#102b55] sm:text-xl">EstatePro</span>
+          <Link href="/maintenance" className="inline-flex min-w-0 items-center gap-2" aria-label="Ghar Safar home">
+            <Image
+              src="/images/ghar-safar-logo.png"
+              unoptimized
+              alt="Ghar Safar logo"
+              width={40}
+              height={39}
+              className="h-8 w-8 shrink-0 object-contain sm:h-9 sm:w-9"
+            />
+            <span className="truncate text-[17px] font-black tracking-[-0.04em] text-[#102b55] sm:text-xl">Ghar Safar</span>
           </Link>
           <nav aria-label="Account" className="flex shrink-0 items-center gap-2">
             <Link href="/login" className="inline-flex min-h-9 items-center justify-center rounded-full border border-[#b8cce4] bg-white px-3 text-[11px] font-bold text-[#0d57ad] transition hover:bg-[#f4f8fd] sm:min-h-10 sm:px-5 sm:text-xs">
@@ -165,7 +172,7 @@ export default function MaintenanceLandingPage() {
         <div aria-hidden="true" className="absolute inset-0 z-[-1] bg-gradient-to-r from-[#061a34]/90 via-[#08284e]/75 to-[#08284e]/25 md:from-[#061a34]/90 md:via-[#08284e]/65 md:to-[#08284e]/15" />
         <div className="relative mx-auto flex min-h-[620px] max-w-[1180px] items-center px-4 py-9 sm:min-h-[640px] sm:px-6 sm:py-12 md:min-h-[560px] lg:px-8">
           <div className="w-full max-w-[540px]">
-            <p className="mb-3 text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#b8d7ff] sm:text-xs">ESTATEPRO HOME SERVICES</p>
+            <p className="mb-3 text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#b8d7ff] sm:text-xs">GHAR SAFAR HOME SERVICES</p>
             <h1 id="maintenance-hero-heading" className="max-w-[520px] text-[clamp(2.15rem,7vw,4rem)] font-black leading-[0.99] tracking-[-0.05em] text-white">
               Expert Home Maintenance, <span className="text-[#9ccaff]">Made Simple</span>
             </h1>
@@ -188,7 +195,7 @@ export default function MaintenanceLandingPage() {
               </button>
             </form>
 
-            <nav aria-label="Choose an EstatePro experience" className="mt-4 flex">
+            <nav aria-label="Choose a Ghar Safar experience" className="mt-4 flex">
               <div className="flex items-center rounded-full border border-white/40 bg-white p-1 shadow-[0_6px_20px_rgba(0,0,0,0.2)]">
                 <Link href="/" className="inline-flex min-h-9 items-center gap-1.5 rounded-full px-3 text-[11px] font-bold text-[#17365d] transition hover:bg-[#f1f6fc] sm:min-h-10 sm:gap-2 sm:px-5 sm:text-sm">
                   <House aria-hidden="true" className="h-4 w-4 text-[#0d65c8]" />
@@ -204,7 +211,7 @@ export default function MaintenanceLandingPage() {
         </div>
       </section>
 
-      <section aria-label="EstatePro service commitments" className="border-y border-[#e1ebf8] bg-[#edf5ff]">
+      <section aria-label="Ghar Safar service commitments" className="border-y border-[#e1ebf8] bg-[#edf5ff]">
         <div className="mx-auto grid max-w-[1180px] grid-cols-3 divide-x divide-[#d4e2f4] px-2 py-3 sm:px-6 sm:py-4 lg:px-8">
           {[
             { label: 'Trusted Professionals', icon: ShieldCheck },
@@ -235,7 +242,7 @@ export default function MaintenanceLandingPage() {
               Complete Care for Every Corner of Your Home
             </h2>
             <p className="mt-3 text-[13px] leading-5 text-[#405875] sm:text-sm sm:leading-6">
-              From small repairs to major renovations, EstatePro is your one-stop solution for all your home maintenance needs.
+              From small repairs to major renovations, Ghar Safar is your one-stop solution for all your home maintenance needs.
             </p>
           </div>
         </div>
@@ -271,7 +278,7 @@ export default function MaintenanceLandingPage() {
       <section id="why-us" aria-labelledby="why-heading" className="bg-[#f6f9fd]">
         <div className="mx-auto grid max-w-[1180px] items-center gap-5 px-4 py-7 sm:px-6 sm:py-9 md:grid-cols-[0.8fr_1.2fr] md:gap-8 lg:px-8">
           <div>
-            <h2 id="why-heading" className="text-[clamp(1.45rem,4vw,2rem)] font-black leading-tight tracking-[-0.04em] text-[#102b55]">Why Choose EstatePro</h2>
+            <h2 id="why-heading" className="text-[clamp(1.45rem,4vw,2rem)] font-black leading-tight tracking-[-0.04em] text-[#102b55]">Why Choose Ghar Safar</h2>
             <ul className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-1">
               {benefits.map(({ title, icon: Icon }) => (
                 <li key={title} className="flex items-center gap-2.5 text-xs font-semibold text-[#244368] sm:text-sm">
@@ -322,7 +329,7 @@ export default function MaintenanceLandingPage() {
             </span>
             <h3 className="mt-2 text-sm font-bold text-[#17365d] sm:text-base">The maintenance directory is growing</h3>
             <p className="mx-auto mt-1 max-w-lg text-xs leading-5 text-[#64748b] sm:text-sm">
-              Provider profiles and ratings will appear here when maintenance professionals join EstatePro. Call us and we’ll help with your service request.
+              Provider profiles and ratings will appear here when maintenance professionals join Ghar Safar. Call us and we’ll help with your service request.
             </p>
             <ContactLink className="mt-3 inline-flex min-h-9 items-center justify-center gap-2 rounded-full border border-[#c8d9ed] bg-white px-4 text-xs font-bold text-[#0d57ad] transition hover:bg-[#edf5ff]">
               <Phone aria-hidden="true" className="h-3.5 w-3.5" /> Request a Service
@@ -335,7 +342,7 @@ export default function MaintenanceLandingPage() {
         <div className="mx-auto max-w-[1100px]">
           <SectionTitle id="work-heading" title="Recent Maintenance Work" centered />
           <div className="mt-4 grid grid-cols-2 gap-2.5 sm:mt-5 sm:grid-cols-4 sm:gap-3">
-            {workGallery.map(({ title, position }) => (
+            {workGallery.map(({ title, positionClass }) => (
               <figure key={title} className="overflow-hidden rounded-xl border border-[#e6ebf2] bg-white shadow-sm">
                 <div className="relative aspect-[1.35] bg-[#e7edf4]">
                   <Image
@@ -343,8 +350,7 @@ export default function MaintenanceLandingPage() {
                     alt={`${title} service`}
                     fill
                     sizes="(max-width: 639px) 45vw, 25vw"
-                    className="object-cover"
-                    style={{ objectPosition: position }}
+                    className={`object-cover ${positionClass}`}
                   />
                 </div>
                 <figcaption className="px-2.5 py-2 text-[10px] font-bold text-[#19375d] sm:px-3 sm:text-xs">{title}</figcaption>
@@ -423,11 +429,18 @@ export default function MaintenanceLandingPage() {
       <footer className="bg-[#062650] text-white">
         <div className="mx-auto grid max-w-[1180px] grid-cols-2 gap-x-5 gap-y-7 px-4 py-7 sm:px-6 sm:py-9 md:grid-cols-4 md:gap-8 lg:px-8">
           <div className="col-span-2 md:col-span-1">
-            <Link href="/maintenance" className="inline-flex items-center gap-2" aria-label="EstatePro Maintenance home">
-              <House aria-hidden="true" className="h-8 w-8 fill-white text-white" />
-              <span className="text-lg font-extrabold tracking-tight">EstatePro</span>
+            <Link href="/maintenance" className="inline-flex items-center gap-2" aria-label="Ghar Safar Maintenance home">
+              <Image
+                src="/images/ghar-safar-logo.png"
+                unoptimized
+                alt="Ghar Safar logo"
+                width={40}
+                height={39}
+                className="h-8 w-8 shrink-0 object-contain"
+              />
+              <span className="text-lg font-extrabold tracking-tight">Ghar Safar</span>
             </Link>
-            <p className="mt-1 text-[10px] text-blue-100 sm:text-xs">Your Home, Our Priority</p>
+            <p className="mt-1 text-[10px] text-blue-100 sm:text-xs">Har Khwab Ki Manzil, Apna Ghar.</p>
             <div className="mt-3 flex items-center gap-2" aria-label="Social networks">
               {[
                 { name: 'Facebook', Icon: Facebook },
@@ -466,14 +479,14 @@ export default function MaintenanceLandingPage() {
             <ul className="space-y-2 text-[10px] text-blue-100 sm:text-xs">
               <li className="flex items-center gap-2"><MapPin aria-hidden="true" className="h-3.5 w-3.5 shrink-0" />Lahore, Pakistan</li>
               <li className="flex items-center gap-2"><Phone aria-hidden="true" className="h-3.5 w-3.5 shrink-0" /><a href="tel:+923001234567" className="hover:text-white">+92 300 1234567</a></li>
-              <li className="flex min-w-0 items-center gap-2"><Mail aria-hidden="true" className="h-3.5 w-3.5 shrink-0" /><a href="mailto:info@estatepro.pk" className="break-all hover:text-white">info@estatepro.pk</a></li>
+              <li className="flex min-w-0 items-center gap-2"><Mail aria-hidden="true" className="h-3.5 w-3.5 shrink-0" /><a href="mailto:info@estatepro.pk" className="break-all hover:text-white">Ghar Safar Support</a></li>
             </ul>
           </div>
         </div>
         <div className="border-t border-white/20">
           <div className="mx-auto flex max-w-[1180px] flex-col gap-1 px-4 py-3 text-[9px] text-blue-100 sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:text-[10px] lg:px-8">
-            <p>© {new Date().getFullYear()} EstatePro. All rights reserved.</p>
-            <p>Live Better, With EstatePro</p>
+            <p>© {new Date().getFullYear()} Ghar Safar. All rights reserved.</p>
+            <p>Har Khwab Ki Manzil, Apna Ghar.</p>
           </div>
         </div>
       </footer>

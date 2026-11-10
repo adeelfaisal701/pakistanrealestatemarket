@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Building2, PlusCircle, ShieldCheck, Menu, X, User, ArrowRight, Search } from 'lucide-react';
+import Image from 'next/image';
+import { PlusCircle, ShieldCheck, Menu, X, User, ArrowRight, Search } from 'lucide-react';
 
 interface NavbarProps {
   showSearch?: boolean;
@@ -42,20 +43,25 @@ export default function Navbar({ showSearch = false }: NavbarProps) {
         <div className="flex items-center justify-between h-16 sm:h-18 xl:h-20">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 sm:gap-2.5 xl:gap-3 group flex-shrink-0">
-            <div className="h-9 w-9 sm:h-10 sm:w-10 xl:h-11 xl:w-11 rounded-xl bg-gradient-to-tr from-emerald-700 to-teal-500 flex items-center justify-center text-white shadow-md shadow-emerald-500/20 group-hover:scale-105 transition-transform duration-200 flex-shrink-0">
-              <Building2 className="h-4 w-4 sm:h-5 sm:w-5 xl:h-6 xl:w-6 flex-shrink-0" />
-            </div>
+            <Image
+              src="/images/ghar-safar-logo.png"
+              unoptimized
+              alt="Ghar Safar logo"
+              width={58}
+              height={56}
+              className="h-11 w-11 flex-shrink-0 object-contain sm:h-12 sm:w-12 xl:h-[52px] xl:w-[52px]"
+            />
             <div>
               <div className="flex items-center gap-1.5">
-                <span className="text-lg sm:text-xl xl:text-2xl font-black tracking-tight text-slate-900 dark:text-white">
-                  PRM
+                <span className="text-xl sm:text-2xl xl:text-[26px] font-black tracking-tight text-slate-900 dark:text-white">
+                  Ghar Safar
                 </span>
                 <span className="px-1.5 py-0.5 text-[9px] sm:text-[10px] font-bold uppercase tracking-wider bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-400 rounded-md border border-emerald-200 dark:border-emerald-800">
                   Lahore
                 </span>
               </div>
               <p className="text-[10px] sm:text-[11px] font-medium text-slate-500 dark:text-slate-400 -mt-0.5 hidden sm:block">
-                Pakistan Real Estate Marketplace
+                Har Khwab Ki Manzil, Apna Ghar.
               </p>
             </div>
           </Link>

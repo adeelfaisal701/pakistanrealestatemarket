@@ -42,7 +42,7 @@ ${property.description ? `📝 *Highlights:* ${property.description}` : ''}
 Would you like to schedule an on-site visit today or require video tour / title document copies?
 
 Regards,
-*EstatePro Verified Agent Team*
+*Ghar Safar Verified Agent Team*
 Lahore Real Estate Desk`;
   }
 
@@ -55,7 +55,7 @@ We have curated top verified inventory options matching your exact parameters.
 When is a good time for a quick 2-minute call or site visit this week?
 
 Regards,
-*EstatePro Verified Agent Desk*`;
+*Ghar Safar Verified Agent Desk*`;
 }
 
 export function WhatsAppShareModal({

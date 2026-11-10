@@ -71,7 +71,7 @@ export function PropertyReportForm({ propertyId }: PropertyReportFormProps) {
             <header className="mb-4 flex items-center justify-between gap-3">
               <div>
                 <h2 id={`report-property-${propertyId}`} className="font-bold text-slate-900 dark:text-white">Report this property</h2>
-                <p className="mt-1 text-xs text-slate-500">Reports are reviewed by EstatePro administrators.</p>
+                <p className="mt-1 text-xs text-slate-500">Reports are reviewed by Ghar Safar administrators.</p>
               </div>
               <button type="button" onClick={() => setOpen(false)} aria-label="Close report form" className="rounded-lg p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800"><X className="h-5 w-5" /></button>
             </header>

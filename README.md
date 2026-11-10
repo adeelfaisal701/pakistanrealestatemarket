@@ -1,6 +1,6 @@
-# EstatePro
+# Ghar Safar
 
-EstatePro is a Pakistan real-estate marketplace and agent CRM. The repository contains a Next.js web application and a separate NestJS API backed by MongoDB/Mongoose.
+Ghar Safar (گھر سفر) is a Pakistan real-estate marketplace and agent CRM. Har Khwab Ki Manzil, Apna Ghar. The repository contains a Next.js web application and a separate NestJS API backed by MongoDB/Mongoose.
 
 ## Implemented capabilities
 

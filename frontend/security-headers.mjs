@@ -3,7 +3,11 @@ const DEFAULT_IMAGE_ORIGINS = [
   "https://tile.openstreetmap.org",
 ];
 
-export function buildContentSecurityPolicy(environment = process.env) {
+export function buildContentSecurityPolicy(environment = process.env, nonce) {
+  if (typeof nonce !== "string" || !/^[A-Za-z0-9+/_-]+={0,2}$/.test(nonce)) {
+    throw new Error("A valid per-request CSP nonce is required.");
+  }
+
   const imageOrigins = parseOrigins(
     environment.CSP_IMAGE_ORIGINS,
     environment.NODE_ENV,
@@ -13,6 +17,7 @@ export function buildContentSecurityPolicy(environment = process.env) {
     environment.NEXT_PUBLIC_API_BASE_URL,
     environment.NODE_ENV,
   );
+  const isDevelopment = environment.NODE_ENV === "development";
 
   return [
     "default-src 'self'",
@@ -20,8 +25,13 @@ export function buildContentSecurityPolicy(environment = process.env) {
     "object-src 'none'",
     "form-action 'self'",
     "frame-ancestors 'none'",
-    "script-src 'self'",
-    "style-src 'self'",
+    `script-src 'self' 'nonce-${nonce}'${isDevelopment ? " 'unsafe-eval'" : ""}`,
+    "script-src-attr 'none'",
+    `style-src 'self' 'nonce-${nonce}'`,
+    "style-src-attr 'unsafe-inline'",
+    isDevelopment
+      ? "style-src-elem 'self' 'unsafe-inline'"
+      : `style-src-elem 'self' 'nonce-${nonce}'`,
     `img-src 'self' data: blob: ${[...new Set([...DEFAULT_IMAGE_ORIGINS, ...imageOrigins])].join(" ")}`,
     `font-src 'self' data:`,
     `connect-src 'self' ${apiOrigin ?? ""}`.trim(),
@@ -33,7 +43,6 @@ export function buildContentSecurityPolicy(environment = process.env) {
 
 export function buildSecurityHeaders(environment = process.env) {
   const headers = [
-    { key: "Content-Security-Policy-Report-Only", value: buildContentSecurityPolicy(environment) },
     { key: "X-Content-Type-Options", value: "nosniff" },
     { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
     { key: "X-Frame-Options", value: "DENY" },

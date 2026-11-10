@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { Building2, Building, House, LandPlot, Search, Store } from 'lucide-react';
+import { Search } from 'lucide-react';
 
 export default function HeroSearch({ desktop = false }: { desktop?: boolean }) {
   const router = useRouter();
@@ -186,18 +186,18 @@ export default function HeroSearch({ desktop = false }: { desktop?: boolean }) {
             )}
             <nav aria-label="Property categories" className="mt-4 flex snap-x snap-mandatory gap-2 overflow-x-auto scroll-smooth [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
               {[
-                { label: 'Plots', type: 'Plot', Icon: LandPlot },
-                { label: 'Houses', type: 'House', Icon: House },
-                { label: 'Shops', type: 'Commercial', Icon: Store },
-                { label: 'Commercial', type: 'Commercial', Icon: Building2 },
-                { label: 'Apartments', type: 'Flat', Icon: Building },
-              ].map(({ label, type, Icon }) => (
+                { label: 'Plots', type: 'Plot', icon: '/images/icons/plots.svg' },
+                { label: 'Houses', type: 'House', icon: '/images/icons/houses.svg' },
+                { label: 'Shops', type: 'Commercial', icon: '/images/icons/shops.svg' },
+                { label: 'Commercial', type: 'Commercial', icon: '/images/icons/commercial.svg' },
+                { label: 'Apartments', type: 'Flat', icon: '/images/icons/apartments.svg' },
+              ].map(({ label, type, icon }) => (
                 <Link
                   key={label}
                   href={`/properties?propertyType=${encodeURIComponent(type)}`}
                   className="flex min-w-[72px] flex-1 shrink-0 snap-start flex-col items-center justify-center gap-1 rounded-xl px-2 py-2 text-xs font-semibold text-slate-700 transition-colors hover:bg-emerald-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 dark:text-slate-200 dark:hover:bg-slate-800"
                 >
-                  <Icon aria-hidden="true" className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                  <Image src={icon} alt="" width={20} height={20} className="h-5 w-5 object-contain" />
                   <span className="whitespace-nowrap">{label}</span>
                 </Link>
               ))}

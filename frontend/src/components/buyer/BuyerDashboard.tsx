@@ -207,11 +207,7 @@ export function BuyerDashboard() {
   return (
     <div className="min-h-full space-y-6 text-slate-100 max-lg:space-y-4">
       <header
-        className="relative min-h-[148px] overflow-hidden rounded-2xl bg-[#07152b] bg-cover bg-center px-6 py-6 sm:px-8 max-lg:hidden"
-        style={{
-          backgroundImage:
-            "linear-gradient(90deg, rgba(5,16,34,.88) 0%, rgba(5,16,34,.72) 45%, rgba(5,16,34,.48) 100%), url('/images/buyer-dashboard-house.png')",
-        }}
+        className="buyer-dashboard-banner relative min-h-[148px] overflow-hidden rounded-2xl bg-[#07152b] bg-cover bg-center px-6 py-6 sm:px-8 max-lg:hidden"
       >
         <div className="relative z-10 flex min-h-[100px] flex-wrap items-start justify-between gap-5">
           <div className="pt-1">
@@ -237,11 +233,7 @@ export function BuyerDashboard() {
       </header>
 
       <header
-        className="relative overflow-hidden rounded-[22px] bg-[#07152b] bg-cover bg-center px-4 py-4 shadow-sm lg:hidden"
-        style={{
-          backgroundImage:
-            "linear-gradient(90deg, rgba(5,16,34,.88) 0%, rgba(5,16,34,.72) 45%, rgba(5,16,34,.48) 100%), url('/images/buyer-dashboard-house.png')",
-        }}
+        className="buyer-dashboard-banner relative overflow-hidden rounded-[22px] bg-[#07152b] bg-cover bg-center px-4 py-4 shadow-sm lg:hidden"
       >
         <div className="relative z-10 flex flex-col gap-3">
           <div className="flex min-w-0 items-center gap-3">

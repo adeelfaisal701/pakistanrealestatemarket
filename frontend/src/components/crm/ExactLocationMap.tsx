@@ -27,7 +27,7 @@ function createMarker(
     draggable: !readOnly,
     icon: L.divIcon({
       className: "",
-      html: '<span style="display:block;width:18px;height:18px;border:3px solid white;border-radius:50%;background:#059669;box-shadow:0 1px 5px #0f172a"></span>',
+      html: '<span class="exact-location-map-marker"></span>',
       iconSize: [18, 18],
       iconAnchor: [9, 9],
     }),

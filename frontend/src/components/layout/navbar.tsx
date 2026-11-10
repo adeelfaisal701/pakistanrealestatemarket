@@ -1,6 +1,7 @@
 import React from "react";
 import Link from "next/link";
-import { Building2, PlusCircle, User } from "lucide-react";
+import Image from "next/image";
+import { PlusCircle, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export function Navbar() {
@@ -9,12 +10,17 @@ export function Navbar() {
       <div className="max-w-7xl mx-auto flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8">
         {/* Brand Logo */}
         <Link href="/" className="flex items-center gap-2.5 group">
-          <div className="h-10 w-10 rounded-xl bg-emerald-600 flex items-center justify-center text-white shadow-md shadow-emerald-600/20 group-hover:scale-105 transition-transform">
-            <Building2 className="h-5 w-5" />
-          </div>
+          <Image
+            src="/images/ghar-safar-logo.png"
+            unoptimized
+            alt="Ghar Safar logo"
+            width={44}
+            height={42}
+            className="h-10 w-10 shrink-0 object-contain"
+          />
           <div className="flex flex-col">
             <span className="text-lg font-bold tracking-tight text-slate-900 dark:text-white">
-              Zameen<span className="text-emerald-600">Connect</span>
+              Ghar Safar
             </span>
             <span className="text-[10px] -mt-1 uppercase tracking-wider text-slate-500 font-medium">
               Pakistan Property CRM

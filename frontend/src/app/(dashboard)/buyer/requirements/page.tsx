@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import { BuyerRequirementsManager } from "@/components/buyer/BuyerRequirementsManager";
 
 export const metadata = {
-  title: "My Requirements | EstatePro",
+  title: "My Requirements | Ghar Safar",
   description: "Create and manage your property requirements and review agent offers.",
 };
 

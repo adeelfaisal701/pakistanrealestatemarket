@@ -3,7 +3,7 @@ import { AdminSidebar } from "@/components/admin/AdminSidebar";
 import { AdminAccessGuard } from "@/components/admin/AdminAccessGuard";
 
 export const metadata = {
-  title: "Super Admin Central | EstatePro Lahore",
+  title: "Super Admin Central | Ghar Safar",
   description: "Platform analytics, agent verification approvals, and property moderation dashboard.",
 };
 

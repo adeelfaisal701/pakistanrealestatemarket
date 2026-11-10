@@ -1,7 +1,7 @@
 import { AdminAdvertisementManager } from "@/components/admin/AdminAdvertisementManager";
 
 export const metadata = {
-  title: "Advertisement Management | EstatePro Admin",
+  title: "Advertisement Management | Ghar Safar Admin",
   description: "Review and manage database-backed property advertisements.",
 };
 

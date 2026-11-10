@@ -1,7 +1,7 @@
 import { AdminReportsManager } from "@/components/admin/AdminReportsManager";
 
 export const metadata = {
-  title: "Reports & Complaints | EstatePro Admin",
+  title: "Reports & Complaints | Ghar Safar Admin",
   description: "Review public marketplace reports and record moderation resolutions.",
 };
 

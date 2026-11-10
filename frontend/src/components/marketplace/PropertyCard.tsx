@@ -15,7 +15,7 @@ interface PropertyCardProps {
 export default function PropertyCard({ property }: PropertyCardProps) {
   const phoneNumber = normalizeInternationalPhone(property.agentPhone);
   const whatsappMessage = encodeURIComponent(
-    `Assalam o Alaikum, I am interested in this listing on PRM: "${property.title}" priced at ${property.price} located in ${property.location}, ${property.society}. Please share more details.`
+    `Assalam o Alaikum, I am interested in this listing on Ghar Safar: "${property.title}" priced at ${property.price} located in ${property.location}, ${property.society}. Please share more details.`
   );
 
   const whatsappUrl = phoneNumber

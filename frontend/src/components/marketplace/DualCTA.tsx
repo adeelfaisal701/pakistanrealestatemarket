@@ -13,7 +13,7 @@ export default function DualCTA() {
           Join the Ecosystem
         </div>
         <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight">
-          Whether You Own or Sell, PRM Works for You
+          Whether You Own or Sell, Ghar Safar Works for You
         </h2>
         <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
           Direct, verified, and free of middleman commissions.

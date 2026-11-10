@@ -1112,12 +1112,7 @@ export default function PropertyDetailsClient({
             showStickyContactActions ? "" : "hidden"
           }`}
         >
-          <div
-            className="mx-auto grid max-w-lg items-center gap-0.5"
-            style={{
-              gridTemplateColumns: "repeat(5, minmax(0, 1fr))",
-            }}
-          >
+          <div className="mx-auto grid max-w-lg grid-cols-5 items-center gap-0.5">
             {mobileSectionLinks.map(({ id, label }) => (
               <a
                 key={id}

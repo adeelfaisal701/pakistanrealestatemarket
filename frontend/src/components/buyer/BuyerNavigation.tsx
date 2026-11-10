@@ -161,7 +161,7 @@ export function BuyerNavigation() {
         <div className="relative overflow-hidden rounded-xl border border-emerald-500/20 bg-gradient-to-br from-[#10433e] via-[#10333a] to-[#10243b] p-4">
           <House className="absolute -bottom-3 -right-2 h-16 w-16 text-emerald-300/10" />
           <p className="relative text-sm font-bold leading-5 text-white">
-            Find Your Dream Home With EstatePro
+            Find Your Dream Home With Ghar Safar
           </p>
           <Link
             href="/properties"

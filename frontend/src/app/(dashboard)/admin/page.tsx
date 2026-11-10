@@ -1,7 +1,7 @@
 import { AdminOverviewDashboard } from "@/components/admin/AdminOverviewDashboard";
 
 export const metadata = {
-  title: "Admin Overview | EstatePro Lahore",
+  title: "Admin Overview | Ghar Safar",
   description: "Database-backed property moderation and agent verification overview.",
 };
 

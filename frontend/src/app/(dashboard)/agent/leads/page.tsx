@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { LeadPipeline } from "@/components/crm/LeadPipeline";
 
 export const metadata = {
-  title: "Leads Pipeline | EstatePro Lahore Agent CRM",
+  title: "Leads Pipeline | Ghar Safar Agent CRM",
   description: "Track buyer inquiries, auto-match inventory, and send 1-tap WhatsApp pitches.",
 };
 

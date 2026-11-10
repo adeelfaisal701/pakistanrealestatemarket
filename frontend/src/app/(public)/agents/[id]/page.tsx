@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import {
   ArrowLeft,
   BadgeCheck,
@@ -43,12 +44,17 @@ function MobileProfileHeader() {
   return (
     <header className="sticky top-0 z-50 border-b border-slate-200 bg-white shadow-sm md:hidden">
       <div className="mx-auto flex h-16 max-w-lg items-center justify-between gap-1.5 px-3">
-        <Link href="/" aria-label="EstatePro home" className="flex min-w-0 shrink items-center gap-1.5">
-          <span className="flex h-8 w-8 shrink-0 items-center justify-center text-emerald-700">
-            <House className="h-8 w-8" strokeWidth={2.5} />
-          </span>
+        <Link href="/" aria-label="Ghar Safar home" className="flex min-w-0 shrink items-center gap-1.5">
+          <Image
+            src="/images/ghar-safar-logo.png"
+            unoptimized
+            alt="Ghar Safar logo"
+            width={34}
+            height={33}
+            className="h-8 w-8 shrink-0 object-contain"
+          />
           <span className="truncate text-[17px] font-extrabold tracking-tight text-slate-900">
-            Estate<span className="text-emerald-700">Pro</span>
+            Ghar Safar
           </span>
         </Link>
         <div className="flex shrink-0 items-center gap-1">
@@ -152,7 +158,7 @@ export default function PublicAgentProfilePage() {
   const hasPublicPhone = Boolean(agentPhone);
   const listingCount = listingsLoading ? null : listings?.pagination.total ?? 0;
   const trustIndicators = [
-    ...(agent?.isVerified ? ["Verified EstatePro agent"] : []),
+    ...(agent?.isVerified ? ["Verified Ghar Safar agent"] : []),
     ...(hasPublicPhone ? ["Public contact details available"] : []),
     ...((listingCount ?? 0) > 0 ? [`${listingCount} published ${listingCount === 1 ? "listing" : "listings"}`] : []),
   ];
@@ -173,8 +179,7 @@ export default function PublicAgentProfilePage() {
             <section className="relative isolate overflow-hidden bg-slate-950 text-white">
               <div
                 aria-hidden="true"
-                className="absolute inset-0 z-0 bg-cover bg-center"
-                style={{ backgroundImage: "url('/images/mobile%20hero%20section.png')" }}
+                className="agent-profile-mobile-hero absolute inset-0 z-0 bg-cover bg-center"
               />
               <div aria-hidden="true" className="absolute inset-0 z-10 bg-gradient-to-r from-slate-950/85 via-slate-950/65 to-slate-950/45" />
               <div aria-hidden="true" className="absolute inset-x-0 bottom-0 z-10 h-40 bg-gradient-to-t from-slate-950/80 to-transparent" />
@@ -492,14 +497,14 @@ export default function PublicAgentProfilePage() {
                   </span>
                   <div className="min-w-0 flex-1">
                     <h2 className="font-extrabold text-slate-900">Need Help?</h2>
-                    <p className="text-xs text-slate-600">{agent.phone ? `Chat with ${agent.name} on WhatsApp` : "Contact EstatePro support on WhatsApp"}</p>
+                    <p className="text-xs text-slate-600">{agent.phone ? `Chat with ${agent.name} on WhatsApp` : "Contact Ghar Safar support on WhatsApp"}</p>
                   </div>
                   {agent.phone ? (
                     <WhatsAppButton phoneNumber={agent.phone} className="h-10 w-auto shrink-0 rounded-lg px-3 text-xs font-bold">
                       Chat Now
                     </WhatsAppButton>
                   ) : (
-                    <a href="https://wa.me/923007589188?text=Assalam%20o%20Alaikum%20PRM%20Support" target="_blank" rel="noopener noreferrer" className="inline-flex h-10 shrink-0 items-center gap-1 rounded-lg bg-emerald-700 px-3 text-xs font-bold text-white">
+                    <a href="https://wa.me/923007589188?text=Assalam%20o%20Alaikum%20Ghar%20Safar%20Support" target="_blank" rel="noopener noreferrer" className="inline-flex h-10 shrink-0 items-center gap-1 rounded-lg bg-emerald-700 px-3 text-xs font-bold text-white">
                       <MessageCircle className="h-4 w-4" /> Chat Now
                     </a>
                   )}

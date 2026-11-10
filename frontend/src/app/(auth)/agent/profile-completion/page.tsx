@@ -7,8 +7,9 @@ import {
   type ChangeEvent,
   type FormEvent,
 } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { Building2, ImagePlus, LoaderCircle, Upload } from "lucide-react";
+import { ImagePlus, LoaderCircle, Upload } from "lucide-react";
 import axios from "axios";
 import apiClient, { getApiErrorMessage, type ApiEnvelope } from "@/lib/api-client";
 import { Button } from "@/components/ui/button";
@@ -189,9 +190,14 @@ export default function AgentProfileCompletionPage() {
   return (
     <main className="flex min-h-[70vh] items-center justify-center bg-slate-50 px-4 py-10 dark:bg-slate-950">
       <section className="w-full max-w-xl rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-8">
-        <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">
-          <Building2 className="h-6 w-6" />
-        </div>
+        <Image
+          src="/images/ghar-safar-logo.png"
+          unoptimized
+          alt="Ghar Safar logo"
+          width={50}
+          height={48}
+          className="mb-6 h-12 w-12 object-contain"
+        />
         <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
           Complete your agent profile
         </h1>

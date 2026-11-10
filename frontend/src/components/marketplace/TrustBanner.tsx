@@ -40,7 +40,7 @@ export default function TrustBanner() {
         <div className="text-center max-w-2xl mx-auto mb-10">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100 dark:bg-emerald-950/80 border border-emerald-300 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300 text-xs font-bold uppercase tracking-wider mb-3">
             <Zap className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
-            Why PRM Is Different
+            Why Ghar Safar Is Different
           </div>
           <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
             Built to Eliminate Fake & Expired Listings in Pakistan

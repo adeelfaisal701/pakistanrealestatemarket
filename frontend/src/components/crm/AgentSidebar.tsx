@@ -2,6 +2,7 @@
 
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import {
   BadgeCheck,
@@ -191,12 +192,17 @@ export function AgentSidebar() {
       <aside className="z-30 hidden border-r border-[#16243a] bg-[#08101d] text-slate-100 lg:fixed lg:inset-y-0 lg:flex lg:w-72 lg:flex-col">
         {/* Brand */}
         <div className="flex h-20 flex-shrink-0 items-center gap-3 border-b border-[#16243a] px-6">
-          <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl bg-emerald-500 shadow-lg shadow-emerald-900/40">
-            <Building2 className="h-6 w-6 text-white" />
-          </div>
+          <Image
+            src="/images/ghar-safar-logo.png"
+            unoptimized
+            alt="Ghar Safar logo"
+            width={48}
+            height={46}
+            className="h-11 w-11 flex-shrink-0 object-contain"
+          />
           <div className="min-w-0">
             <div className="flex items-center gap-2">
-              <span className="text-lg font-bold tracking-tight text-white">EstatePro</span>
+              <span className="text-lg font-bold tracking-tight text-white">Ghar Safar</span>
               <span className="rounded-full border border-emerald-500/40 bg-emerald-500/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-emerald-400">
                 Agent CRM
               </span>
@@ -268,12 +274,17 @@ export function AgentSidebar() {
       {isMobileDashboard && (
       <header className="sticky top-0 z-40 flex h-[calc(72px+env(safe-area-inset-top))] items-center justify-between border-b border-[#16243a] bg-[#08101d] px-5 pt-[env(safe-area-inset-top)] text-white shadow-sm shadow-slate-950/20 md:hidden">
         <div className="flex min-w-0 items-center gap-2.5">
-          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#00C98B]">
-            <Building2 className={cn("h-5 w-5", isMobileDashboard ? "text-[#006B45]" : "text-white")} />
-          </span>
+          <Image
+            src="/images/ghar-safar-logo.png"
+            unoptimized
+            alt="Ghar Safar logo"
+            width={40}
+            height={39}
+            className="h-9 w-9 shrink-0 object-contain"
+          />
           <span className="min-w-0 leading-tight">
             <span className="block truncate text-[17px] font-bold tracking-tight text-white">
-              EstatePro
+              Ghar Safar
             </span>
             <span className="block text-[11px] font-medium text-slate-400">Agent CRM</span>
           </span>
@@ -525,11 +536,16 @@ export function AgentSidebar() {
       {isMobileDashboard && (
       <header className="sticky top-0 z-40 hidden h-16 items-center justify-between border-b border-[#16243a] bg-[#08101d]/95 px-4 text-white backdrop-blur-md md:flex lg:hidden">
         <div className="flex items-center gap-2.5">
-          <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-emerald-500 shadow-md">
-            <Building2 className="h-5 w-5 text-white" />
-          </div>
+          <Image
+            src="/images/ghar-safar-logo.png"
+            unoptimized
+            alt="Ghar Safar logo"
+            width={40}
+            height={39}
+            className="h-9 w-9 flex-shrink-0 object-contain"
+          />
           <div className="flex items-center gap-1.5">
-            <span className="text-base font-bold tracking-tight text-white">EstatePro</span>
+            <span className="text-base font-bold tracking-tight text-white">Ghar Safar</span>
             <span className="rounded border border-emerald-500/40 bg-emerald-500/15 px-1 text-[9px] font-bold uppercase text-emerald-400">
               Agent CRM
             </span>

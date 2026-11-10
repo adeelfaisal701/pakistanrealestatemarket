@@ -2,6 +2,7 @@
 
 import { useEffect, useState, type FormEvent } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import {
   Activity,
@@ -216,11 +217,16 @@ export function AdminSidebar() {
     <>
       <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 flex-col border-r border-slate-800/90 bg-[#0b1426] text-slate-100 lg:flex">
         <Link href="/admin" className="flex h-[66px] shrink-0 items-center gap-3 border-b border-slate-800/90 px-5">
-          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-600 text-white shadow-lg shadow-blue-950/40">
-            <Home className="h-5 w-5" />
-          </span>
+          <Image
+            src="/images/ghar-safar-logo.png"
+            unoptimized
+            alt="Ghar Safar logo"
+            width={40}
+            height={39}
+            className="h-9 w-9 shrink-0 object-contain"
+          />
           <span className="min-w-0">
-            <span className="block text-base font-extrabold tracking-tight text-white">EstatePro</span>
+            <span className="block text-base font-extrabold tracking-tight text-white">Ghar Safar</span>
             <span className="block text-[10px] text-slate-400">Control Panel</span>
           </span>
         </Link>
@@ -270,17 +276,22 @@ export function AdminSidebar() {
         </button>
         <Link
           href="/admin"
-          aria-label="EstatePro Admin home"
+          aria-label="Ghar Safar Admin home"
           className={cn(
             "hidden items-center gap-2",
             isOverview && "max-md:flex max-md:order-1",
           )}
         >
-          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#006B45] text-white">
-            <Home className="h-5 w-5" />
-          </span>
+          <Image
+            src="/images/ghar-safar-logo.png"
+            unoptimized
+            alt="Ghar Safar logo"
+            width={40}
+            height={39}
+            className="h-9 w-9 shrink-0 object-contain"
+          />
           <span className="leading-tight">
-            <span className="block text-[15px] font-extrabold tracking-tight text-[#006B45]">EstatePro</span>
+            <span className="block text-[15px] font-extrabold tracking-tight text-[#006B45]">Ghar Safar</span>
             <span className="block text-[10px] text-slate-500">Admin Dashboard</span>
           </span>
         </Link>
@@ -328,10 +339,15 @@ export function AdminSidebar() {
           <aside className="relative flex h-full w-[min(20rem,88vw)] flex-col border-r border-slate-800 bg-[#0b1426] p-3 text-slate-100 shadow-2xl">
             <div className="flex h-12 items-center justify-between border-b border-slate-800 px-2 pb-3">
               <Link href="/admin" className="flex items-center gap-2.5" onClick={() => setMenuOpen(false)}>
-                <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600">
-                  <Home className="h-4 w-4" />
-                </span>
-                <span className="text-sm font-bold">EstatePro Admin</span>
+                <Image
+                  src="/images/ghar-safar-logo.png"
+                  unoptimized
+                  alt="Ghar Safar logo"
+                  width={36}
+                  height={35}
+                  className="h-8 w-8 shrink-0 object-contain"
+                />
+                <span className="text-sm font-bold">Ghar Safar Admin</span>
               </Link>
               <button
                 type="button"

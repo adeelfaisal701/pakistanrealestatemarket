@@ -1,5 +1,6 @@
 export function buildContentSecurityPolicy(
-  environment?: Record<string, string | undefined>,
+  environment: Record<string, string | undefined> | undefined,
+  nonce: string,
 ): string;
 
 export function buildSecurityHeaders(

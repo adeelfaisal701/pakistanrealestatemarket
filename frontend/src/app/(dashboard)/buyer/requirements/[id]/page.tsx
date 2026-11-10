@@ -1,7 +1,7 @@
 import { BuyerRequirementDetails } from "@/components/buyer/BuyerRequirementDetails";
 
 export const metadata = {
-  title: "Requirement Offers | EstatePro",
+  title: "Requirement Offers | Ghar Safar",
   description: "Review property offers submitted for your requirement.",
 };
 

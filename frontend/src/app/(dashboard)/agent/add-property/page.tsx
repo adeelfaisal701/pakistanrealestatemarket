@@ -4,7 +4,7 @@ import { ArrowLeft, Sparkles } from "lucide-react";
 import { AddPropertyForm } from "@/components/crm/AddPropertyForm";
 
 export const metadata = {
-  title: "Add New Property Listing | EstatePro Lahore Agent",
+  title: "Add New Property Listing | Ghar Safar Agent",
   description: "Post a verified property listing in Lahore societies with instant CRM auto-match.",
 };
 
