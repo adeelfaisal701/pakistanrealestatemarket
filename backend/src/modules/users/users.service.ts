@@ -104,19 +104,22 @@ export class UsersService {
     return user;
   }
 
-  async findPublicAgents(): Promise<PublicAgentRecord[]> {
-    const agents = await this.userModel
+  async findPublicAgents(limit?: number): Promise<PublicAgentRecord[]> {
+    let query = this.userModel
       .find({
         role: UserRole.AGENT,
         accountStatus: UserAccountStatus.ACTIVE,
         avatarUrl: { $type: 'string', $regex: /\S/ },
         agencyAddress: { $type: 'string', $regex: /\S/ },
       })
-      .select('_id name phone agencyName city avatarUrl isVerified verificationStatus')
-      .sort({ isVerified: -1, verifiedAt: -1, createdAt: -1 })
-      .limit(8)
-      .lean()
-      .exec();
+      .select('_id name phone agencyName agencyAddress city avatarUrl isVerified verificationStatus')
+      .sort({ isVerified: -1, verifiedAt: -1, createdAt: -1 });
+
+    if (limit && limit > 0) {
+      query = query.limit(limit);
+    }
+
+    const agents = await query.lean().exec();
 
     return agents.map((agent) => this.toPublicAgent(agent, false));
   }

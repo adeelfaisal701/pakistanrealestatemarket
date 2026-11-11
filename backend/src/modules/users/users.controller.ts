@@ -34,6 +34,12 @@ export class UsersController {
   @Public()
   @Get('public/featured-agents')
   getFeaturedAgents() {
+    return this.usersService.findPublicAgents(8);
+  }
+
+  @Public()
+  @Get('public/agents')
+  getPublicAgents() {
     return this.usersService.findPublicAgents();
   }
 

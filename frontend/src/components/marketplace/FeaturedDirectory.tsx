@@ -74,7 +74,7 @@ export function FeaturedAgents() {
               Featured Agents
             </h2>
           </div>
-          <Link href="/agents" className="mb-0.5 inline-flex shrink-0 items-center gap-1 text-xs font-bold text-[#008F68] md:hidden">
+          <Link href="/agents" className="mb-0.5 inline-flex shrink-0 items-center gap-1 text-xs font-bold text-[#008F68] md:text-emerald-300 md:hover:text-emerald-200">
             View All <ArrowRight className="h-3.5 w-3.5" />
           </Link>
         </div>

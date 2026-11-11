@@ -69,6 +69,17 @@ export function fetchFeaturedAgents(): Promise<PublicAgent[]> {
   return cachedGet("featured-agents", "/users/public/featured-agents");
 }
 
+export async function fetchPublicAgents(): Promise<PublicAgent[]> {
+  try {
+    const response = await apiClient.get<ApiEnvelope<PublicAgent[]>>(
+      "/users/public/agents",
+    );
+    return response.data.data;
+  } catch {
+    return fetchFeaturedAgents();
+  }
+}
+
 export function fetchFeaturedAgencies(): Promise<PublicAgency[]> {
   return cachedGet("featured-agencies", "/users/public/featured-agencies");
 }
