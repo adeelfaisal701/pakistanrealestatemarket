@@ -29,6 +29,7 @@ import {
 import { AdminDeleteDto } from './dto/admin-delete.dto';
 import { UpdateUserReportDto } from './dto/user-report.dto';
 import { AdminMutationRateLimitGuard } from './admin-mutation-rate-limit.guard';
+import { AdminBuyerUpdateDto } from './dto/admin-buyer-update.dto';
 
 @Controller('admin')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -69,6 +70,46 @@ export class AdminController {
   @Get('agents')
   getAgents(@Query() query: AdminAgentsQueryDto) {
     return this.adminService.getAgents(query);
+  }
+
+  @Get('buyers')
+  getBuyerAccounts(@Query() query: AdminAgentsQueryDto) {
+    return this.adminService.getBuyerAccounts(query);
+  }
+
+  @Get('buyers/:id')
+  getBuyerAccount(@Param('id', ParseObjectIdPipe) userId: string) {
+    return this.adminService.getBuyerAccount(userId);
+  }
+
+  @Patch('buyers/:id')
+  @UseGuards(AdminMutationRateLimitGuard)
+  updateBuyerAccount(
+    @Param('id', ParseObjectIdPipe) userId: string,
+    @Body() body: AdminBuyerUpdateDto,
+    @CurrentUser('id') adminId: string,
+  ) {
+    return this.adminService.updateBuyerAccount(userId, body, adminId);
+  }
+
+  @Patch('buyers/:id/account-status')
+  @UseGuards(AdminMutationRateLimitGuard)
+  updateBuyerAccountStatus(
+    @Param('id', ParseObjectIdPipe) userId: string,
+    @Body() body: AdminAccountStatusDto,
+    @CurrentUser('id') adminId: string,
+  ) {
+    return this.adminService.updateBuyerAccountStatus(userId, body, adminId);
+  }
+
+  @Delete('buyers/:id')
+  @UseGuards(AdminMutationRateLimitGuard)
+  deleteBuyer(
+    @Param('id', ParseObjectIdPipe) userId: string,
+    @Body() body: AdminDeleteDto,
+    @CurrentUser('id') adminId: string,
+  ) {
+    return this.adminService.deleteBuyer(userId, body, adminId);
   }
 
   @Get('agents/:id')

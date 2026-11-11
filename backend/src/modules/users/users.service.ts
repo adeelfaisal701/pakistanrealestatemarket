@@ -12,7 +12,7 @@ import {
   UserDocument,
   UserRole,
 } from './schemas/user.schema';
-import { Agency, AgencyDocument } from '../agencies/schemas/agency.schema';
+import { Agency, AgencyAccountStatus, AgencyDocument } from '../agencies/schemas/agency.schema';
 import { CreateUserDto } from './dto/create-user.dto';
 import { isAgentProfileComplete } from './agent-profile.utils';
 
@@ -138,6 +138,12 @@ export class UsersService {
   }
 
   async findPublicAgencies(): Promise<PublicAgencyRecord[]> {
+    const inactiveAgencies = await this.agencyModel
+      .find({ status: { $in: [AgencyAccountStatus.SUSPENDED, AgencyAccountStatus.DEACTIVATED] } })
+      .select('normalizedName')
+      .lean()
+      .exec();
+    const inactiveNames = new Set(inactiveAgencies.map((agency) => agency.normalizedName));
     const agencies = await this.userModel
       .aggregate<{
         name: string;
@@ -164,7 +170,6 @@ export class UsersService {
           },
         },
         { $sort: { agentCount: -1, name: 1 } },
-        { $limit: 8 },
         {
           $project: {
             _id: 0,
@@ -194,11 +199,13 @@ export class UsersService {
       ])
       .exec();
 
-    if (!agencies.length) return agencies;
-
     const normalizeName = (name: string) => name.trim().replace(/\s+/g, ' ').toLowerCase();
+    const visibleAgencies = agencies
+      .filter((agency) => !inactiveNames.has(normalizeName(agency.name)))
+      .slice(0, 8);
+    if (!visibleAgencies.length) return [];
     const profiles = await this.agencyModel
-      .find({ normalizedName: { $in: agencies.map(({ name }) => normalizeName(name)) } })
+      .find({ normalizedName: { $in: visibleAgencies.map(({ name }) => normalizeName(name)) } })
       .select('normalizedName logoUrl coverImageUrl')
       .lean()
       .exec();
@@ -206,7 +213,7 @@ export class UsersService {
       profiles.map((profile) => [profile.normalizedName, profile]),
     );
 
-    return agencies.map((agency) => {
+    return visibleAgencies.map((agency) => {
       const profile = profilesByName.get(normalizeName(agency.name));
       return {
         ...agency,
@@ -217,6 +224,18 @@ export class UsersService {
   }
 
   async findPublicAgency(name: string) {
+    const normalizedName = name.trim().replace(/\s+/g, ' ').toLowerCase();
+    const agencyRecord = await this.agencyModel
+      .findOne({ normalizedName })
+      .select('status')
+      .lean()
+      .exec();
+    if (
+      agencyRecord?.status &&
+      agencyRecord.status !== AgencyAccountStatus.ACTIVE
+    ) {
+      return null;
+    }
     const escapedName = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     const filter = {
       role: UserRole.AGENT,

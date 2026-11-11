@@ -60,7 +60,9 @@ interface PropertyCounts {
   rejected: number;
   draft: number;
   sold: number;
-  [status: string]: number;
+  hidden?: number;
+  deactivated?: number;
+  [status: string]: number | undefined;
 }
 
 interface AdminPropertiesResponse {
@@ -81,6 +83,14 @@ const STATUS_FILTERS = [
   { value: "rejected", label: "Rejected" },
   { value: "draft", label: "Draft" },
   { value: "sold", label: "Sold" },
+] as const;
+
+const MODERATION_FILTERS = [
+  { value: "", label: "All moderation states" },
+  { value: "live", label: "🟢 Live" },
+  { value: "hidden", label: "🟡 Hidden" },
+  { value: "deactivated", label: "🔴 Deactivated" },
+  { value: "flagged", label: "🚩 Flagged" },
 ] as const;
 
 function statusLabel(status: string) {
@@ -116,6 +126,7 @@ export function PropertyModerationGrid({ initialSearch = "" }: { initialSearch?:
   const [propertyTypeFilter, setPropertyTypeFilter] = useState("");
   const [purposeFilter, setPurposeFilter] = useState("");
   const [inventoryFilter, setInventoryFilter] = useState("");
+  const [moderationFilter, setModerationFilter] = useState("");
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
   const [loading, setLoading] = useState(true);
@@ -143,6 +154,7 @@ export function PropertyModerationGrid({ initialSearch = "" }: { initialSearch?:
             ...(propertyTypeFilter ? { propertyType: propertyTypeFilter } : {}),
             ...(purposeFilter ? { purpose: purposeFilter } : {}),
             ...(inventoryFilter ? { inventoryStatus: inventoryFilter } : {}),
+            ...(moderationFilter ? { moderationFilter } : {}),
             ...(fromDate ? { fromDate: new Date(`${fromDate}T00:00:00`).toISOString() } : {}),
             ...(toDate ? { toDate: new Date(`${toDate}T23:59:59.999`).toISOString() } : {}),
           },
@@ -163,7 +175,7 @@ export function PropertyModerationGrid({ initialSearch = "" }: { initialSearch?:
     } finally {
       setLoading(false);
     }
-  }, [fromDate, inventoryFilter, propertyTypeFilter, purposeFilter, searchQuery, toDate]);
+  }, [fromDate, inventoryFilter, moderationFilter, propertyTypeFilter, purposeFilter, searchQuery, toDate]);
 
   useEffect(() => {
     void loadProperties(page, statusFilter);
@@ -200,7 +212,7 @@ export function PropertyModerationGrid({ initialSearch = "" }: { initialSearch?:
 
   const moderateAction = async (
     property: AdminProperty,
-    action: "hide" | "unpublish" | "restore" | "flag" | "remove",
+    action: "hide" | "unpublish" | "restore" | "flag" | "remove" | "reactivate",
   ) => {
     const needsReason = ["hide", "flag", "remove"].includes(action);
     const reason = needsReason
@@ -208,8 +220,10 @@ export function PropertyModerationGrid({ initialSearch = "" }: { initialSearch?:
       : "";
     if (needsReason && !reason) return;
     const warning = action === "remove"
-      ? "This hides the property and ends its linked advertisement. The original property record, images, analytics, leads, and messages are retained."
-      : `Confirm that you want to ${action} this property?`;
+      ? "Deactivating hides the property and ends its linked advertisement. The record, images, analytics, leads, and messages are retained. Admin can reactivate later."
+      : action === "reactivate"
+        ? "Reactivating will restore this property to visible and restore its advertisement to paused status. The agent will need to re-publish the advertisement."
+        : `Confirm that you want to ${action} this property?`;
     if (!window.confirm(`${warning}\n\n${property.title}`)) return;
     setActingId(property.id);
     setActionError("");
@@ -286,7 +300,7 @@ export function PropertyModerationGrid({ initialSearch = "" }: { initialSearch?:
           </button>
         </div>
 
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-6">
           <label className="space-y-1 text-xs text-slate-400">
             Type
             <select value={propertyTypeFilter} onChange={(event) => { setPage(1); setPropertyTypeFilter(event.target.value); }} className="min-h-10 w-full rounded-lg border border-slate-700 bg-slate-800 px-2 text-sm text-white">
@@ -304,6 +318,12 @@ export function PropertyModerationGrid({ initialSearch = "" }: { initialSearch?:
             Inventory
             <select value={inventoryFilter} onChange={(event) => { setPage(1); setInventoryFilter(event.target.value); }} className="min-h-10 w-full rounded-lg border border-slate-700 bg-slate-800 px-2 text-sm text-white">
               <option value="">All availability</option>{["available", "sold", "rented", "reserved", "unavailable"].map((item) => <option key={item} value={item}>{item}</option>)}
+            </select>
+          </label>
+          <label className="space-y-1 text-xs text-slate-400">
+            Moderation
+            <select value={moderationFilter} onChange={(event) => { setPage(1); setModerationFilter(event.target.value); }} className="min-h-10 w-full rounded-lg border border-slate-700 bg-slate-800 px-2 text-sm text-white">
+              {MODERATION_FILTERS.map(({ value, label }) => <option key={value} value={value}>{label}</option>)}
             </select>
           </label>
           <label className="space-y-1 text-xs text-slate-400">
@@ -342,7 +362,7 @@ export function PropertyModerationGrid({ initialSearch = "" }: { initialSearch?:
 
         <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-slate-400">
           <span>
-            {counts ? `Database total: ${counts.total} · pending: ${counts.pending_approval ?? 0} · published: ${counts.published ?? 0} · rejected: ${counts.rejected ?? 0}` : "Loading database totals…"}
+            {counts ? `Database total: ${counts.total} · pending: ${counts.pending_approval ?? 0} · published: ${counts.published ?? 0} · hidden: ${counts.hidden ?? 0} · deactivated: ${counts.deactivated ?? 0} · rejected: ${counts.rejected ?? 0}` : "Loading database totals…"}
           </span>
           <span>
             {total > 0
@@ -537,11 +557,14 @@ export function PropertyModerationGrid({ initialSearch = "" }: { initialSearch?:
                       {!property.adminFlagged && (
                         <Button type="button" size="sm" variant="outline" disabled={actingId === property.id} onClick={() => void moderateAction(property, "flag")}>Flag</Button>
                       )}
-                      <Button type="button" size="sm" variant="danger" disabled={actingId === property.id} onClick={() => void moderateAction(property, "remove")}>Remove</Button>
+                      <Button type="button" size="sm" variant="danger" disabled={actingId === property.id} onClick={() => void moderateAction(property, "remove")}>Deactivate</Button>
                     </div>
                   )}
                   {property.adminRemoved && (
-                    <div className="border-t border-slate-800 pt-4">
+                    <div className="flex flex-wrap gap-2 border-t border-slate-800 pt-4">
+                      <Button type="button" size="sm" className="bg-emerald-700 text-white hover:bg-emerald-600" disabled={actingId === property.id} onClick={() => void moderateAction(property, "reactivate")}>
+                        Reactivate
+                      </Button>
                       <Button type="button" size="sm" variant="danger" disabled={actingId === property.id} onClick={() => void deletePermanently(property)}>
                         Delete permanently
                       </Button>

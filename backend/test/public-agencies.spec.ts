@@ -29,14 +29,19 @@ test('featured agencies include only their matching saved logo and cover URLs', 
     aggregate: () => ({ exec: async () => agencies }),
   };
   const agencyModel = {
-    find: () => ({
+    find: (filter: Record<string, unknown>) => ({
       select() {
         return this;
       },
       lean() {
         return this;
       },
-      exec: async () => profiles,
+      exec: async () => ('status' in filter ? [] : profiles),
+    }),
+    findOne: () => ({
+      select() { return this; },
+      lean() { return this; },
+      exec: async () => null,
     }),
   };
   const service = new UsersService(userModel as never, agencyModel as never);

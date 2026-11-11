@@ -1,7 +1,13 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+import { Document, Types } from 'mongoose';
 
 export type AgencyDocument = Agency & Document;
+
+export enum AgencyAccountStatus {
+  ACTIVE = 'active',
+  SUSPENDED = 'suspended',
+  DEACTIVATED = 'deactivated',
+}
 
 @Schema({ timestamps: true })
 export class Agency {
@@ -40,6 +46,18 @@ export class Agency {
 
   @Prop({ type: [String], default: [] })
   galleryUrls: string[];
+
+  @Prop({ type: String, enum: AgencyAccountStatus, default: AgencyAccountStatus.ACTIVE, index: true })
+  status: AgencyAccountStatus;
+
+  @Prop({ type: String, maxlength: 1000 })
+  statusReason?: string;
+
+  @Prop({ type: Date })
+  statusChangedAt?: Date;
+
+  @Prop({ type: Types.ObjectId, ref: 'User' })
+  statusChangedBy?: Types.ObjectId;
 }
 
 export const AgencySchema = SchemaFactory.createForClass(Agency);

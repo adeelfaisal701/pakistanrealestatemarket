@@ -128,13 +128,15 @@ export class PropertiesService {
   async create(createPropertyDto: CreatePropertyDto, agentId: string): Promise<PropertyDocument> {
     this.validateFeatureGroups(createPropertyDto.features);
     const inventoryOnly = createPropertyDto.submissionMode === 'inventory';
+    const now = new Date();
     const createdProperty = new this.propertyModel({
       ...createPropertyDto,
       agentId: new Types.ObjectId(agentId),
       status: inventoryOnly
         ? PropertyStatus.AVAILABLE
-        : PropertyStatus.PENDING_APPROVAL,
+        : PropertyStatus.PUBLISHED,
       inventoryStatus: PropertyStatus.AVAILABLE,
+      ...(!inventoryOnly ? { moderatedAt: now } : {}),
     });
     const property = await createdProperty.save();
     if (!inventoryOnly && this.advertisementModel) {
@@ -142,7 +144,9 @@ export class PropertiesService {
         await this.advertisementModel.create({
           propertyId: property._id,
           agentId: new Types.ObjectId(agentId),
-          status: PropertyAdvertisementStatus.PENDING_REVIEW,
+          status: PropertyAdvertisementStatus.PUBLISHED,
+          approvedAt: now,
+          publishedAt: now,
         });
       } catch (error) {
         try {

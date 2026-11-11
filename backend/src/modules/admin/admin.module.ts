@@ -14,6 +14,14 @@ import {
   BuyerNotification,
   BuyerNotificationSchema,
 } from '../buyer/schemas/buyer-notification.schema';
+import { BuyerProfile, BuyerProfileSchema } from '../buyer/schemas/buyer-profile.schema';
+import { SavedSearch, SavedSearchSchema } from '../buyer/schemas/saved-search.schema';
+import { ClientRequirement, ClientRequirementSchema } from '../requirements/schemas/client-requirement.schema';
+import { RequirementOffer, RequirementOfferSchema } from '../requirements/schemas/requirement-offer.schema';
+import { PropertyMessage, PropertyMessageSchema } from '../crm/schemas/property-message.schema';
+import { DevelopmentProject, DevelopmentProjectSchema } from '../projects/schemas/development-project.schema';
+import { Agency, AgencySchema } from '../agencies/schemas/agency.schema';
+import { PropertyImageStorageService } from '../properties/property-image-storage.service';
 
 @Module({
   imports: [
@@ -25,10 +33,17 @@ import {
       { name: UserReport.name, schema: UserReportSchema },
       { name: SavedProperty.name, schema: SavedPropertySchema },
       { name: BuyerNotification.name, schema: BuyerNotificationSchema },
+      { name: BuyerProfile.name, schema: BuyerProfileSchema },
+      { name: SavedSearch.name, schema: SavedSearchSchema },
+      { name: ClientRequirement.name, schema: ClientRequirementSchema },
+      { name: RequirementOffer.name, schema: RequirementOfferSchema },
+      { name: PropertyMessage.name, schema: PropertyMessageSchema },
+      { name: DevelopmentProject.name, schema: DevelopmentProjectSchema },
+      { name: Agency.name, schema: AgencySchema },
     ]),
   ],
   controllers: [AdminController, PublicReportsController],
-  providers: [AdminService, AdminMutationRateLimitGuard],
+  providers: [AdminService, AdminMutationRateLimitGuard, PropertyImageStorageService],
   exports: [AdminService],
 })
 export class AdminModule {}

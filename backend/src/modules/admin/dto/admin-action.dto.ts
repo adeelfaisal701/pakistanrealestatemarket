@@ -15,8 +15,8 @@ export class AdminAccountStatusDto extends AdminAgentActionDto {
 
 export class AdminPropertyActionDto {
   @IsNotEmpty()
-  @IsIn(['approve', 'reject', 'hide', 'unpublish', 'restore', 'flag', 'remove'])
-  action: 'approve' | 'reject' | 'hide' | 'unpublish' | 'restore' | 'flag' | 'remove';
+  @IsIn(['approve', 'reject', 'hide', 'unpublish', 'restore', 'flag', 'remove', 'reactivate'])
+  action: 'approve' | 'reject' | 'hide' | 'unpublish' | 'restore' | 'flag' | 'remove' | 'reactivate';
 
   @IsOptional()
   @IsString()

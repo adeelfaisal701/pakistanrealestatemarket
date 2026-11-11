@@ -95,9 +95,10 @@ function setup(overrides: Record<string, unknown> = {}) {
     ...overrides,
   };
   const service = new ProjectsService(model as never, {} as never, {
+    filenameForManagedUrl: () => undefined,
     read: async () => ({ buffer: Buffer.alloc(0), contentType: 'image/png' }),
     remove: async () => undefined,
-  } as never);
+  } as never, { findOne: () => query(null) } as never, { findOne: () => query(null) } as never, { findOne: () => query(null) } as never);
   return { service, calls };
 }
 
@@ -272,6 +273,7 @@ test('payment-plan PDFs are stored and served from isolated project document sto
       },
     };
     const imageStorage = {
+      filenameForManagedUrl: () => undefined,
       read: async () => ({ buffer: content, contentType: 'image/png' }),
       remove: async () => undefined,
     };
@@ -333,7 +335,10 @@ test('disabling a project payment plan removes its old managed document after sa
   const service = new ProjectsService(
     model as never,
     documentStorage as never,
-    { remove: async () => undefined } as never,
+    { filenameForManagedUrl: () => undefined, remove: async () => undefined } as never,
+    { findOne: () => query(null) } as never,
+    { findOne: () => query(null) } as never,
+    { findOne: () => query(null) } as never,
   );
   await service.update('project-id', {
     name: 'Cedar Residences',
@@ -354,4 +359,65 @@ test('disabling a project payment plan removes its old managed document after sa
     displayOrder: 0,
   } as never);
   assert.deepEqual(removed, [oldUrl]);
+});
+
+test('deleting a project removes only unreferenced managed media', async () => {
+  const coverUrl = '/api/v1/properties/images/00000000-0000-4000-8000-000000000001.jpg';
+  const propertyImageUrl = '/api/v1/properties/images/00000000-0000-4000-8000-000000000002.jpg';
+  const userAvatarUrl = '/api/v1/properties/images/00000000-0000-4000-8000-000000000003.jpg';
+  const agencyImageUrl = '/api/v1/properties/images/00000000-0000-4000-8000-000000000004.jpg';
+  const paymentPlanUrl = '/api/v1/projects/media/00000000-0000-4000-8000-000000000005.pdf';
+  const project = document({
+    coverImage: coverUrl,
+    gallery: [propertyImageUrl, userAvatarUrl, agencyImageUrl],
+    paymentPlan: { enabled: true, documentUrl: paymentPlanUrl, milestones: [] },
+  });
+  const removedImages: string[] = [];
+  const removedDocuments: string[] = [];
+  const projectModel = {
+    findByIdAndDelete: () => query(project),
+    findOne: () => query(null),
+  };
+  const propertyModel = {
+    findOne: (filter: Record<string, unknown>) =>
+      query(JSON.stringify(filter).includes(propertyImageUrl) ? { _id: new Types.ObjectId() } : null),
+  };
+  const userModel = {
+    findOne: (filter: Record<string, unknown>) =>
+      query(JSON.stringify(filter).includes(userAvatarUrl) ? { _id: new Types.ObjectId() } : null),
+  };
+  const agencyModel = {
+    findOne: (filter: Record<string, unknown>) =>
+      query(JSON.stringify(filter).includes(agencyImageUrl) ? { _id: new Types.ObjectId() } : null),
+  };
+  const imageNames = new Map([
+    [coverUrl, '00000000-0000-4000-8000-000000000001.jpg'],
+    [propertyImageUrl, '00000000-0000-4000-8000-000000000002.jpg'],
+    [userAvatarUrl, '00000000-0000-4000-8000-000000000003.jpg'],
+    [agencyImageUrl, '00000000-0000-4000-8000-000000000004.jpg'],
+  ]);
+  const documentStorage = {
+    filenameForManagedUrl: (url: string) =>
+      url === paymentPlanUrl ? '00000000-0000-4000-8000-000000000005.pdf' : undefined,
+    remove: async (url: string) => { removedDocuments.push(url); },
+  };
+  const imageStorage = {
+    filenameForManagedUrl: (url: string) => imageNames.get(url),
+    remove: async (filename: string) => { removedImages.push(filename); },
+  };
+  const service = new ProjectsService(
+    projectModel as never,
+    documentStorage as never,
+    imageStorage as never,
+    propertyModel as never,
+    userModel as never,
+    agencyModel as never,
+  );
+
+  assert.deepEqual(await service.delete(String(project._id)), {
+    id: String(project._id),
+    deleted: true,
+  });
+  assert.deepEqual(removedImages, ['00000000-0000-4000-8000-000000000001.jpg']);
+  assert.deepEqual(removedDocuments, [paymentPlanUrl]);
 });

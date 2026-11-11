@@ -47,4 +47,9 @@ export class AdminPropertiesQueryDto {
   @IsOptional()
   @IsDateString()
   toDate?: string;
+
+  /** Moderation-state filter: 'hidden' | 'deactivated' | 'live' */
+  @IsOptional()
+  @IsIn(['hidden', 'deactivated', 'live', 'flagged'])
+  moderationFilter?: 'hidden' | 'deactivated' | 'live' | 'flagged';
 }

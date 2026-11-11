@@ -42,6 +42,12 @@ const navigation = [
     description: "Verify local brokers",
   },
   {
+    name: "Buyer Accounts",
+    href: "/admin/buyers",
+    icon: Users,
+    description: "Manage buyer access and records",
+  },
+  {
     name: "Property Moderation",
     href: "/admin/properties",
     icon: Gavel,

@@ -1,7 +1,9 @@
 import {
   ConflictException,
   Injectable,
+  Logger,
   NotFoundException,
+  Optional,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
@@ -12,14 +14,25 @@ import {
 } from './schemas/development-project.schema';
 import { ProjectDocumentStorageService } from './project-document-storage.service';
 import { PropertyImageStorageService } from '../properties/property-image-storage.service';
+import { Property, PropertyDocument } from '../properties/schemas/property.schema';
+import { User, UserDocument } from '../users/schemas/user.schema';
+import { Agency, AgencyDocument } from '../agencies/schemas/agency.schema';
 
 @Injectable()
 export class ProjectsService {
+  private readonly logger = new Logger(ProjectsService.name);
+
   constructor(
     @InjectModel(DevelopmentProject.name)
     private readonly projectModel: Model<DevelopmentProjectDocument>,
     private readonly documentStorage: ProjectDocumentStorageService,
     private readonly imageStorage: PropertyImageStorageService,
+    @Optional() @InjectModel(Property.name)
+    private readonly propertyModel?: Model<PropertyDocument>,
+    @Optional() @InjectModel(User.name)
+    private readonly userModel?: Model<UserDocument>,
+    @Optional() @InjectModel(Agency.name)
+    private readonly agencyModel?: Model<AgencyDocument>,
   ) {}
 
   async listAdmin() {
@@ -51,6 +64,7 @@ export class ProjectsService {
   async update(id: string, payload: ProjectPayloadDto) {
     const previous = await this.projectModel.findById(id).exec();
     if (!previous) throw new NotFoundException('Project not found.');
+    const previousMedia = this.mediaUrls(previous);
     try {
       const project = await this.projectModel
         .findByIdAndUpdate(id, this.normalize(payload), {
@@ -59,11 +73,10 @@ export class ProjectsService {
         })
         .exec();
       if (!project) throw new NotFoundException('Project not found.');
-      if (previous.paymentPlan?.documentUrl !== project.paymentPlan?.documentUrl) {
-        await this.removeUnreferencedPaymentDocument(
-          previous.paymentPlan?.documentUrl,
-        );
-      }
+      const currentMedia = new Set(this.mediaUrls(project));
+      await this.removeUnreferencedMedia(
+        previousMedia.filter((url) => !currentMedia.has(url)),
+      );
       return this.serialize(project);
     } catch (error) {
       if (this.isDuplicateKey(error)) {
@@ -76,9 +89,7 @@ export class ProjectsService {
   async delete(id: string) {
     const project = await this.projectModel.findByIdAndDelete(id).exec();
     if (!project) throw new NotFoundException('Project not found.');
-    await this.removeUnreferencedPaymentDocument(
-      project.paymentPlan?.documentUrl,
-    );
+    await this.removeUnreferencedMedia(this.mediaUrls(project));
     return { id: String(project._id), deleted: true };
   }
 
@@ -128,25 +139,67 @@ export class ProjectsService {
     return this.imageStorage.read(filename);
   }
 
-  private async removeUnreferencedPaymentDocument(url?: string) {
-    if (!url) return;
-    const filename = this.documentStorage.filenameForManagedUrl(url);
-    if (!filename) return;
-    const stillReferenced = await this.projectModel
-      .findOne({
-        $or: [
-          { coverImage: url },
-          { gallery: url },
-          { 'paymentPlan.documentUrl': url },
-        ],
-      })
-      .select('_id')
-      .exec();
-    if (stillReferenced) return;
-    if (filename.endsWith('.pdf')) {
-      await this.documentStorage.remove(url);
-    } else {
-      await this.imageStorage.remove(filename);
+  private mediaUrls(project: DevelopmentProjectDocument): string[] {
+    return [...new Set([
+      project.coverImage,
+      ...(project.gallery ?? []),
+      project.paymentPlan?.documentUrl,
+    ].filter((url): url is string => Boolean(url)))];
+  }
+
+  private async removeUnreferencedMedia(urls: string[]): Promise<void> {
+    for (const url of urls) {
+      const imageFilename = this.imageStorage.filenameForManagedUrl(url);
+      const documentFilename = this.documentStorage.filenameForManagedUrl(url);
+      if (!imageFilename && !documentFilename) continue;
+
+      if (!this.propertyModel || !this.userModel || !this.agencyModel) {
+        this.logger.warn('Project media cleanup skipped because reference checks are unavailable.');
+        continue;
+      }
+
+      const [projectReference, propertyReference, userReference, agencyReference] =
+        await Promise.all([
+          this.projectModel
+            .findOne({
+              $or: [
+                { coverImage: url },
+                { gallery: url },
+                { 'paymentPlan.documentUrl': url },
+              ],
+            })
+            .select('_id')
+            .exec(),
+          this.propertyModel
+            .findOne({ $or: [{ images: url }, { 'imageMetadata.url': url }] })
+            .select('_id')
+            .exec(),
+          this.userModel.findOne({ avatarUrl: url }).select('_id').exec(),
+          this.agencyModel
+            .findOne({
+              $or: [
+                { logoUrl: url },
+                { coverImageUrl: url },
+                { galleryUrls: url },
+              ],
+            })
+            .select('_id')
+            .exec(),
+        ]);
+      if (projectReference || propertyReference || userReference || agencyReference) {
+        continue;
+      }
+
+      try {
+        if (url.endsWith('.pdf')) {
+          await this.documentStorage.remove(url);
+        } else {
+          const filename = imageFilename ?? documentFilename;
+          if (filename) await this.imageStorage.remove(filename);
+        }
+      } catch {
+        this.logger.warn('Project media cleanup failed; a managed file may need later review.');
+      }
     }
   }
 

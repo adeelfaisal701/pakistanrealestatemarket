@@ -115,8 +115,13 @@ export function AgentApprovalTable() {
           reason ? { reason } : {},
         );
       } else {
+        const statusMap: Record<string, string> = {
+          suspend: "suspended",
+          deactivate: "deactivated",
+          reactivate: "active",
+        };
         await apiClient.patch(`/admin/agents/${agent.id}/account-status`, {
-          status: action === "reactivate" ? "active" : action,
+          status: statusMap[action] ?? action,
           reason,
         });
       }

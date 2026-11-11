@@ -1,7 +1,9 @@
 import {
   BadRequestException,
   ConflictException,
+  ForbiddenException,
   Injectable,
+  Logger,
   NotFoundException,
   Optional,
   ServiceUnavailableException,
@@ -37,6 +39,26 @@ import {
   BuyerNotificationDocument,
 } from '../buyer/schemas/buyer-notification.schema';
 import {
+  BuyerProfile,
+  BuyerProfileDocument,
+} from '../buyer/schemas/buyer-profile.schema';
+import { SavedSearch, SavedSearchDocument } from '../buyer/schemas/saved-search.schema';
+import {
+  ClientRequirement,
+  ClientRequirementDocument,
+} from '../requirements/schemas/client-requirement.schema';
+import {
+  RequirementOffer,
+  RequirementOfferDocument,
+} from '../requirements/schemas/requirement-offer.schema';
+import {
+  PropertyMessage,
+  PropertyMessageDocument,
+} from '../crm/schemas/property-message.schema';
+import { DevelopmentProject, DevelopmentProjectDocument } from '../projects/schemas/development-project.schema';
+import { Agency, AgencyDocument } from '../agencies/schemas/agency.schema';
+import { PropertyImageStorageService } from '../properties/property-image-storage.service';
+import {
   PropertyAdvertisement,
   PropertyAdvertisementDocument,
   PropertyAdvertisementStatus,
@@ -61,6 +83,7 @@ import {
   AdminPropertyActionDto,
 } from './dto/admin-action.dto';
 import { AdminDeleteDto } from './dto/admin-delete.dto';
+import { AdminBuyerUpdateDto } from './dto/admin-buyer-update.dto';
 import {
   CreateUserReportDto,
   UpdateUserReportDto,
@@ -78,6 +101,8 @@ import {
 
 @Injectable()
 export class AdminService {
+  private readonly logger = new Logger(AdminService.name);
+
   constructor(
     @InjectModel(Property.name) private propertyModel: Model<PropertyDocument>,
     @InjectModel(User.name) private userModel: Model<UserDocument>,
@@ -112,6 +137,29 @@ export class AdminService {
     @Optional()
     @InjectConnection()
     private readonly connection?: Connection,
+    @Optional()
+    @InjectModel(BuyerProfile.name)
+    private readonly buyerProfileModel?: Model<BuyerProfileDocument>,
+    @Optional()
+    @InjectModel(SavedSearch.name)
+    private readonly savedSearchModel?: Model<SavedSearchDocument>,
+    @Optional()
+    @InjectModel(ClientRequirement.name)
+    private readonly requirementModel?: Model<ClientRequirementDocument>,
+    @Optional()
+    @InjectModel(RequirementOffer.name)
+    private readonly requirementOfferModel?: Model<RequirementOfferDocument>,
+    @Optional()
+    @InjectModel(PropertyMessage.name)
+    private readonly messageModel?: Model<PropertyMessageDocument>,
+    @Optional()
+    @InjectModel(DevelopmentProject.name)
+    private readonly projectModel?: Model<DevelopmentProjectDocument>,
+    @Optional()
+    @InjectModel(Agency.name)
+    private readonly agencyModel?: Model<AgencyDocument>,
+    @Optional()
+    private readonly imageStorage?: PropertyImageStorageService,
   ) {}
 
   private async revokePropertyLocationShares(
@@ -181,6 +229,17 @@ export class AdminService {
     if (query.inventoryStatus) filter.inventoryStatus = query.inventoryStatus;
     if (query.propertyType) filter.propertyType = query.propertyType;
     if (query.purpose) filter.purpose = query.purpose;
+    if (query.moderationFilter === 'hidden') {
+      filter.adminHidden = true;
+    } else if (query.moderationFilter === 'deactivated') {
+      filter.adminRemoved = true;
+    } else if (query.moderationFilter === 'flagged') {
+      filter.adminFlagged = true;
+    } else if (query.moderationFilter === 'live') {
+      filter.status = PropertyStatus.PUBLISHED;
+      filter.adminHidden = { $ne: true };
+      filter.adminRemoved = { $ne: true };
+    }
     if (query.fromDate || query.toDate) {
       filter.createdAt = {
         ...(query.fromDate ? { $gte: new Date(query.fromDate) } : {}),
@@ -397,6 +456,306 @@ export class AdminService {
       limit,
       totalPages: Math.ceil(total / limit),
     };
+  }
+
+  async getBuyerAccounts(query: Partial<AdminAgentsQueryDto> = {}) {
+    const page = query.page ?? 1;
+    const limit = query.limit ?? 30;
+    const filter: Record<string, unknown> = { role: UserRole.BUYER };
+    if (query.accountStatus && query.accountStatus !== 'all') {
+      filter.accountStatus = query.accountStatus;
+    }
+    if (query.search?.trim()) {
+      const regex = new RegExp(escapeRegExp(query.search.trim()), 'i');
+      filter.$or = [
+        { name: regex },
+        { email: regex },
+        { phone: regex },
+        { city: regex },
+      ];
+    }
+
+    const [buyers, total, active, suspended, deactivated] = await Promise.all([
+      this.userModel
+        .find(filter)
+        .select('name email phone city avatarUrl accountStatus accountStatusReason accountStatusChangedAt createdAt')
+        .sort({ createdAt: -1 })
+        .skip((page - 1) * limit)
+        .limit(limit)
+        .lean()
+        .exec(),
+      this.userModel.countDocuments(filter).exec(),
+      this.userModel.countDocuments({ role: UserRole.BUYER, accountStatus: UserAccountStatus.ACTIVE }).exec(),
+      this.userModel.countDocuments({ role: UserRole.BUYER, accountStatus: UserAccountStatus.SUSPENDED }).exec(),
+      this.userModel.countDocuments({ role: UserRole.BUYER, accountStatus: UserAccountStatus.DEACTIVATED }).exec(),
+    ]);
+
+    return {
+      items: buyers.map((buyer) => this.toSafeBuyer(buyer)),
+      total,
+      counts: { active, suspended, deactivated },
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    };
+  }
+
+  async getBuyerAccount(userId: string) {
+    const buyer = await this.userModel
+      .findOne({ _id: userId, role: UserRole.BUYER })
+      .select('name email phone city avatarUrl accountStatus accountStatusReason accountStatusChangedAt createdAt')
+      .lean()
+      .exec();
+    if (!buyer) throw new NotFoundException('Buyer not found.');
+    const buyerId = new Types.ObjectId(userId);
+    const [profile, savedProperties, savedSearches, notifications, requirements, leads, conversations] = await Promise.all([
+      this.buyerProfileModel?.findOne({ buyerId }).lean().exec() ?? null,
+      this.savedPropertyModel?.countDocuments({ buyerId }).exec() ?? 0,
+      this.savedSearchModel?.countDocuments({ buyerId }).exec() ?? 0,
+      this.buyerNotificationModel?.countDocuments({ buyerId }).exec() ?? 0,
+      this.requirementModel?.countDocuments({ buyerId }).exec() ?? 0,
+      this.leadModel?.countDocuments({ buyerId }).exec() ?? 0,
+      this.conversationModel?.countDocuments({ buyerId }).exec() ?? 0,
+    ]);
+    return {
+      ...this.toSafeBuyer(buyer),
+      profile: profile?.preferences ?? null,
+      relatedRecordCounts: {
+        savedProperties,
+        savedSearches,
+        notifications,
+        requirements,
+        leads,
+        conversations,
+      },
+    };
+  }
+
+  async updateBuyerAccount(
+    userId: string,
+    body: AdminBuyerUpdateDto,
+    adminId: string,
+  ) {
+    const buyer = await this.userModel.findOne({ _id: userId, role: UserRole.BUYER }).exec();
+    if (!buyer) throw new NotFoundException('Buyer not found.');
+    if (String(buyer._id) === adminId) {
+      throw new ForbiddenException('Administrators cannot edit their own account through buyer management.');
+    }
+    if (body.email !== undefined) {
+      const email = body.email.trim().toLowerCase();
+      if (!email) throw new BadRequestException('Email cannot be empty.');
+      const existing = await this.userModel
+        .findOne({ email, _id: { $ne: buyer._id } })
+        .select('_id')
+        .lean()
+        .exec();
+      if (existing) throw new ConflictException('Another account already uses this email.');
+      buyer.email = email;
+    }
+    if (body.name !== undefined) buyer.name = body.name.trim();
+    if (body.phone !== undefined) buyer.phone = body.phone.trim();
+    if (body.city !== undefined) buyer.city = body.city.trim();
+    await buyer.save();
+    await this.logAction({
+      adminId,
+      actionType: 'buyer.update',
+      entityType: 'user',
+      entityId: userId,
+      metadata: { changedFields: Object.keys(body) },
+    });
+    return this.toSafeBuyer(buyer);
+  }
+
+  async updateBuyerAccountStatus(
+    userId: string,
+    body: AdminAccountStatusDto,
+    adminId: string,
+  ) {
+    this.requireReason(body.reason, 'A reason is required for account status changes.');
+    const buyer = await this.userModel.findOne({ _id: userId, role: UserRole.BUYER }).exec();
+    if (!buyer) throw new NotFoundException('Buyer not found.');
+    if (String(buyer._id) === adminId) {
+      throw new ForbiddenException('Administrators cannot change their own status through buyer management.');
+    }
+    const previousStatus = buyer.accountStatus ?? UserAccountStatus.ACTIVE;
+    buyer.accountStatus = body.status as UserAccountStatus;
+    buyer.accountStatusReason = body.reason.trim();
+    buyer.accountStatusChangedAt = new Date();
+    buyer.accountStatusChangedBy = new Types.ObjectId(adminId);
+    await buyer.save();
+    await this.logAction({
+      adminId,
+      actionType: `buyer.${body.status}`,
+      entityType: 'user',
+      entityId: userId,
+      previousStatus,
+      newStatus: body.status,
+      reason: body.reason,
+    });
+    return this.toSafeBuyer(buyer);
+  }
+
+  async deleteBuyer(userId: string, body: AdminDeleteDto, adminId: string) {
+    this.validateDeleteConfirmation(body, 'DELETE BUYER');
+    if (!this.connection) {
+      throw new ServiceUnavailableException('Transactional buyer deletion is unavailable.');
+    }
+    const requiredModels = [
+      this.buyerProfileModel,
+      this.savedPropertyModel,
+      this.savedSearchModel,
+      this.buyerNotificationModel,
+      this.locationShareModel,
+      this.requirementModel,
+      this.requirementOfferModel,
+      this.leadModel,
+      this.conversationModel,
+      this.messageModel,
+      this.activityModel,
+    ];
+    if (requiredModels.some((model) => !model)) {
+      throw new ServiceUnavailableException('Buyer dependency cleanup is unavailable.');
+    }
+
+    const session = await this.connection.startSession();
+    let deletedBuyer: UserDocument | null = null;
+    let cleanupCounts = {
+      buyerProfile: 0,
+      savedProperties: 0,
+      savedSearches: 0,
+      notifications: 0,
+      locationShares: 0,
+      requirements: 0,
+      offers: 0,
+    };
+    try {
+      await session.withTransaction(async () => {
+        const buyer = await this.userModel
+          .findOne({ _id: userId })
+          .session(session)
+          .exec();
+        if (!buyer) throw new NotFoundException('Buyer not found.');
+        if (buyer.role === UserRole.ADMIN || String(buyer._id) === adminId) {
+          throw new ForbiddenException('Administrator accounts cannot be deleted here.');
+        }
+        if (buyer.role !== UserRole.BUYER) {
+          throw new BadRequestException('Only buyer accounts can be deleted through this action.');
+        }
+        this.requireReason(body.reason, 'A reason is required for account deletion.');
+        const buyerId = buyer._id as Types.ObjectId;
+        const requirements = await this.requirementModel!
+          .find({ buyerId })
+          .select('_id')
+          .session(session)
+          .lean()
+          .exec();
+        const requirementIds = requirements.map((requirement) => requirement._id);
+        const [offers, leads, conversations, messages] = await Promise.all([
+          this.requirementOfferModel!
+            .countDocuments({ requirementId: { $in: requirementIds } })
+            .session(session)
+            .exec(),
+          this.leadModel!
+            .countDocuments({ buyerId })
+            .session(session)
+            .exec(),
+          this.conversationModel!
+            .countDocuments({ buyerId })
+            .session(session)
+            .exec(),
+          this.messageModel!
+            .countDocuments({ senderId: buyerId })
+            .session(session)
+            .exec(),
+        ]);
+        if (offers || leads || conversations || messages) {
+          throw new ConflictException(
+            `Buyer has retained business history (offers=${offers}, leads=${leads}, conversations=${conversations}, messages=${messages}); deactivate the account to preserve it.`,
+          );
+        }
+
+        const [profile, savedProperties, savedSearches, notifications, locationShares] = await Promise.all([
+          this.buyerProfileModel!.deleteOne({ buyerId }).session(session).exec(),
+          this.savedPropertyModel!.deleteMany({ buyerId }).session(session).exec(),
+          this.savedSearchModel!.deleteMany({ buyerId }).session(session).exec(),
+          this.buyerNotificationModel!.deleteMany({ buyerId }).session(session).exec(),
+          this.locationShareModel!.deleteMany({ recipientId: buyerId }).session(session).exec(),
+        ]);
+        const requirementsDeleted = await this.requirementModel!
+          .deleteMany({ buyerId })
+          .session(session)
+          .exec();
+        const userDeleted = await this.userModel
+          .deleteOne({ _id: buyerId, role: UserRole.BUYER })
+          .session(session)
+          .exec();
+        if (userDeleted.deletedCount !== 1) {
+          throw new ConflictException('Buyer deletion did not remove exactly one account.');
+        }
+        cleanupCounts = {
+          buyerProfile: profile.deletedCount ?? 0,
+          savedProperties: savedProperties.deletedCount ?? 0,
+          savedSearches: savedSearches.deletedCount ?? 0,
+          notifications: notifications.deletedCount ?? 0,
+          locationShares: locationShares.deletedCount ?? 0,
+          requirements: requirementsDeleted.deletedCount ?? 0,
+          offers: 0,
+        };
+        deletedBuyer = buyer;
+        await this.logAction({
+          adminId,
+          actionType: 'buyer.delete',
+          entityType: 'user',
+          entityId: userId,
+          previousStatus: buyer.accountStatus ?? UserAccountStatus.ACTIVE,
+          newStatus: 'deleted',
+          reason: body.reason,
+          metadata: cleanupCounts,
+        }, session);
+      });
+    } finally {
+      await session.endSession();
+    }
+
+    const avatarFileRemoved = deletedBuyer?.avatarUrl
+      ? await this.removeBuyerAvatarIfUnreferenced(deletedBuyer.avatarUrl, userId)
+      : false;
+    return { deleted: true, id: userId, cleanupCounts, avatarFileRemoved };
+  }
+
+  private toSafeBuyer(buyer: UserDocument | Record<string, any>) {
+    return {
+      id: String(buyer._id),
+      name: buyer.name,
+      email: buyer.email,
+      phone: buyer.phone,
+      city: buyer.city,
+      avatarUrl: buyer.avatarUrl,
+      role: UserRole.BUYER,
+      accountStatus: buyer.accountStatus ?? UserAccountStatus.ACTIVE,
+      accountStatusReason: buyer.accountStatusReason,
+      accountStatusChangedAt: buyer.accountStatusChangedAt,
+      createdAt: (buyer as UserDocument & { createdAt?: Date }).createdAt,
+    };
+  }
+
+  private async removeBuyerAvatarIfUnreferenced(url: string, userId: string) {
+    const filename = this.imageStorage?.filenameForManagedUrl(url);
+    if (!filename || !this.projectModel || !this.agencyModel) return false;
+    const [userReference, propertyReference, agencyReference, projectReference] = await Promise.all([
+      this.userModel.findOne({ _id: { $ne: new Types.ObjectId(userId) }, avatarUrl: url }).select('_id').exec(),
+      this.propertyModel.findOne({ $or: [{ images: url }, { 'imageMetadata.url': url }] }).select('_id').exec(),
+      this.agencyModel.findOne({ $or: [{ logoUrl: url }, { coverImageUrl: url }, { galleryUrls: url }] }).select('_id').exec(),
+      this.projectModel.findOne({ $or: [{ coverImage: url }, { gallery: url }, { 'paymentPlan.documentUrl': url }] }).select('_id').exec(),
+    ]);
+    if (userReference || propertyReference || agencyReference || projectReference) return false;
+    try {
+      await this.imageStorage.remove(filename);
+      return true;
+    } catch {
+      this.logger.warn('Buyer avatar cleanup failed; a managed file may need later review.');
+      return false;
+    }
   }
 
   async getAgentProfile(userId: string) {
@@ -737,6 +1096,28 @@ export class AdminService {
               status: PropertyAdvertisementStatus.ENDED,
               endedAt: now,
               moderationNotes: body.reason?.trim(),
+            },
+          },
+        ).exec();
+      }
+    } else if (body.action === 'reactivate') {
+      if (!property.adminRemoved) {
+        throw new ConflictException('Only a deactivated (removed) property can be reactivated.');
+      }
+      set.adminRemoved = false;
+      set.adminModerationReason = null;
+      // Restore the advertisement to paused so the agent can re-publish
+      if (this.advertisementModel) {
+        await this.advertisementModel.updateOne(
+          {
+            propertyId: property._id,
+            status: PropertyAdvertisementStatus.ENDED,
+          },
+          {
+            $set: {
+              status: PropertyAdvertisementStatus.PAUSED,
+              pausedAt: now,
+              moderationNotes: null,
             },
           },
         ).exec();
@@ -1452,6 +1833,13 @@ export class AdminService {
       counts[_id] = count;
     }
     counts.total = groups.reduce((total, group) => total + group.count, 0);
+    // Additional moderation-state counts (independent of property status)
+    const [hiddenCount, deactivatedCount] = await Promise.all([
+      this.propertyModel.countDocuments({ adminHidden: true }).exec(),
+      this.propertyModel.countDocuments({ adminRemoved: true }).exec(),
+    ]);
+    counts.hidden = hiddenCount;
+    counts.deactivated = deactivatedCount;
     return counts;
   }
 
