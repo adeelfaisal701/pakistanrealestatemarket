@@ -7,8 +7,7 @@ import {
   ArrowLeft,
   BadgeCheck,
   Building2,
-  ExternalLink,
-  Globe,
+  Home,
   Mail,
   MapPin,
   Phone,
@@ -127,156 +126,140 @@ export default function PublicAgenciesPage() {
           <p role="alert" className="mt-6 rounded-2xl bg-red-50 p-6 text-sm text-red-700 dark:bg-red-950/30 dark:text-red-300">{error}</p>
         ) : agencyName && agency ? (
           <>
-            {/* Section A: Agency Cover Banner */}
-            <section aria-label="Agency Cover Banner" className="relative mt-5 h-48 w-full overflow-hidden rounded-2xl border border-slate-200/80 bg-slate-900 shadow-sm sm:h-64 sm:rounded-3xl md:h-72 lg:h-80 dark:border-slate-800">
-              <img
-                src={agency.coverImageUrl || DEFAULT_COVER_IMAGE}
-                alt={`${agency.name} cover banner`}
-                className="h-full w-full object-cover object-center"
-                onError={(e) => {
-                  if (e.currentTarget.src !== DEFAULT_COVER_IMAGE) {
-                    e.currentTarget.src = DEFAULT_COVER_IMAGE;
-                  }
-                }}
-              />
-              <div
-                aria-hidden="true"
-                className="pointer-events-none absolute inset-0 bg-gradient-to-t from-slate-950/30 via-transparent to-slate-950/10"
-              />
-            </section>
+            {/* Unified Agency Profile Card: Facebook / WhatsApp Business Style */}
+            <section aria-label="Agency Profile" className="relative mt-5 overflow-hidden rounded-3xl border border-slate-200/80 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+              {/* Full-width Cover Photo Banner */}
+              <div className="relative h-52 w-full overflow-hidden bg-slate-900 sm:h-64 md:h-72">
+                <img
+                  src={agency.coverImageUrl || DEFAULT_COVER_IMAGE}
+                  alt={`${agency.name} cover`}
+                  className="h-full w-full object-cover object-center"
+                  onError={(e) => {
+                    if (e.currentTarget.src !== DEFAULT_COVER_IMAGE) {
+                      e.currentTarget.src = DEFAULT_COVER_IMAGE;
+                    }
+                  }}
+                />
+              </div>
 
-            {/* Section B: Agency Information Card */}
-            <section aria-label="Agency Information" className="mt-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:mt-6 sm:rounded-3xl sm:p-7 lg:p-8 dark:border-slate-800 dark:bg-slate-900">
-              <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
-                <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:gap-6 min-w-0 flex-1">
-                  {/* Agency Logo */}
-                  <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-slate-200 bg-white p-2 shadow-sm sm:h-28 sm:w-28 dark:border-slate-700 dark:bg-slate-800">
+              {/* Information Card Body with Overlapping Circular Logo */}
+              <div className="relative bg-white px-5 pb-6 pt-0 sm:px-8 sm:pb-8 dark:bg-slate-900">
+                {/* Header Row: Circular Logo + Agency Name & Category */}
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:gap-5">
+                  {/* Overlapping Circular Agency Logo */}
+                  <div className="-mt-14 relative z-20 flex h-28 w-28 shrink-0 items-center justify-center overflow-hidden rounded-full border-[3.5px] border-[#008F68] bg-white p-1.5 shadow-lg sm:-mt-20 sm:h-36 sm:w-36 sm:p-2 dark:bg-slate-800">
                     {agency.logoUrl ? (
                       <img
                         src={agency.logoUrl}
                         alt={`${agency.name} logo`}
-                        className="h-full w-full object-contain"
+                        className="h-full w-full rounded-full object-contain"
                       />
                     ) : (
-                      <Building2 className="h-10 w-10 text-emerald-600 sm:h-14 sm:w-14 dark:text-emerald-400" />
+                      <Building2 className="h-12 w-12 text-[#008F68] sm:h-16 sm:w-16" />
                     )}
                   </div>
 
-                  {/* Main Information */}
-                  <div className="min-w-0 flex-1">
+                  {/* Agency Name, Verification Badge & Category */}
+                  <div className="min-w-0 flex-1 pt-1 sm:pt-4">
                     <div className="flex flex-wrap items-center gap-2">
-                      <h1 className="text-2xl font-extrabold tracking-tight text-[#071B2B] sm:text-3xl lg:text-4xl dark:text-white break-words">
+                      <h1 className="text-2xl font-bold tracking-tight text-[#071B2B] sm:text-3xl dark:text-white break-words">
                         {agency.name}
                       </h1>
                       {agency.isVerified && (
-                        <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-semibold text-emerald-700 border border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800">
-                          <BadgeCheck className="h-3.5 w-3.5 shrink-0" />
-                          Verified agency
+                        <span className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#008F68] text-white shadow-sm" title="Verified agency">
+                          <svg className="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
+                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                          </svg>
                         </span>
                       )}
                     </div>
 
                     {agency.agencyType && (
-                      <p className="mt-1 text-sm font-semibold text-emerald-700 dark:text-emerald-400">
-                        {agency.agencyType}
-                      </p>
-                    )}
-
-                    {/* Metadata Badges */}
-                    <div className="mt-3.5 flex flex-wrap items-center gap-2 text-xs sm:text-sm">
-                      {!!locations.length && (
-                        <span className="inline-flex items-center gap-1.5 rounded-lg bg-slate-100 px-3 py-1.5 font-medium text-slate-700 dark:bg-slate-800 dark:text-slate-300">
-                          <MapPin className="h-3.5 w-3.5 shrink-0 text-emerald-600 dark:text-emerald-400" />
-                          {locations.join(", ")}
-                        </span>
-                      )}
-                      <span className="inline-flex items-center gap-1.5 rounded-lg bg-slate-100 px-3 py-1.5 font-medium text-slate-700 dark:bg-slate-800 dark:text-slate-300">
-                        <Users className="h-3.5 w-3.5 shrink-0 text-emerald-600 dark:text-emerald-400" />
-                        {agency.agentCount} associated {agency.agentCount === 1 ? "agent" : "agents"}
-                      </span>
-                      {listings && (
-                        <span className="inline-flex items-center gap-1.5 rounded-lg bg-slate-100 px-3 py-1.5 font-medium text-slate-700 dark:bg-slate-800 dark:text-slate-300">
-                          <Building2 className="h-3.5 w-3.5 shrink-0 text-emerald-600 dark:text-emerald-400" />
-                          {listings.pagination.total} published {listings.pagination.total === 1 ? "listing" : "listings"}
-                        </span>
-                      )}
-                    </div>
-
-                    {/* Complete Agency Address */}
-                    {!!officeAddresses.length && (
-                      <div className="mt-3 flex items-start gap-1.5 text-xs sm:text-sm text-slate-600 dark:text-slate-400">
-                        <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-slate-400 dark:text-slate-500" />
-                        <span className="leading-relaxed">{officeAddresses.join(" · ")}</span>
+                      <div className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-[#EAF7F2] px-3 py-1 text-xs sm:text-sm font-semibold text-[#008F68] dark:bg-emerald-950/60 dark:text-emerald-300">
+                        <Home className="h-3.5 w-3.5 shrink-0" />
+                        <span>{agency.agencyType}</span>
                       </div>
                     )}
                   </div>
                 </div>
 
-                {/* Action Buttons */}
-                <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:gap-2.5 lg:flex-col lg:w-48 shrink-0">
+                {/* Location and Statistics Row */}
+                <div className="mt-5 flex flex-wrap items-center gap-x-3 gap-y-2 text-xs sm:text-sm font-medium text-slate-800 dark:text-slate-200">
+                  {!!locations.length && (
+                    <span className="inline-flex items-center gap-1.5">
+                      <MapPin className="h-4 w-4 shrink-0 text-[#008F68]" />
+                      <span>{locations.join(", ")}</span>
+                    </span>
+                  )}
+                  {!!locations.length && (
+                    <span className="text-slate-300 dark:text-slate-700 select-none">|</span>
+                  )}
+                  <span className="inline-flex items-center gap-1.5">
+                    <Users className="h-4 w-4 shrink-0 text-[#008F68]" />
+                    <span>{agency.agentCount} Associated {agency.agentCount === 1 ? "Agent" : "Agents"}</span>
+                  </span>
+                  <span className="text-slate-300 dark:text-slate-700 select-none">|</span>
+                  <span className="inline-flex items-center gap-1.5">
+                    <Building2 className="h-4 w-4 shrink-0 text-[#008F68]" />
+                    <span>{listings ? listings.pagination.total : 0} Published Listings</span>
+                  </span>
+                </div>
+
+                {/* Complete Agency Address */}
+                {!!officeAddresses.length && (
+                  <div className="mt-3 flex items-start gap-2 text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300">
+                    <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-[#008F68]" />
+                    <span className="leading-relaxed">{officeAddresses.join(" · ")}</span>
+                  </div>
+                )}
+
+                {/* Agency Description */}
+                {agency.description && (
+                  <>
+                    <div className="my-4 border-t border-slate-100 dark:border-slate-800" />
+                    <p className="text-sm sm:text-base font-medium italic text-slate-700 dark:text-slate-300 leading-relaxed whitespace-pre-line">
+                      {agency.description}
+                    </p>
+                  </>
+                )}
+
+                {/* Action Buttons: Exact 3-Buttons Layout */}
+                <div className="mt-5 space-y-2.5">
+                  {/* Row 1: Call Agency (100% full width, dark black / deep navy background, white phone icon and text) */}
                   {agency.phone && (
                     <a
                       href={`tel:${agency.phone}`}
-                      className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700 active:scale-[0.98]"
+                      className="flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#071B2B] px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#0B2538] active:scale-[0.99] dark:bg-slate-950 dark:hover:bg-slate-800"
                     >
-                      <Phone className="h-4 w-4 shrink-0" />
-                      <span>Call agency</span>
+                      <Phone className="h-4 w-4 shrink-0 text-white" />
+                      <span>Call Agency</span>
                     </a>
                   )}
-                  {agency.phone && (
-                    <WhatsAppButton
-                      phoneNumber={agency.phone}
-                      className="h-11 w-full rounded-xl px-4 text-sm font-semibold shadow-sm transition active:scale-[0.98]"
-                    >
-                      WhatsApp
-                    </WhatsAppButton>
-                  )}
-                  {agency.email && (
-                    <a
-                      href={`mailto:${agency.email}`}
-                      className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 hover:text-slate-900 active:scale-[0.98] dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
-                    >
-                      <Mail className="h-4 w-4 shrink-0 text-slate-500 dark:text-slate-400" />
-                      <span>Email</span>
-                    </a>
-                  )}
-                  <Link
-                    href="/agent/agency-profile"
-                    className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 hover:text-slate-900 active:scale-[0.98] dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
-                  >
-                    <ExternalLink className="h-4 w-4 shrink-0 text-slate-500 dark:text-slate-400" />
-                    <span>Manage agency</span>
-                  </Link>
-                </div>
-              </div>
 
-              {/* Agency Description Section */}
-              <div className="mt-6 border-t border-slate-100 pt-5 dark:border-slate-800">
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <h2 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                    About the agency
-                  </h2>
-                  {agency.website && (
-                    <a
-                      href={agency.website}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-700 hover:underline dark:text-emerald-400"
-                    >
-                      <Globe className="h-3.5 w-3.5 shrink-0" />
-                      <span>Visit website</span>
-                    </a>
-                  )}
+                  {/* Row 2: WhatsApp (50%) & Email (50%) Side by Side */}
+                  <div className="grid grid-cols-2 gap-2.5">
+                    {/* WhatsApp: brand green background, white WhatsApp icon and text */}
+                    {agency.phone && (
+                      <WhatsAppButton
+                        phoneNumber={agency.phone}
+                        className="flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#008F68] hover:bg-[#007555] px-4 text-sm font-semibold text-white shadow-sm transition active:scale-[0.99]"
+                      >
+                        WhatsApp
+                      </WhatsAppButton>
+                    )}
+
+                    {/* Email: white background, green border, green email icon and text */}
+                    {agency.email && (
+                      <a
+                        href={`mailto:${agency.email}`}
+                        className="flex h-12 w-full items-center justify-center gap-2 rounded-xl border-2 border-[#008F68] bg-white px-4 text-sm font-semibold text-[#008F68] shadow-sm transition hover:bg-[#EAF7F2] active:scale-[0.99] dark:bg-transparent dark:hover:bg-emerald-950/30"
+                      >
+                        <Mail className="h-4 w-4 shrink-0 text-[#008F68]" />
+                        <span>Email</span>
+                      </a>
+                    )}
+                  </div>
                 </div>
-                {agency.description ? (
-                  <p className="mt-2.5 whitespace-pre-line text-sm sm:text-base leading-relaxed text-slate-600 dark:text-slate-300">
-                    {agency.description}
-                  </p>
-                ) : (
-                  <p className="mt-2.5 text-sm text-slate-400 dark:text-slate-500 italic">
-                    An agency introduction has not been added yet.
-                  </p>
-                )}
               </div>
             </section>
 
