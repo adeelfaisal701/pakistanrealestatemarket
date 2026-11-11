@@ -1,6 +1,7 @@
 import {
   Controller,
   Get,
+  Post,
   Patch,
   Delete,
   Param,
@@ -30,6 +31,7 @@ import { AdminDeleteDto } from './dto/admin-delete.dto';
 import { UpdateUserReportDto } from './dto/user-report.dto';
 import { AdminMutationRateLimitGuard } from './admin-mutation-rate-limit.guard';
 import { AdminBuyerUpdateDto } from './dto/admin-buyer-update.dto';
+import { AdminCreateAccountDto } from './dto/admin-create-account.dto';
 
 @Controller('admin')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -70,6 +72,15 @@ export class AdminController {
   @Get('agents')
   getAgents(@Query() query: AdminAgentsQueryDto) {
     return this.adminService.getAgents(query);
+  }
+
+  @Post('accounts')
+  @UseGuards(AdminMutationRateLimitGuard)
+  createAccount(
+    @Body() body: AdminCreateAccountDto,
+    @CurrentUser('id') adminId: string,
+  ) {
+    return this.adminService.createAgentAccount(body, adminId);
   }
 
   @Get('buyers')

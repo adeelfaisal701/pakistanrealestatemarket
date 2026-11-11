@@ -13,9 +13,9 @@ import { UserRole } from '../../users/schemas/user.schema';
 /**
  * Public self-registration payload.
  *
- * `role` is deliberately limited to non-privileged roles. Admin accounts must
- * never be created through the public register endpoint (create them via a
- * seed script / admin tooling instead).
+ * `role` is deliberately limited to BUYER only. Agent, agency, and dealer
+ * accounts must be created by an authenticated admin through the admin API.
+ * Admin accounts must never be created through the public register endpoint.
  */
 export class RegisterDto {
   @IsNotEmpty()
@@ -45,14 +45,13 @@ export class RegisterDto {
   })
   password: string;
 
+  /**
+   * Only BUYER is accepted for public self-registration.
+   * Omitting the field also defaults to BUYER in the user schema.
+   */
   @IsOptional()
-  @IsIn([UserRole.BUYER, UserRole.AGENT])
-  role?: UserRole;
-
-  @IsOptional()
-  @IsString()
-  @MaxLength(150)
-  agencyName?: string;
+  @IsIn([UserRole.BUYER])
+  role?: UserRole.BUYER;
 
   @IsOptional()
   @IsString()

@@ -12,6 +12,8 @@ import { InjectModel } from '@nestjs/mongoose';
 import { ClientSession, Connection, Model, Types } from 'mongoose';
 import { InjectConnection } from '@nestjs/mongoose';
 import { createHash } from 'crypto';
+import * as bcrypt from 'bcrypt';
+import { normalizeAuthEmail } from '../auth/auth-rate-limit.service';
 import {
   Property,
   PropertyDocument,
@@ -88,6 +90,7 @@ import {
   CreateUserReportDto,
   UpdateUserReportDto,
 } from './dto/user-report.dto';
+import { AdminCreateAccountDto } from './dto/admin-create-account.dto';
 import {
   AdminActivity,
   AdminActivityDocument,
@@ -1019,6 +1022,53 @@ export class AdminService {
       reason: body.reason,
     });
     return { deleted: true, id: userId };
+  }
+
+  /**
+   * Admin-only account creation for privileged roles (agent, etc.).
+   * Password is hashed with bcrypt before storage; plaintext is never persisted.
+   * Returns the created user's safe profile plus the credentials so the admin
+   * can pass them on to the new user manually.
+   */
+  async createAgentAccount(body: AdminCreateAccountDto, adminId: string) {
+    const normalizedEmail = normalizeAuthEmail(body.email);
+    const existing = await this.userModel.findOne({ email: normalizedEmail }).exec();
+    if (existing) {
+      throw new ConflictException(
+        'An account with this email address already exists.',
+      );
+    }
+    const passwordHash = await bcrypt.hash(body.password, 10);
+    const user = await this.userModel.create({
+      name: body.name.trim(),
+      email: normalizedEmail,
+      phone: body.phone.replace(/\s+/g, ''),
+      role: body.role,
+      agencyName: body.agencyName?.trim() || undefined,
+      city: body.city?.trim() || undefined,
+      passwordHash,
+      accountStatus: UserAccountStatus.ACTIVE,
+    });
+    await this.logAction({
+      adminId,
+      actionType: 'agent.admin_create',
+      entityType: 'agent',
+      entityId: String(user._id),
+      previousStatus: 'none',
+      newStatus: UserAccountStatus.ACTIVE,
+      reason: `Admin created ${body.role} account`,
+    });
+    return {
+      id: String(user._id),
+      name: user.name,
+      email: user.email,
+      phone: user.phone,
+      role: user.role,
+      agencyName: user.agencyName,
+      city: user.city,
+      accountStatus: user.accountStatus,
+      createdAt: (user as UserDocument & { createdAt?: Date }).createdAt,
+    };
   }
 
   async adminPropertyAction(

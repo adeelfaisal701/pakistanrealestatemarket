@@ -1,3 +1,4 @@
+
 import 'reflect-metadata';
 import { strict as assert } from 'node:assert';
 import { test } from 'node:test';
@@ -43,14 +44,26 @@ test('accepts a valid buyer registration', async () => {
   assert.ok(result instanceof RegisterDto);
 });
 
-test('accepts a valid agent registration with an agency name', async () => {
-  const result = await validateRegistration({
-    ...validPayload,
-    role: 'agent',
-    agencyName: 'QA Realty',
-  });
+test('rejects public agent registration', async () => {
+  await assert.rejects(
+    validateRegistration({
+      ...validPayload,
+      role: 'agent',
+      agencyName: 'QA Realty',
+    }),
+    BadRequestException,
+  );
+});
 
-  assert.ok(result instanceof RegisterDto);
+test('rejects public agency registration', async () => {
+  await assert.rejects(
+    validateRegistration({
+      ...validPayload,
+      role: 'agency',
+      agencyName: 'QA Realty',
+    }),
+    BadRequestException,
+  );
 });
 
 test('rejects invalid email addresses', async () => {
@@ -99,7 +112,9 @@ test('new and existing email registrations return the same generic acknowledgeme
     let created = false;
     const usersService = {
       findByEmail: async (email: string) =>
-        email === 'qa.user@example.test' && existing ? { _id: 'existing-id' } : null,
+        email === 'qa.user@example.test' && existing
+          ? { _id: 'existing-id' }
+          : null,
       create: async () => {
         created = true;
         return { _id: 'new-id' };
