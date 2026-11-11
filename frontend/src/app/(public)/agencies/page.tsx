@@ -8,10 +8,12 @@ import {
   BadgeCheck,
   Building2,
   ExternalLink,
+  Globe,
   Mail,
   MapPin,
   Phone,
   UserRound,
+  Users,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PropertyCard } from "@/components/marketplace/property-card";
@@ -28,6 +30,8 @@ import {
 import { fetchPublicPropertiesPage, type PublicPropertiesPage } from "@/lib/public-properties";
 
 const PAGE_SIZE = 6;
+const DEFAULT_COVER_IMAGE =
+  "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1600&q=80";
 
 export default function PublicAgenciesPage() {
   const [agencyName, setAgencyName] = useState("");
@@ -123,83 +127,199 @@ export default function PublicAgenciesPage() {
           <p role="alert" className="mt-6 rounded-2xl bg-red-50 p-6 text-sm text-red-700 dark:bg-red-950/30 dark:text-red-300">{error}</p>
         ) : agencyName && agency ? (
           <>
-            <section className="relative isolate mt-5 overflow-hidden rounded-3xl bg-slate-950 text-white shadow-xl">
-              {agency.coverImageUrl && <img src={agency.coverImageUrl} alt="" className="absolute inset-0 h-full w-full object-cover" />}
-              <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-r from-slate-950/95 via-slate-950/80 to-slate-950/45" />
-              <div className="relative grid gap-5 p-5 sm:grid-cols-[auto_1fr] sm:items-end sm:p-8">
-                <div className="flex h-24 w-24 items-center justify-center overflow-hidden rounded-2xl border border-white/20 bg-white/10 shadow-lg sm:h-32 sm:w-32">
-                  {agency.logoUrl ? <img src={agency.logoUrl} alt={`${agency.name} logo`} className="h-full w-full object-cover" /> : <Building2 className="h-12 w-12 text-emerald-300 sm:h-16 sm:w-16" />}
-                </div>
-                <div className="min-w-0">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <h1 className="text-2xl font-extrabold tracking-tight sm:text-4xl">{agency.name}</h1>
-                    {agency.isVerified && <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/15 px-2.5 py-1 text-xs font-semibold text-emerald-200"><BadgeCheck className="h-4 w-4" /> Verified agency</span>}
-                  </div>
-                  {agency.agencyType && <p className="mt-2 text-sm font-medium text-emerald-200">{agency.agencyType}</p>}
-                  <div className="mt-3 flex flex-wrap gap-x-4 gap-y-2 text-sm text-slate-200">
-                    {!!locations.length && <span className="inline-flex items-center gap-1.5"><MapPin className="h-4 w-4 shrink-0 text-emerald-300" />{locations.join(", ")}</span>}
-                    <span>{agency.agentCount} associated {agency.agentCount === 1 ? "agent" : "agents"}</span>
-                    {listings && <span>{listings.pagination.total} published listings</span>}
-                  </div>
-                  {!!officeAddresses.length && <p className="mt-2 text-sm text-slate-300">{officeAddresses.join(" · ")}</p>}
-                  <div className="mt-4 flex flex-wrap gap-2">
-                    {agency.phone && (
-                      <>
-                        <a href={`tel:${agency.phone}`} className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-emerald-600 px-4 text-sm font-semibold text-white hover:bg-emerald-700"><Phone className="h-4 w-4" /> Call agency</a>
-                        <WhatsAppButton phoneNumber={agency.phone} className="w-auto">WhatsApp</WhatsAppButton>
-                      </>
+            {/* Section A: Agency Cover Banner */}
+            <section aria-label="Agency Cover Banner" className="relative mt-5 h-48 w-full overflow-hidden rounded-2xl border border-slate-200/80 bg-slate-900 shadow-sm sm:h-64 sm:rounded-3xl md:h-72 lg:h-80 dark:border-slate-800">
+              <img
+                src={agency.coverImageUrl || DEFAULT_COVER_IMAGE}
+                alt={`${agency.name} cover banner`}
+                className="h-full w-full object-cover object-center"
+                onError={(e) => {
+                  if (e.currentTarget.src !== DEFAULT_COVER_IMAGE) {
+                    e.currentTarget.src = DEFAULT_COVER_IMAGE;
+                  }
+                }}
+              />
+              <div
+                aria-hidden="true"
+                className="pointer-events-none absolute inset-0 bg-gradient-to-t from-slate-950/30 via-transparent to-slate-950/10"
+              />
+            </section>
+
+            {/* Section B: Agency Information Card */}
+            <section aria-label="Agency Information" className="mt-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:mt-6 sm:rounded-3xl sm:p-7 lg:p-8 dark:border-slate-800 dark:bg-slate-900">
+              <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:gap-6 min-w-0 flex-1">
+                  {/* Agency Logo */}
+                  <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-slate-200 bg-white p-2 shadow-sm sm:h-28 sm:w-28 dark:border-slate-700 dark:bg-slate-800">
+                    {agency.logoUrl ? (
+                      <img
+                        src={agency.logoUrl}
+                        alt={`${agency.name} logo`}
+                        className="h-full w-full object-contain"
+                      />
+                    ) : (
+                      <Building2 className="h-10 w-10 text-emerald-600 sm:h-14 sm:w-14 dark:text-emerald-400" />
                     )}
-                    {agency.email && <a href={`mailto:${agency.email}`} className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-white/25 px-4 text-sm font-semibold text-white hover:bg-white/10"><Mail className="h-4 w-4" /> Email</a>}
-                    <Link href="/agent/agency-profile" className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-white/25 px-4 text-sm font-semibold text-white hover:bg-white/10"><ExternalLink className="h-4 w-4" /> Manage agency</Link>
+                  </div>
+
+                  {/* Main Information */}
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <h1 className="text-2xl font-extrabold tracking-tight text-[#071B2B] sm:text-3xl lg:text-4xl dark:text-white break-words">
+                        {agency.name}
+                      </h1>
+                      {agency.isVerified && (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-semibold text-emerald-700 border border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800">
+                          <BadgeCheck className="h-3.5 w-3.5 shrink-0" />
+                          Verified agency
+                        </span>
+                      )}
+                    </div>
+
+                    {agency.agencyType && (
+                      <p className="mt-1 text-sm font-semibold text-emerald-700 dark:text-emerald-400">
+                        {agency.agencyType}
+                      </p>
+                    )}
+
+                    {/* Metadata Badges */}
+                    <div className="mt-3.5 flex flex-wrap items-center gap-2 text-xs sm:text-sm">
+                      {!!locations.length && (
+                        <span className="inline-flex items-center gap-1.5 rounded-lg bg-slate-100 px-3 py-1.5 font-medium text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+                          <MapPin className="h-3.5 w-3.5 shrink-0 text-emerald-600 dark:text-emerald-400" />
+                          {locations.join(", ")}
+                        </span>
+                      )}
+                      <span className="inline-flex items-center gap-1.5 rounded-lg bg-slate-100 px-3 py-1.5 font-medium text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+                        <Users className="h-3.5 w-3.5 shrink-0 text-emerald-600 dark:text-emerald-400" />
+                        {agency.agentCount} associated {agency.agentCount === 1 ? "agent" : "agents"}
+                      </span>
+                      {listings && (
+                        <span className="inline-flex items-center gap-1.5 rounded-lg bg-slate-100 px-3 py-1.5 font-medium text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+                          <Building2 className="h-3.5 w-3.5 shrink-0 text-emerald-600 dark:text-emerald-400" />
+                          {listings.pagination.total} published {listings.pagination.total === 1 ? "listing" : "listings"}
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Complete Agency Address */}
+                    {!!officeAddresses.length && (
+                      <div className="mt-3 flex items-start gap-1.5 text-xs sm:text-sm text-slate-600 dark:text-slate-400">
+                        <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-slate-400 dark:text-slate-500" />
+                        <span className="leading-relaxed">{officeAddresses.join(" · ")}</span>
+                      </div>
+                    )}
                   </div>
                 </div>
+
+                {/* Action Buttons */}
+                <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:gap-2.5 lg:flex-col lg:w-48 shrink-0">
+                  {agency.phone && (
+                    <a
+                      href={`tel:${agency.phone}`}
+                      className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700 active:scale-[0.98]"
+                    >
+                      <Phone className="h-4 w-4 shrink-0" />
+                      <span>Call agency</span>
+                    </a>
+                  )}
+                  {agency.phone && (
+                    <WhatsAppButton
+                      phoneNumber={agency.phone}
+                      className="h-11 w-full rounded-xl px-4 text-sm font-semibold shadow-sm transition active:scale-[0.98]"
+                    >
+                      WhatsApp
+                    </WhatsAppButton>
+                  )}
+                  {agency.email && (
+                    <a
+                      href={`mailto:${agency.email}`}
+                      className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 hover:text-slate-900 active:scale-[0.98] dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+                    >
+                      <Mail className="h-4 w-4 shrink-0 text-slate-500 dark:text-slate-400" />
+                      <span>Email</span>
+                    </a>
+                  )}
+                  <Link
+                    href="/agent/agency-profile"
+                    className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 hover:text-slate-900 active:scale-[0.98] dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+                  >
+                    <ExternalLink className="h-4 w-4 shrink-0 text-slate-500 dark:text-slate-400" />
+                    <span>Manage agency</span>
+                  </Link>
+                </div>
+              </div>
+
+              {/* Agency Description Section */}
+              <div className="mt-6 border-t border-slate-100 pt-5 dark:border-slate-800">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <h2 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                    About the agency
+                  </h2>
+                  {agency.website && (
+                    <a
+                      href={agency.website}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-700 hover:underline dark:text-emerald-400"
+                    >
+                      <Globe className="h-3.5 w-3.5 shrink-0" />
+                      <span>Visit website</span>
+                    </a>
+                  )}
+                </div>
+                {agency.description ? (
+                  <p className="mt-2.5 whitespace-pre-line text-sm sm:text-base leading-relaxed text-slate-600 dark:text-slate-300">
+                    {agency.description}
+                  </p>
+                ) : (
+                  <p className="mt-2.5 text-sm text-slate-400 dark:text-slate-500 italic">
+                    An agency introduction has not been added yet.
+                  </p>
+                )}
               </div>
             </section>
 
-            <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)]">
-              <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-6">
-                <p className="text-sm font-semibold text-emerald-700 dark:text-emerald-300">About the agency</p>
-                <h2 className="mt-1 text-xl font-bold">Agency overview</h2>
-                {agency.description ? (
-                  <p className="mt-3 whitespace-pre-line text-sm leading-6 text-slate-600 dark:text-slate-300">{agency.description}</p>
-                ) : (
-                  <p className="mt-3 text-sm text-slate-500 dark:text-slate-400">An agency introduction has not been added yet.</p>
-                )}
-                <dl className="mt-5 space-y-3 border-t border-slate-100 pt-4 text-sm dark:border-slate-800">
-                  {agency.agencyType && <InfoRow label="Agency type" value={agency.agencyType} />}
-                  {!!locations.length && <InfoRow label="City" value={locations.join(", ")} />}
-                  {!!officeAddresses.length && <InfoRow label={officeAddresses.length > 1 ? "Office addresses" : "Office address"} value={officeAddresses.join(" · ")} />}
-                  {agency.phone && <InfoRow label="Phone" value={agency.phone} />}
-                  {agency.email && <InfoRow label="Email" value={agency.email} />}
-                  {agency.website && <InfoRow label="Website" value={<a href={agency.website} target="_blank" rel="noopener noreferrer" className="break-all text-emerald-700 hover:underline dark:text-emerald-300">{agency.website}</a>} />}
-                </dl>
-              </section>
-
-              <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-6">
-                <div className="flex items-end justify-between gap-3">
-                  <div><p className="text-sm font-semibold text-emerald-700 dark:text-emerald-300">Agency team</p><h2 className="mt-1 text-xl font-bold">Our agents</h2></div>
-                  <span className="text-sm text-slate-500 dark:text-slate-400">{agency.agentCount} agents</span>
+            {/* Agency Team Section */}
+            <section className="mt-6 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:rounded-3xl sm:p-7 dark:border-slate-800 dark:bg-slate-900">
+              <div className="flex items-end justify-between gap-3">
+                <div>
+                  <p className="text-sm font-semibold text-emerald-700 dark:text-emerald-300">Agency team</p>
+                  <h2 className="mt-1 text-xl sm:text-2xl font-bold text-[#071B2B] dark:text-white">Our agents</h2>
                 </div>
-                <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                  {agency.agents.map((agent) => (
-                    <article key={agent.id} className="flex min-w-0 items-center gap-3 rounded-xl border border-slate-200 p-3 dark:border-slate-800">
-                      <Link href={`/agents/${encodeURIComponent(agent.id)}`} aria-label={`View ${agent.name}'s profile`} className="shrink-0">
-                        {agent.avatarUrl ? <img src={agent.avatarUrl} alt={`${agent.name} profile`} className="h-12 w-12 rounded-full object-cover" loading="lazy" /> : <span className="flex h-12 w-12 items-center justify-center rounded-full bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300"><UserRound className="h-6 w-6" /></span>}
+                <span className="text-sm font-medium text-slate-500 dark:text-slate-400">
+                  {agency.agentCount} {agency.agentCount === 1 ? "agent" : "agents"}
+                </span>
+              </div>
+              <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                {agency.agents.map((agent) => (
+                  <article key={agent.id} className="flex min-w-0 items-center gap-3.5 rounded-xl border border-slate-200 bg-white p-3.5 transition hover:border-emerald-300 hover:shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:hover:border-slate-700">
+                    <Link href={`/agents/${encodeURIComponent(agent.id)}`} aria-label={`View ${agent.name}'s profile`} className="shrink-0">
+                      {agent.avatarUrl ? (
+                        <img src={agent.avatarUrl} alt={`${agent.name} profile`} className="h-12 w-12 rounded-full object-cover ring-2 ring-emerald-500/10" loading="lazy" />
+                      ) : (
+                        <span className="flex h-12 w-12 items-center justify-center rounded-full bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300 ring-2 ring-emerald-500/10">
+                          <UserRound className="h-6 w-6" />
+                        </span>
+                      )}
+                    </Link>
+                    <div className="min-w-0 flex-1">
+                      <Link href={`/agents/${encodeURIComponent(agent.id)}`} className="flex items-center gap-1 font-semibold text-slate-900 hover:text-emerald-700 dark:text-white dark:hover:text-emerald-300">
+                        <span className="truncate">{agent.name}</span>
+                        {agent.isVerified && <BadgeCheck aria-label="Verified agent" className="h-4 w-4 shrink-0 text-emerald-600" />}
                       </Link>
-                      <div className="min-w-0">
-                        <Link href={`/agents/${encodeURIComponent(agent.id)}`} className="flex items-center gap-1 font-semibold text-slate-900 hover:text-emerald-700 dark:text-white dark:hover:text-emerald-300">
-                          <span className="truncate">{agent.name}</span>
-                          {agent.isVerified && <BadgeCheck aria-label="Verified agent" className="h-4 w-4 shrink-0 text-emerald-600" />}
-                        </Link>
-                        {agent.city && <p className="mt-0.5 truncate text-xs text-slate-500 dark:text-slate-400">{agent.city}</p>}
-                        <Link href={`/agents/${encodeURIComponent(agent.id)}`} className="mt-1 inline-block text-xs font-semibold text-emerald-700 dark:text-emerald-300">View profile</Link>
-                      </div>
-                    </article>
-                  ))}
-                  {!agency.agents.length && <p className="sm:col-span-2 rounded-xl border border-dashed border-slate-300 p-5 text-sm text-slate-500 dark:border-slate-700">No active public agent profiles are currently associated with this agency.</p>}
-                </div>
-              </section>
-            </div>
+                      {agent.city && <p className="mt-0.5 truncate text-xs text-slate-500 dark:text-slate-400">{agent.city}</p>}
+                      <Link href={`/agents/${encodeURIComponent(agent.id)}`} className="mt-1 inline-block text-xs font-semibold text-emerald-700 dark:text-emerald-300">View profile</Link>
+                    </div>
+                  </article>
+                ))}
+                {!agency.agents.length && (
+                  <p className="sm:col-span-2 lg:col-span-3 rounded-xl border border-dashed border-slate-300 p-5 text-sm text-slate-500 dark:border-slate-700">
+                    No active public agent profiles are currently associated with this agency.
+                  </p>
+                )}
+              </div>
+            </section>
 
             {!!agency.galleryUrls?.length && (
               <section className="mt-6">
