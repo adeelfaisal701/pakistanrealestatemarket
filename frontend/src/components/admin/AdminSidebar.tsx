@@ -173,21 +173,21 @@ export function AdminSidebar() {
               className={cn(
                 "group flex min-h-11 items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-colors",
                 active
-                  ? "bg-blue-600/25 text-white ring-1 ring-inset ring-blue-500/30"
+                  ? "bg-emerald-600/25 text-white ring-1 ring-inset ring-emerald-500/30"
                   : "text-slate-300 hover:bg-slate-800/80 hover:text-white",
               )}
             >
               <span
                 className={cn(
                   "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg",
-                  active ? "bg-blue-600 text-white" : "text-slate-400 group-hover:text-blue-300",
+                  active ? "bg-emerald-600 text-white" : "text-slate-400 group-hover:text-emerald-300",
                 )}
               >
                 <Icon className="h-[18px] w-[18px]" />
               </span>
               <span className="min-w-0 flex-1">
                 <span className="block truncate font-semibold">{item.name}</span>
-                <span className={cn("mt-0.5 block truncate text-[10px]", active ? "text-blue-200/80" : "text-slate-500")}>
+                <span className={cn("mt-0.5 block truncate text-[10px]", active ? "text-emerald-200/80" : "text-slate-500")}>
                   {item.description}
                 </span>
               </span>
@@ -254,9 +254,9 @@ export function AdminSidebar() {
           {renderNavigation()}
         </div>
 
-        <div className="m-3 rounded-xl border border-blue-500/20 bg-blue-950/30 p-3">
-          <div className="flex items-center gap-2 text-xs font-bold text-blue-200">
-            <ShieldCheck className="h-4 w-4 text-blue-400" />
+        <div className="m-3 rounded-xl border border-emerald-500/20 bg-emerald-950/30 p-3">
+          <div className="flex items-center gap-2 text-xs font-bold text-emerald-200">
+            <ShieldCheck className="h-4 w-4 text-emerald-400" />
             Platform Control
           </div>
           <p className="mt-1 text-[10px] leading-4 text-slate-400">
@@ -264,7 +264,7 @@ export function AdminSidebar() {
           </p>
           <Link
             href="/admin/activity"
-            className="mt-2 inline-flex min-h-8 w-full items-center justify-center gap-1 rounded-lg bg-blue-700 px-3 text-[10px] font-semibold text-white transition-colors hover:bg-blue-600"
+            className="mt-2 inline-flex min-h-8 w-full items-center justify-center gap-1 rounded-lg bg-emerald-700 px-3 text-[10px] font-semibold text-white transition-colors hover:bg-emerald-600"
           >
             View Activity Log <ChevronRight className="h-3 w-3" />
           </Link>
@@ -312,7 +312,7 @@ export function AdminSidebar() {
           "flex min-w-0 max-w-3xl flex-1 items-center",
           isOverview && "max-md:hidden",
         )}>
-          <label className="flex h-10 w-full items-center gap-2 rounded-full border border-slate-700/80 bg-slate-800/70 px-4 text-slate-400 transition-colors focus-within:border-blue-500/70 focus-within:bg-slate-800">
+          <label className="flex h-10 w-full items-center gap-2 rounded-full border border-slate-700/80 bg-slate-800/70 px-4 text-slate-400 transition-colors focus-within:border-emerald-500/70 focus-within:bg-slate-800">
             <Search className="h-4 w-4 shrink-0" />
             <input
               type="search"
@@ -333,11 +333,11 @@ export function AdminSidebar() {
             <span className="block text-xs font-semibold text-slate-100">{admin?.name ?? "Admin"}</span>
             <span className="block text-[10px] text-slate-400">{admin?.email ?? "Administrator"}</span>
           </span>
-          <span className="flex h-9 w-9 items-center justify-center rounded-full border border-blue-400/40 bg-blue-600/25 text-xs font-bold text-blue-100">
+          <span className="flex h-9 w-9 items-center justify-center rounded-full border border-emerald-400/40 bg-emerald-600/25 text-xs font-bold text-emerald-100">
             {initials}
           </span>
           <span className="hidden text-xs font-medium text-slate-300 sm:block">Admin</span>
-          <Shield className="hidden h-4 w-4 text-blue-300 sm:block" />
+          <Shield className="hidden h-4 w-4 text-emerald-300 sm:block" />
         </div>
       </header>
 

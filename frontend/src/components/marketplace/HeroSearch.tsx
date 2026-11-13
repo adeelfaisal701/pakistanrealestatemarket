@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
@@ -8,6 +8,9 @@ import { Search } from 'lucide-react';
 
 export default function HeroSearch({ desktop = false }: { desktop?: boolean }) {
   const router = useRouter();
+  useEffect(() => {
+    router.prefetch('/maintenance');
+  }, [router]);
   const [selectedHeroOption, setSelectedHeroOption] = useState<'Property' | 'Maintenance'>('Property');
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [city, setCity] = useState('');
@@ -49,7 +52,7 @@ export default function HeroSearch({ desktop = false }: { desktop?: boolean }) {
       className={`relative px-4 sm:px-6 lg:px-8 text-white overflow-hidden ${
         desktop
           ? 'min-h-[660px] flex items-center rounded-b-[32px] py-20'
-          : 'pt-8 sm:pt-14 pb-16 sm:pb-24 bg-gradient-to-b from-emerald-950 via-slate-900 to-slate-950'
+          : 'pt-8 sm:pt-14 pb-16 sm:pb-24 bg-gradient-to-b from-ink-900 via-ink-950 to-ink-950'
       }`}
     >
       {desktop && (
@@ -62,7 +65,7 @@ export default function HeroSearch({ desktop = false }: { desktop?: boolean }) {
             sizes="99vw"
             className="object-cover object-center"
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-[#0a2a1f]/90 via-[#0a2a1f]/75 to-[#0a2a1f]/55" />
+          <div className="absolute inset-0 bg-gradient-to-r from-ink-950/90 via-ink-950/75 to-ink-950/50" />
         </div>
       )}
       {!desktop && (

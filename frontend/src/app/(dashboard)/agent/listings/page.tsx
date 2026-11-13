@@ -746,7 +746,7 @@ export default function AgentListingsPage() {
                         {hasAdvertisement && (
                             <Link
                               href={advertisementHref}
-                              className="col-span-2 inline-flex min-h-10 items-center justify-center gap-1.5 rounded-lg border border-blue-500/25 bg-blue-500/5 px-3 text-sm font-semibold text-blue-200 transition-colors hover:bg-blue-500/10 max-md:text-blue-700 max-lg:col-span-1 max-lg:col-start-2 max-lg:row-start-2 max-lg:min-h-11 max-lg:px-1.5 max-lg:text-xs"
+                              className="col-span-2 inline-flex min-h-10 items-center justify-center gap-1.5 rounded-lg border border-emerald-500/25 bg-emerald-500/5 px-3 text-sm font-semibold text-emerald-200 transition-colors hover:bg-emerald-500/10 max-md:text-emerald-700 max-lg:col-span-1 max-lg:col-start-2 max-lg:row-start-2 max-lg:min-h-11 max-lg:px-1.5 max-lg:text-xs"
                           >
                             <ExternalLink className="h-3.5 w-3.5" />
                             View Advertisement

@@ -200,7 +200,7 @@ export function BuyerDashboard() {
       count: requirementCount,
       href: "/buyer/requirements",
       icon: ClipboardList,
-      color: "bg-blue-600 text-white shadow-blue-900/40",
+      color: "bg-emerald-600 text-white shadow-emerald-900/40",
     },
   ];
 

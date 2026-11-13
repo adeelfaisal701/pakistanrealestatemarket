@@ -12,7 +12,7 @@ import { EmptyState, ErrorBanner, LoadingState, StatusBadge } from "@/components
 import { ServiceIcon } from "@/components/property-care/PropertyCareUI";
 import { OpsPageHeader } from "./OpsShell";
 
-const input = "min-h-11 w-full rounded-xl border border-white/10 bg-white/[0.04] px-3 text-sm text-white outline-none placeholder:text-slate-500 focus:border-blue-500";
+const input = "min-h-11 w-full rounded-xl border border-white/10 bg-white/[0.04] px-3 text-sm text-white outline-none placeholder:text-slate-500 focus:border-care-500";
 
 const QUICK = [
   { key: "all", label: "All" },
@@ -66,7 +66,7 @@ export function OpsRequests() {
             type="button"
             onClick={() => set("status", item.key)}
             aria-pressed={filters.status === item.key}
-            className={cn("min-h-9 shrink-0 rounded-full border px-3.5 text-xs font-bold transition", filters.status === item.key ? "border-blue-500 bg-blue-600 text-white" : "border-white/10 text-slate-300 hover:bg-white/5")}
+            className={cn("min-h-9 shrink-0 rounded-full border px-3.5 text-xs font-bold transition", filters.status === item.key ? "border-care-500 bg-care-600 text-white" : "border-white/10 text-slate-300 hover:bg-white/5")}
           >
             {item.label}
           </button>
@@ -83,7 +83,7 @@ export function OpsRequests() {
           <button type="button" aria-expanded={showFilters} onClick={() => setShowFilters((open) => !open)} className="inline-flex min-h-11 shrink-0 items-center gap-2 rounded-xl border border-white/10 px-3 text-sm font-semibold text-slate-200 hover:bg-white/5">
             <SlidersHorizontal className="h-4 w-4" />
             <span className="hidden sm:inline">Filters</span>
-            {activeFilterCount > 0 && <span className="rounded-full bg-blue-600 px-1.5 text-[10px]">{activeFilterCount}</span>}
+            {activeFilterCount > 0 && <span className="rounded-full bg-care-600 px-1.5 text-[10px]">{activeFilterCount}</span>}
           </button>
         </div>
         {showFilters && (
@@ -145,7 +145,7 @@ export function OpsRequests() {
                   <tr key={item.id} onClick={() => router.push(`/care-ops/requests/${item.id}`)} className="cursor-pointer transition hover:bg-white/[0.03]">
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
-                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-blue-500/10 text-blue-300"><ServiceIcon category={item.category} className="h-4 w-4" /></span>
+                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-care-500/10 text-care-300"><ServiceIcon category={item.category} className="h-4 w-4" /></span>
                         <div className="min-w-0">
                           <Link href={`/care-ops/requests/${item.id}`} onClick={(event) => event.stopPropagation()} className="block truncate font-semibold text-white hover:underline">{item.title}</Link>
                           <span className="block text-xs text-slate-500">{item.reference} · {formatDate(item.createdAt)}</span>
@@ -169,7 +169,7 @@ export function OpsRequests() {
               <li key={item.id}>
                 <Link href={`/care-ops/requests/${item.id}`} className="block rounded-2xl border border-white/5 bg-[#0e1b33] p-4 active:bg-white/[0.04]">
                   <div className="flex items-start gap-3">
-                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-500/10 text-blue-300"><ServiceIcon category={item.category} className="h-4 w-4" /></span>
+                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-care-500/10 text-care-300"><ServiceIcon category={item.category} className="h-4 w-4" /></span>
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-semibold text-white">{item.title}</p>
                       <p className="text-xs text-slate-500">{item.reference}</p>

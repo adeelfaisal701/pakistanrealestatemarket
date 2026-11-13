@@ -36,7 +36,7 @@ import {
   Timeline,
 } from "@/components/maintenance/MaintenanceShared";
 
-const input = "min-h-10 w-full rounded-lg border border-slate-700 bg-slate-800 px-3 text-sm text-white outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30";
+const input = "min-h-10 w-full rounded-lg border border-slate-700 bg-slate-800 px-3 text-sm text-white outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/30";
 const label = "block text-xs font-semibold text-slate-400";
 
 function toLocalInput(date: Date) {
@@ -192,7 +192,7 @@ export function AdminMaintenanceRequestDetail({ id }: { id: string }) {
 
   // Rendered at the top on phones/tablets and in the sidebar on wide screens.
   const statusControl = (variant: "mobile" | "desktop") => (
-    <SectionCard title="Status control" icon={<Settings2 className="h-4 w-4 text-blue-300" />} dark>
+    <SectionCard title="Status control" icon={<Settings2 className="h-4 w-4 text-emerald-300" />} dark>
       {request.allowedStatusTargets.length ? (
         <form onSubmit={(event) => { event.preventDefault(); if (targetStatus) { setActionError(null); setPending({ kind: "status", status: targetStatus }); } }} className="space-y-3">
           <label className={label} htmlFor={`status-target-${variant}`}>Move to</label>
@@ -200,7 +200,7 @@ export function AdminMaintenanceRequestDetail({ id }: { id: string }) {
             <option value="">Select a valid next status…</option>
             {request.allowedStatusTargets.map((status) => <option key={status} value={status}>{OPS_STATUS_LABELS[status]}</option>)}
           </select>
-          <button type="submit" disabled={!targetStatus || busy} className="min-h-11 w-full rounded-xl bg-blue-600 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-50">Update status</button>
+          <button type="submit" disabled={!targetStatus || busy} className="min-h-11 w-full rounded-xl bg-emerald-600 text-sm font-semibold text-white hover:bg-emerald-700 disabled:opacity-50">Update status</button>
           <p className="text-[11px] text-slate-500">Only transitions permitted by the workflow are listed. Assignment uses the technician panel.</p>
         </form>
       ) : (
@@ -246,7 +246,7 @@ export function AdminMaintenanceRequestDetail({ id }: { id: string }) {
         <ul className="flex gap-2">
           {jumpLinks.map((link) => (
             <li key={link.id} className="shrink-0">
-              <a href={`#${link.id}`} className="inline-flex min-h-9 items-center rounded-full border border-slate-700 bg-slate-900 px-3.5 text-xs font-semibold text-slate-200 hover:border-blue-500 hover:text-white">{link.label}</a>
+              <a href={`#${link.id}`} className="inline-flex min-h-9 items-center rounded-full border border-slate-700 bg-slate-900 px-3.5 text-xs font-semibold text-slate-200 hover:border-emerald-500 hover:text-white">{link.label}</a>
             </li>
           ))}
         </ul>
@@ -256,7 +256,7 @@ export function AdminMaintenanceRequestDetail({ id }: { id: string }) {
 
       <div className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1fr)_360px]">
         <div className="min-w-0 space-y-5">
-          <SectionCard id="mr-request" title="Request" icon={<FileText className="h-4 w-4 text-blue-300" />} dark>
+          <SectionCard id="mr-request" title="Request" icon={<FileText className="h-4 w-4 text-emerald-300" />} dark>
             <p className="whitespace-pre-line text-sm text-slate-300">{request.description}</p>
             <dl className="mt-4 grid grid-cols-1 gap-3 text-sm sm:grid-cols-2">
               <div><dt className={label}>Customer</dt><dd className="text-slate-200">{request.customer?.name ?? request.contact.name}<span className="block text-xs text-slate-400">{request.customer?.email}</span></dd></div>
@@ -267,13 +267,13 @@ export function AdminMaintenanceRequestDetail({ id }: { id: string }) {
             </dl>
           </SectionCard>
 
-          <SectionCard id="mr-photos" title="Photos" icon={<Images className="h-4 w-4 text-blue-300" />} dark>
+          <SectionCard id="mr-photos" title="Photos" icon={<Images className="h-4 w-4 text-emerald-300" />} dark>
             <ImageGallery images={request.images} emptyLabel="No photos uploaded." dark />
           </SectionCard>
 
           {request.canAssign && (
-            <SectionCard id="mr-assign" title={replacing ? "Reassign technician" : "Assign technician"} icon={<UserCog className="h-4 w-4 text-blue-300" />} dark actions={
-              <Link href="/care-ops/technicians" className="text-xs font-semibold text-blue-300 hover:underline">Manage technicians</Link>
+            <SectionCard id="mr-assign" title={replacing ? "Reassign technician" : "Assign technician"} icon={<UserCog className="h-4 w-4 text-emerald-300" />} dark actions={
+              <Link href="/care-ops/technicians" className="text-xs font-semibold text-emerald-300 hover:underline">Manage technicians</Link>
             }>
               {request.status === "pending" ? (
                 <p className="text-sm text-slate-400">Move the request to <strong>Under Review</strong> before assigning a technician.</p>
@@ -292,7 +292,7 @@ export function AdminMaintenanceRequestDetail({ id }: { id: string }) {
                           <li key={technician.id}>
                             <label className={cn(
                               "flex cursor-pointer items-start gap-3 rounded-xl border p-3 text-sm transition",
-                              assignForm.technicianId === technician.id ? "border-blue-500 bg-blue-950/40" : "border-slate-800 hover:border-slate-600",
+                              assignForm.technicianId === technician.id ? "border-emerald-500 bg-emerald-950/40" : "border-slate-800 hover:border-slate-600",
                             )}>
                               <input type="radio" name="technician" value={technician.id} checked={assignForm.technicianId === technician.id} onChange={() => setAssignForm((current) => ({ ...current, technicianId: technician.id }))} className="mt-1 accent-blue-500" />
                               <span className="min-w-0 flex-1">
@@ -319,7 +319,7 @@ export function AdminMaintenanceRequestDetail({ id }: { id: string }) {
                       <input value={assignForm.notes} maxLength={1000} onChange={(event) => setAssignForm((current) => ({ ...current, notes: event.target.value }))} className={cn(input, "mt-1")} />
                     </label>
                   </div>
-                  <button type="submit" disabled={busy || !eligible?.length} className="inline-flex min-h-10 items-center gap-2 rounded-lg bg-blue-600 px-4 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-50">
+                  <button type="submit" disabled={busy || !eligible?.length} className="inline-flex min-h-10 items-center gap-2 rounded-lg bg-emerald-600 px-4 text-sm font-semibold text-white hover:bg-emerald-700 disabled:opacity-50">
                     <UserCog className="h-4 w-4" />{replacing ? "Reassign technician" : "Assign technician"}
                   </button>
                 </form>
@@ -328,7 +328,7 @@ export function AdminMaintenanceRequestDetail({ id }: { id: string }) {
           )}
 
           {request.assignments.length > 0 && (
-            <SectionCard id="mr-history" title="Assignment history" icon={<History className="h-4 w-4 text-blue-300" />} dark>
+            <SectionCard id="mr-history" title="Assignment history" icon={<History className="h-4 w-4 text-emerald-300" />} dark>
               <div className="overflow-x-auto">
                 <table className="w-full min-w-[560px] text-left text-sm">
                   <thead><tr className="border-b border-slate-800 text-xs uppercase text-slate-400"><th className="py-2 pr-3">Technician</th><th className="py-2 pr-3">Assigned</th><th className="py-2 pr-3">Visit</th><th className="py-2 pr-3">Outcome</th></tr></thead>
@@ -352,7 +352,7 @@ export function AdminMaintenanceRequestDetail({ id }: { id: string }) {
             </SectionCard>
           )}
 
-          <SectionCard id="mr-quotation" title="Quotation" icon={<ReceiptText className="h-4 w-4 text-blue-300" />} dark actions={
+          <SectionCard id="mr-quotation" title="Quotation" icon={<ReceiptText className="h-4 w-4 text-emerald-300" />} dark actions={
             request.quotation && <span className="text-xs text-slate-400">v{request.quotation.version} · {QUOTATION_LABELS[request.quotation.status]}</span>
           }>
             {request.quotation?.customerNote && <p className="mb-3 rounded-lg bg-slate-800 p-2 text-sm text-slate-300">Customer note: {request.quotation.customerNote}</p>}
@@ -378,7 +378,7 @@ export function AdminMaintenanceRequestDetail({ id }: { id: string }) {
                     </div>
                   ))}
                   {quote.lines.length < 15 && (
-                    <button type="button" onClick={() => setQuote((current) => ({ ...current, lines: [...current.lines, { label: "", amount: "" }] }))} className="inline-flex items-center gap-1 text-xs font-semibold text-blue-300 hover:underline"><Plus className="h-3.5 w-3.5" />Add charge</button>
+                    <button type="button" onClick={() => setQuote((current) => ({ ...current, lines: [...current.lines, { label: "", amount: "" }] }))} className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-300 hover:underline"><Plus className="h-3.5 w-3.5" />Add charge</button>
                   )}
                 </div>
                 <label className={label}>
@@ -388,9 +388,9 @@ export function AdminMaintenanceRequestDetail({ id }: { id: string }) {
                 <p className="text-sm font-semibold text-white">Total: {formatMoney(quoteTotal)}</p>
                 <div className="flex flex-wrap gap-2">
                   <button type="submit" disabled={busy} className="min-h-10 rounded-lg border border-slate-700 px-4 text-sm font-semibold text-slate-200 hover:bg-slate-800">Save draft</button>
-                  <button type="button" disabled={busy} onClick={() => { setActionError(null); setPending({ kind: "save-quotation", send: true }); }} className="inline-flex min-h-10 items-center gap-2 rounded-lg bg-blue-600 px-4 text-sm font-semibold text-white hover:bg-blue-700"><Send className="h-4 w-4" />Save & send to customer</button>
+                  <button type="button" disabled={busy} onClick={() => { setActionError(null); setPending({ kind: "save-quotation", send: true }); }} className="inline-flex min-h-10 items-center gap-2 rounded-lg bg-emerald-600 px-4 text-sm font-semibold text-white hover:bg-emerald-700"><Send className="h-4 w-4" />Save & send to customer</button>
                   {request.quotation?.status === "draft" && (
-                    <button type="button" disabled={busy} onClick={() => { setActionError(null); setPending({ kind: "send-quotation" }); }} className="min-h-10 rounded-lg border border-blue-700 px-4 text-sm font-semibold text-blue-200">Send saved draft</button>
+                    <button type="button" disabled={busy} onClick={() => { setActionError(null); setPending({ kind: "send-quotation" }); }} className="min-h-10 rounded-lg border border-emerald-700 px-4 text-sm font-semibold text-emerald-200">Send saved draft</button>
                   )}
                 </div>
                 {quotationApproved && <p className="text-xs text-amber-300">This quotation is approved. Saving changes requires a revision reason and customer re-approval.</p>}
@@ -402,7 +402,7 @@ export function AdminMaintenanceRequestDetail({ id }: { id: string }) {
             )}
           </SectionCard>
 
-          <SectionCard id="mr-payments" title="Payment records" icon={<Wallet className="h-4 w-4 text-blue-300" />} dark actions={
+          <SectionCard id="mr-payments" title="Payment records" icon={<Wallet className="h-4 w-4 text-emerald-300" />} dark actions={
             <span className="text-xs capitalize text-slate-400">{request.paymentStatus.replace("_", " ")}</span>
           }>
             <p className="mb-2 text-xs text-slate-500">Manual payment records only — no payment gateway is connected.</p>
@@ -484,7 +484,7 @@ export function AdminMaintenanceRequestDetail({ id }: { id: string }) {
                           </select>
                           <label className="sr-only" htmlFor={`complaint-note-${item.id}`}>Resolution note</label>
                           <input id={`complaint-note-${item.id}`} value={edit.resolutionNote} maxLength={1500} placeholder="Resolution note (required to resolve/close)" onChange={(event) => setComplaintEdits((current) => ({ ...current, [item.id]: { ...edit, resolutionNote: event.target.value } }))} className={input} />
-                          <button type="submit" disabled={busy} className="min-h-10 rounded-lg bg-blue-600 px-3 text-sm font-semibold text-white">Update</button>
+                          <button type="submit" disabled={busy} className="min-h-10 rounded-lg bg-emerald-600 px-3 text-sm font-semibold text-white">Update</button>
                         </form>
                       )}
                     </li>
@@ -494,7 +494,7 @@ export function AdminMaintenanceRequestDetail({ id }: { id: string }) {
             </SectionCard>
           )}
 
-          <SectionCard id="mr-audit" title="Audit trail" icon={<History className="h-4 w-4 text-blue-300" />} dark>
+          <SectionCard id="mr-audit" title="Audit trail" icon={<History className="h-4 w-4 text-emerald-300" />} dark>
             <Timeline events={request.timeline} dark showInternal />
           </SectionCard>
         </div>
@@ -502,7 +502,7 @@ export function AdminMaintenanceRequestDetail({ id }: { id: string }) {
         <aside className="space-y-5">
           <div className="hidden xl:block">{statusControl("desktop")}</div>
 
-          <SectionCard title="Current technician" icon={<CalendarClock className="h-4 w-4 text-blue-300" />} dark>
+          <SectionCard title="Current technician" icon={<CalendarClock className="h-4 w-4 text-emerald-300" />} dark>
             {request.technician ? (
               <div className="text-sm">
                 <Link href={`/care-ops/technicians/${request.technician.id}`} className="font-semibold text-white hover:underline">{request.technician.name}</Link>
@@ -519,7 +519,7 @@ export function AdminMaintenanceRequestDetail({ id }: { id: string }) {
             </SectionCard>
           )}
 
-          <SectionCard title="Internal notes" icon={<NotebookPen className="h-4 w-4 text-blue-300" />} dark>
+          <SectionCard title="Internal notes" icon={<NotebookPen className="h-4 w-4 text-emerald-300" />} dark>
             <ul className="mb-3 space-y-2">
               {request.workNotes.map((item) => (
                 <li key={item.id} className="rounded-lg bg-slate-800/60 p-2 text-sm text-slate-300">

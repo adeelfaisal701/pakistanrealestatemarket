@@ -573,7 +573,7 @@ export default function PropertyDetailsClient({
         </p>
         <Link
           href="/properties"
-          className="mt-6 inline-flex min-h-11 items-center rounded-lg bg-blue-700 px-5 text-sm font-semibold text-white hover:bg-blue-800"
+          className="mt-6 inline-flex min-h-11 items-center rounded-lg bg-emerald-700 px-5 text-sm font-semibold text-white hover:bg-emerald-800"
         >
           Browse available properties
         </Link>
@@ -677,13 +677,13 @@ export default function PropertyDetailsClient({
     <main className="min-h-screen bg-[#faf8ff] pb-14 pt-16 text-slate-900 dark:bg-slate-950 dark:text-slate-100">
       <div className="mx-auto max-w-[1440px] px-4 pb-10 pt-4 sm:px-6 lg:px-8 max-md:px-0 max-md:pb-8 max-md:pt-0">
         <nav aria-label="Breadcrumb" className="mb-4 flex min-w-0 items-center gap-2 overflow-hidden text-xs text-slate-500 sm:text-sm max-md:hidden">
-          <Link href="/" className="shrink-0 hover:text-blue-700">Home</Link>
+          <Link href="/" className="shrink-0 hover:text-emerald-700">Home</Link>
           <span aria-hidden="true">/</span>
           {property.location.city && (
             <>
               <Link
                 href={`/properties?city=${encodeURIComponent(property.location.city)}`}
-                className="shrink-0 hover:text-blue-700"
+                className="shrink-0 hover:text-emerald-700"
               >
                 {property.location.city}
               </Link>
@@ -774,7 +774,7 @@ export default function PropertyDetailsClient({
                 </div>
               )}
               <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/20" />
-              <span className="absolute left-4 top-4 rounded-md bg-blue-700 px-3 py-1.5 text-xs font-bold uppercase text-white shadow-sm">
+              <span className="absolute left-4 top-4 rounded-md bg-emerald-700 px-3 py-1.5 text-xs font-bold uppercase text-white shadow-sm">
                 For {property.purpose}
               </span>
               {images.length > 0 && (
@@ -837,7 +837,7 @@ export default function PropertyDetailsClient({
                       aria-pressed={activeImage === imageIndex}
                       className={`relative h-16 w-20 shrink-0 overflow-hidden rounded-lg border-2 sm:h-[72px] sm:w-24 ${
                         activeImage === imageIndex
-                          ? "border-blue-700"
+                          ? "border-emerald-700"
                           : "border-transparent"
                       }`}
                     >
@@ -863,7 +863,7 @@ export default function PropertyDetailsClient({
                 <button
                   type="button"
                   onClick={() => setLightboxOpen(true)}
-                  className="ml-auto flex min-h-10 shrink-0 items-center gap-1.5 rounded-lg border border-slate-200 px-3 text-xs font-semibold text-slate-700 hover:border-blue-300 hover:text-blue-700 dark:border-slate-700 dark:text-slate-200"
+                  className="ml-auto flex min-h-10 shrink-0 items-center gap-1.5 rounded-lg border border-slate-200 px-3 text-xs font-semibold text-slate-700 hover:border-emerald-300 hover:text-emerald-700 dark:border-slate-700 dark:text-slate-200"
                 >
                   View all photos
                 </button>
@@ -873,14 +873,14 @@ export default function PropertyDetailsClient({
 
           <Card className="flex min-w-0 flex-col justify-between rounded-2xl border-slate-200 p-5 dark:border-slate-800 sm:p-6 max-md:rounded-none max-md:border-0 max-md:px-4 max-md:py-5 max-md:shadow-none">
             <div className="flex flex-col">
-              <p className="order-1 text-[26px] font-extrabold leading-8 tracking-tight text-[#005c55] dark:text-emerald-300 md:order-4 md:mt-5 md:text-2xl md:text-blue-800 dark:md:text-blue-300">
+              <p className="order-1 text-[26px] font-extrabold leading-8 tracking-tight text-[#005c55] dark:text-emerald-300 md:order-4 md:mt-5 md:text-2xl md:text-emerald-800 dark:md:text-emerald-300">
                 {formatPrice(property.price)}
                 {property.purpose === "Rent" && (
                   <span className="ml-1 text-sm font-medium text-slate-500">/ month</span>
                 )}
               </p>
               <div className="order-2 mb-3 flex flex-wrap gap-2 max-md:mt-3">
-                <span className="rounded-full bg-blue-50 px-3 py-1 text-[11px] font-bold uppercase text-blue-800 dark:bg-blue-950/50 dark:text-blue-300">
+                <span className="rounded-full bg-emerald-50 px-3 py-1 text-[11px] font-bold uppercase text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300">
                   {property.propertyType}
                 </span>
                 <span className="rounded-full bg-slate-100 px-3 py-1 text-[11px] font-semibold text-slate-700 dark:bg-slate-800 dark:text-slate-200">
@@ -929,7 +929,7 @@ export default function PropertyDetailsClient({
                 <button
                   type="button"
                   onClick={() => void copyPageLink()}
-                  className="inline-flex min-h-10 items-center gap-1.5 rounded-xl border border-slate-200 px-3 text-xs font-semibold text-slate-700 hover:border-blue-300 hover:text-blue-700 dark:border-slate-700 dark:text-slate-200"
+                  className="inline-flex min-h-10 items-center gap-1.5 rounded-xl border border-slate-200 px-3 text-xs font-semibold text-slate-700 hover:border-emerald-300 hover:text-emerald-700 dark:border-slate-700 dark:text-slate-200"
                 >
                   <Share2 className="h-4 w-4" />
                   Share
@@ -957,7 +957,7 @@ export default function PropertyDetailsClient({
                         className="h-14 w-14 shrink-0 rounded-full bg-slate-100 object-cover"
                       />
                     ) : (
-                      <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-blue-50 text-xl font-bold text-blue-800 dark:bg-blue-950 dark:text-blue-300">
+                      <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-emerald-50 text-xl font-bold text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
                         {(agent?.name || "A").charAt(0).toUpperCase()}
                       </div>
                     )}
@@ -969,7 +969,7 @@ export default function PropertyDetailsClient({
                     className="h-14 w-14 shrink-0 rounded-full bg-slate-100 object-cover"
                   />
                 ) : (
-                  <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-blue-50 text-xl font-bold text-blue-800 dark:bg-blue-950 dark:text-blue-300">
+                  <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-emerald-50 text-xl font-bold text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
                     {(agent?.name || "A").charAt(0).toUpperCase()}
                   </div>
                 )}
@@ -984,7 +984,7 @@ export default function PropertyDetailsClient({
                     )}
                     {agent?.isVerified === true && (
                       <span title="Verified agent" aria-label="Verified agent">
-                        <CheckCircle2 className="h-4 w-4 shrink-0 fill-blue-700 text-white dark:fill-blue-400 dark:text-slate-950" />
+                        <CheckCircle2 className="h-4 w-4 shrink-0 fill-emerald-700 text-white dark:fill-emerald-400 dark:text-slate-950" />
                       </span>
                     )}
                   </h2>
@@ -1242,9 +1242,9 @@ export default function PropertyDetailsClient({
 
         <div className="mt-6 grid items-start gap-6 lg:grid-cols-[minmax(0,1.6fr)_minmax(300px,0.9fr)] max-md:mx-4 max-md:mt-4 max-md:grid-cols-1">
           <div className="space-y-6">
-            <Card className="rounded-2xl border-blue-100 bg-blue-50/70 p-5 dark:border-blue-900/60 dark:bg-blue-950/20 sm:p-6">
+            <Card className="rounded-2xl border-emerald-100 bg-emerald-50/70 p-5 dark:border-emerald-900/60 dark:bg-emerald-950/20 sm:p-6">
               <div className="flex items-center gap-2">
-                <ShieldCheck className="h-5 w-5 text-blue-700 dark:text-blue-300" />
+                <ShieldCheck className="h-5 w-5 text-emerald-700 dark:text-emerald-300" />
                 <h2 className="text-lg font-bold text-slate-900 dark:text-white">Safety tips</h2>
               </div>
               <ul className="mt-4 grid gap-3 text-sm text-slate-600 dark:text-slate-300 sm:grid-cols-2">
@@ -1255,7 +1255,7 @@ export default function PropertyDetailsClient({
                   "Use secure payment channels and keep written transaction records.",
                 ].map((tip) => (
                   <li key={tip} className="flex items-start gap-2">
-                    <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-blue-700" />
+                    <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-700" />
                     <span>{tip}</span>
                   </li>
                 ))}
@@ -1387,7 +1387,7 @@ export default function PropertyDetailsClient({
                   <div className="p-5 sm:p-6">
                     <h2 className="text-lg font-bold text-slate-900 dark:text-white">Approximate location</h2>
                     <p className="mt-2 flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
-                      <MapPin className="h-4 w-4 shrink-0 text-blue-700" />
+                      <MapPin className="h-4 w-4 shrink-0 text-emerald-700" />
                       {approximateLocation}
                     </p>
                   </div>
@@ -1405,7 +1405,7 @@ export default function PropertyDetailsClient({
                       href={mapSearchUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 text-sm font-semibold text-blue-700 hover:underline dark:text-blue-300"
+                      className="inline-flex items-center gap-1.5 text-sm font-semibold text-emerald-700 hover:underline dark:text-emerald-300"
                     >
                       OpenStreetMap <ExternalLink className="h-3.5 w-3.5" />
                     </a>
@@ -1413,7 +1413,7 @@ export default function PropertyDetailsClient({
                       href={googleMapsUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 text-sm font-semibold text-blue-700 hover:underline dark:text-blue-300"
+                      className="inline-flex items-center gap-1.5 text-sm font-semibold text-emerald-700 hover:underline dark:text-emerald-300"
                     >
                       Google Maps <ExternalLink className="h-3.5 w-3.5" />
                     </a>
@@ -1441,7 +1441,7 @@ export default function PropertyDetailsClient({
             </div>
             <Link
               href="/properties"
-              className="text-sm font-semibold text-blue-700 hover:text-blue-800 dark:text-blue-300"
+              className="text-sm font-semibold text-emerald-700 hover:text-emerald-800 dark:text-emerald-300"
             >
               Browse all listings
             </Link>
@@ -1498,7 +1498,7 @@ export default function PropertyDetailsClient({
                       <span>{similarProperty.propertyType}</span>
                     </div>
                     <p className="flex items-start gap-1.5 text-xs text-slate-500">
-                      <MapPin className="mt-0.5 h-3.5 w-3.5 shrink-0 text-blue-700" />
+                      <MapPin className="mt-0.5 h-3.5 w-3.5 shrink-0 text-emerald-700" />
                       <span className="line-clamp-1">
                         {[similarProperty.location.area, similarProperty.location.city]
                           .filter(Boolean)

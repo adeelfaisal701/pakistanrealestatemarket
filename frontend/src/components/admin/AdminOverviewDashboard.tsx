@@ -99,7 +99,7 @@ export function AdminOverviewDashboard() {
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Link href="/admin/agents" className="inline-flex min-h-[44px] items-center gap-2 rounded-xl bg-blue-600 px-4 text-sm font-bold text-white hover:bg-blue-700">
+          <Link href="/admin/agents" className="inline-flex min-h-[44px] items-center gap-2 rounded-xl bg-emerald-600 px-4 text-sm font-bold text-white hover:bg-emerald-700">
             <UserCheck className="h-4 w-4" />
             Agent accounts
           </Link>
@@ -151,10 +151,10 @@ export function AdminOverviewDashboard() {
               </div>
             </div>
             <div className="mt-5 flex flex-wrap gap-3 max-md:mt-3 max-md:flex-col max-md:gap-1">
-              <Link href="/admin/properties" className="inline-flex min-h-10 items-center gap-2 text-sm font-semibold text-blue-300 hover:text-blue-200 max-md:text-sm max-md:text-emerald-800">
+              <Link href="/admin/properties" className="inline-flex min-h-10 items-center gap-2 text-sm font-semibold text-emerald-300 hover:text-emerald-200 max-md:text-sm max-md:text-emerald-800">
                 Review pending listings <ArrowRight className="h-4 w-4" />
               </Link>
-              <Link href="/admin/agents" className="inline-flex min-h-10 items-center gap-2 text-sm font-semibold text-blue-300 hover:text-blue-200 max-md:text-sm max-md:text-emerald-800">
+              <Link href="/admin/agents" className="inline-flex min-h-10 items-center gap-2 text-sm font-semibold text-emerald-300 hover:text-emerald-200 max-md:text-sm max-md:text-emerald-800">
                 Review registered agents <ArrowRight className="h-4 w-4" />
               </Link>
             </div>
@@ -162,7 +162,7 @@ export function AdminOverviewDashboard() {
           <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4 max-md:grid-cols-2 max-md:gap-2" aria-label="Quick actions">
             <h2 className="col-span-full hidden text-base font-bold text-[#101D32] max-md:block">Quick Actions</h2>
             {quickActions.map(({ href, label, Icon }) => (
-              <Link key={href} href={href} className="flex min-h-[78px] flex-col items-center justify-center gap-2 rounded-2xl border border-slate-800 bg-[#101b30] p-3 text-center text-sm font-semibold text-slate-200 transition-colors hover:border-blue-700 hover:bg-slate-800 max-md:min-h-[82px] max-md:rounded-xl max-md:border-slate-200 max-md:bg-white max-md:text-xs max-md:text-emerald-900 max-md:shadow-sm">
+              <Link key={href} href={href} className="flex min-h-[78px] flex-col items-center justify-center gap-2 rounded-2xl border border-slate-800 bg-[#101b30] p-3 text-center text-sm font-semibold text-slate-200 transition-colors hover:border-emerald-700 hover:bg-slate-800 max-md:min-h-[82px] max-md:rounded-xl max-md:border-slate-200 max-md:bg-white max-md:text-xs max-md:text-emerald-900 max-md:shadow-sm">
                 <Icon className="h-5 w-5 text-emerald-600" />
                 <span>{label}</span>
               </Link>

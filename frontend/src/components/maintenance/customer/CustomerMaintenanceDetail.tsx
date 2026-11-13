@@ -166,21 +166,21 @@ export function CustomerMaintenanceDetail({ id }: { id: string }) {
         {/* Header */}
         <section className={cn(pc.card, "overflow-hidden")}>
           <div className="flex items-start gap-3 p-4 sm:p-6">
-            <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#edf5ff] text-[#0d57ad]">
+            <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#eaf2fe] text-[#1660d0]">
               <ServiceIcon category={request.category} className="h-6 w-6" />
             </span>
             <div className="min-w-0 flex-1">
-              <p className="text-xs text-[#6b7a90]">{request.categoryLabel} · <span className="font-mono">{request.reference}</span></p>
-              <h1 className="mt-0.5 text-xl font-black leading-tight tracking-[-0.02em] text-[#102b55] sm:text-2xl">{request.title}</h1>
+              <p className="text-xs text-[#7a8594]">{request.categoryLabel} · <span className="font-mono">{request.reference}</span></p>
+              <h1 className="mt-0.5 text-xl font-black leading-tight tracking-[-0.02em] text-[#0f2747] sm:text-2xl">{request.title}</h1>
               <div className="mt-2 flex flex-wrap items-center gap-2">
                 <StatusBadge status={request.status} />
-                <span className="text-xs text-[#6b7a90]">Submitted {formatDate(request.createdAt, true)}</span>
+                <span className="text-xs text-[#7a8594]">Submitted {formatDate(request.createdAt, true)}</span>
               </div>
             </div>
           </div>
           {!cancelled && (
-            <div className="border-t border-[#eef2f8] bg-[#fafcff] px-4 py-4 sm:px-6">
-              <p className="mb-2 text-xs font-bold text-[#36506f]">
+            <div className="border-t border-[#edf2f8] bg-[#fbfdff] px-4 py-4 sm:px-6">
+              <p className="mb-2 text-xs font-bold text-[#334155]">
                 {completed ? "Completed" : `Step ${step + 1} of ${CUSTOMER_PROGRESS_STEPS.length}: ${CUSTOMER_PROGRESS_STEPS[step]?.label ?? ""}`}
               </p>
               <ol aria-label="Request progress" className="grid grid-cols-6 gap-1.5">
@@ -189,8 +189,8 @@ export function CustomerMaintenanceDetail({ id }: { id: string }) {
                   const current = !completed && index === step;
                   return (
                     <li key={item.key} aria-current={current ? "step" : undefined} title={item.label}>
-                      <span className={cn("block h-2 rounded-full", done ? "bg-emerald-500" : current ? "bg-[#0d57ad]" : "bg-[#dbe5f2]")} />
-                      <span className={cn("mt-1.5 hidden text-[11px] font-semibold leading-tight sm:block", done || current ? "text-[#20385c]" : "text-[#9aa9bd]")}>{item.label}</span>
+                      <span className={cn("block h-2 rounded-full", done ? "bg-emerald-500" : current ? "bg-[#1660d0]" : "bg-[#dbe4f0]")} />
+                      <span className={cn("mt-1.5 hidden text-[11px] font-semibold leading-tight sm:block", done || current ? "text-[#1e293b]" : "text-[#94a3b8]")}>{item.label}</span>
                       <span className="sr-only">{item.label}{done ? " (done)" : current ? " (current)" : ""}</span>
                     </li>
                   );
@@ -222,12 +222,12 @@ export function CustomerMaintenanceDetail({ id }: { id: string }) {
         )}
 
         {confirmAction && (
-          <section className="rounded-3xl border border-sky-300 bg-gradient-to-br from-sky-50 to-white p-5 shadow-[0_8px_24px_rgba(2,132,199,0.12)]">
+          <section className="rounded-3xl border border-emerald-300 bg-gradient-to-br from-emerald-50 to-white p-5 shadow-[0_8px_24px_rgba(2,132,199,0.12)]">
             <div className="flex items-start gap-3">
-              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-sky-100 text-sky-700"><ClipboardCheck className="h-5 w-5" /></span>
+              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-700"><ClipboardCheck className="h-5 w-5" /></span>
               <div>
-                <h2 className="text-base font-extrabold text-sky-950">The technician has finished</h2>
-                <p className="mt-0.5 text-sm text-sky-900/80">Check the after-work photos and checklist, then confirm — or report a problem.</p>
+                <h2 className="text-base font-extrabold text-emerald-950">The technician has finished</h2>
+                <p className="mt-0.5 text-sm text-emerald-900/80">Check the after-work photos and checklist, then confirm — or report a problem.</p>
               </div>
             </div>
             <div className="mt-4 hidden gap-2 sm:flex">
@@ -244,9 +244,9 @@ export function CustomerMaintenanceDetail({ id }: { id: string }) {
 
             {request.quotation && (
               <PcCard title="Quotation" icon={<ReceiptText className="h-4 w-4" />} action={
-                <span className="rounded-full bg-[#edf5ff] px-2.5 py-1 text-[11px] font-bold text-[#0d57ad]">v{request.quotation.version} · {QUOTATION_LABELS[request.quotation.status]}</span>
+                <span className="rounded-full bg-[#eaf2fe] px-2.5 py-1 text-[11px] font-bold text-[#1660d0]">v{request.quotation.version} · {QUOTATION_LABELS[request.quotation.status]}</span>
               }>
-                <dl className="divide-y divide-[#eef2f8]">
+                <dl className="divide-y divide-[#edf2f8]">
                   {request.quotation.inspectionCharge > 0 && <PcInfoRow label="Inspection">{formatMoney(request.quotation.inspectionCharge)}</PcInfoRow>}
                   <PcInfoRow label="Labour">{formatMoney(request.quotation.laborCharge)}</PcInfoRow>
                   <PcInfoRow label="Materials">{formatMoney(request.quotation.materialCharge)}</PcInfoRow>
@@ -254,13 +254,13 @@ export function CustomerMaintenanceDetail({ id }: { id: string }) {
                     <PcInfoRow key={line.label} label={line.label}>{formatMoney(line.amount)}</PcInfoRow>
                   ))}
                 </dl>
-                <div className="mt-2 flex items-center justify-between rounded-2xl bg-[#102b55] px-4 py-3 text-white">
+                <div className="mt-2 flex items-center justify-between rounded-2xl bg-[#0f2747] px-4 py-3 text-white">
                   <span className="text-sm font-semibold">Total</span>
                   <span className="text-lg font-black">{formatMoney(request.quotation.total)}</span>
                 </div>
-                {request.quotation.notes && <p className="mt-3 text-sm text-[#5b6b82]">{request.quotation.notes}</p>}
+                {request.quotation.notes && <p className="mt-3 text-sm text-[#64748b]">{request.quotation.notes}</p>}
                 {request.quotation.status === "approved" && (
-                  <p className="mt-3 text-xs text-[#6b7a90]">Payment status: <span className="font-bold capitalize text-[#102b55]">{request.paymentStatus.replace("_", " ")}</span></p>
+                  <p className="mt-3 text-xs text-[#7a8594]">Payment status: <span className="font-bold capitalize text-[#0f2747]">{request.paymentStatus.replace("_", " ")}</span></p>
                 )}
               </PcCard>
             )}
@@ -279,14 +279,14 @@ export function CustomerMaintenanceDetail({ id }: { id: string }) {
               <PcCard title="Completion report" icon={<ClipboardCheck className="h-4 w-4" />}>
                 <ul className="space-y-2">
                   {request.completionReport.checklist.map((item) => (
-                    <li key={item.label} className="flex items-center gap-2.5 text-sm text-[#20385c]">
+                    <li key={item.label} className="flex items-center gap-2.5 text-sm text-[#1e293b]">
                       <CheckCircle2 className={cn("h-5 w-5 shrink-0", item.done ? "text-emerald-500" : "text-rose-400")} aria-hidden="true" />
                       {item.label}
                     </li>
                   ))}
                 </ul>
-                {request.completionReport.summary && <p className="mt-3 rounded-2xl bg-[#f6f9fd] p-3 text-sm text-[#36506f]">{request.completionReport.summary}</p>}
-                <p className="mt-2 text-xs text-[#6b7a90]">Submitted {formatDate(request.completionReport.submittedAt, true)}</p>
+                {request.completionReport.summary && <p className="mt-3 rounded-2xl bg-[#f5f8fd] p-3 text-sm text-[#334155]">{request.completionReport.summary}</p>}
+                <p className="mt-2 text-xs text-[#7a8594]">Submitted {formatDate(request.completionReport.submittedAt, true)}</p>
               </PcCard>
             )}
 
@@ -294,12 +294,12 @@ export function CustomerMaintenanceDetail({ id }: { id: string }) {
               <PcCard title="How did we do?" icon={<Star className="h-4 w-4" />}>
                 <form onSubmit={submitFeedback} className="space-y-4">
                   <fieldset>
-                    <legend className="text-sm text-[#5b6b82]">Rate your Property Care experience</legend>
+                    <legend className="text-sm text-[#64748b]">Rate your Property Care experience</legend>
                     <div className="mt-2 flex items-center gap-1">
                       {[1, 2, 3, 4, 5].map((value) => (
-                        <label key={value} className="cursor-pointer rounded-xl p-1 focus-within:ring-2 focus-within:ring-[#0d57ad]">
+                        <label key={value} className="cursor-pointer rounded-xl p-1 focus-within:ring-2 focus-within:ring-[#1660d0]">
                           <input type="radio" name="rating" value={value} checked={rating === value} onChange={() => setRating(value)} className="sr-only" />
-                          <Star aria-hidden="true" className={cn("h-9 w-9 transition", value <= rating ? "fill-amber-400 text-amber-400" : "text-[#cfdcee]")} />
+                          <Star aria-hidden="true" className={cn("h-9 w-9 transition", value <= rating ? "fill-amber-400 text-amber-400" : "text-[#d2ddec]")} />
                           <span className="sr-only">{value} star{value > 1 ? "s" : ""}</span>
                         </label>
                       ))}
@@ -320,10 +320,10 @@ export function CustomerMaintenanceDetail({ id }: { id: string }) {
             {request.feedback && (
               <PcCard title="Your feedback" icon={<Star className="h-4 w-4" />}>
                 <p className="flex items-center gap-0.5" aria-label={`${request.feedback.rating} out of 5 stars`}>
-                  {[1, 2, 3, 4, 5].map((value) => <Star key={value} aria-hidden="true" className={cn("h-6 w-6", value <= request.feedback!.rating ? "fill-amber-400 text-amber-400" : "text-[#cfdcee]")} />)}
-                  <span className="ml-2 text-sm font-bold text-[#36506f]">{RATING_LABELS[request.feedback.rating]}</span>
+                  {[1, 2, 3, 4, 5].map((value) => <Star key={value} aria-hidden="true" className={cn("h-6 w-6", value <= request.feedback!.rating ? "fill-amber-400 text-amber-400" : "text-[#d2ddec]")} />)}
+                  <span className="ml-2 text-sm font-bold text-[#334155]">{RATING_LABELS[request.feedback.rating]}</span>
                 </p>
-                {request.feedback.comment && <p className="mt-2 text-sm text-[#36506f]">“{request.feedback.comment}”</p>}
+                {request.feedback.comment && <p className="mt-2 text-sm text-[#334155]">“{request.feedback.comment}”</p>}
               </PcCard>
             )}
 
@@ -331,12 +331,12 @@ export function CustomerMaintenanceDetail({ id }: { id: string }) {
               <PcCard title="Complaints" icon={<MessageSquareWarning className="h-4 w-4" />}>
                 <ul className="space-y-3">
                   {request.complaints.map((item) => (
-                    <li key={item.id} className="rounded-2xl border border-[#eef2f8] p-4 text-sm">
+                    <li key={item.id} className="rounded-2xl border border-[#edf2f8] p-4 text-sm">
                       <div className="flex flex-wrap items-center justify-between gap-2">
-                        <p className="font-extrabold text-[#102b55]">{item.subject}</p>
+                        <p className="font-extrabold text-[#0f2747]">{item.subject}</p>
                         <span className={cn("rounded-full px-2.5 py-1 text-[11px] font-bold capitalize", item.status === "resolved" || item.status === "closed" ? "bg-emerald-100 text-emerald-800" : "bg-amber-100 text-amber-800")}>{item.status.replace("_", " ")}</span>
                       </div>
-                      <p className="mt-1 text-[#5b6b82]">{item.description}</p>
+                      <p className="mt-1 text-[#64748b]">{item.description}</p>
                       {item.resolutionNote && <p className="mt-3 rounded-xl bg-emerald-50 p-3 text-emerald-900"><span className="font-bold">Ghar Safar:</span> {item.resolutionNote}</p>}
                       <p className="mt-2 text-xs text-[#94a3b8]">Raised {formatDate(item.createdAt, true)}</p>
                     </li>
@@ -354,18 +354,18 @@ export function CustomerMaintenanceDetail({ id }: { id: string }) {
             <TechnicianCard request={request} className="hidden lg:block" />
 
             <PcCard title="Request details" icon={<FileText className="h-4 w-4" />}>
-              <p className="whitespace-pre-line text-sm leading-6 text-[#36506f]">{request.description}</p>
-              <dl className="mt-3 divide-y divide-[#eef2f8] border-t border-[#eef2f8]">
+              <p className="whitespace-pre-line text-sm leading-6 text-[#334155]">{request.description}</p>
+              <dl className="mt-3 divide-y divide-[#edf2f8] border-t border-[#edf2f8]">
                 <PcInfoRow label="Property"><span className="capitalize">{request.propertyType}</span></PcInfoRow>
                 <PcInfoRow label="Preferred">{request.preferredVisitDate ? formatDate(request.preferredVisitDate) : "Flexible"} · {timeSlotLabel(request.preferredTimeSlot)}</PcInfoRow>
-                <PcInfoRow label="Contact">{request.contact.name}<span className="block text-xs font-normal text-[#6b7a90]">{request.contact.phone}</span></PcInfoRow>
+                <PcInfoRow label="Contact">{request.contact.name}<span className="block text-xs font-normal text-[#7a8594]">{request.contact.phone}</span></PcInfoRow>
               </dl>
-              <p className="mt-2 flex items-start gap-2 text-sm text-[#36506f]"><MapPin className="mt-0.5 h-4 w-4 shrink-0 text-[#0d57ad]" />{request.address.line}, {request.address.area}, {request.address.city}</p>
+              <p className="mt-2 flex items-start gap-2 text-sm text-[#334155]"><MapPin className="mt-0.5 h-4 w-4 shrink-0 text-[#1660d0]" />{request.address.line}, {request.address.area}, {request.address.city}</p>
             </PcCard>
 
             {((request.actions.canRaiseComplaint && !confirmAction) || request.actions.canCancel) && (
               <div className={cn(pc.card, "space-y-2 p-4")}>
-                <p className="text-xs font-bold text-[#6b7a90]">Need help with this request?</p>
+                <p className="text-xs font-bold text-[#7a8594]">Need help with this request?</p>
                 {request.actions.canRaiseComplaint && !confirmAction && (
                   <button type="button" onClick={() => openDialog("complaint")} className={cn(pc.secondaryBtn, "w-full")}>
                     <MessageSquareWarning className="h-4 w-4" /> Raise a complaint
@@ -381,7 +381,7 @@ export function CustomerMaintenanceDetail({ id }: { id: string }) {
       </div>
 
       {stickyAction && (
-        <div className="fixed inset-x-0 bottom-[calc(4rem+env(safe-area-inset-bottom))] z-30 border-t border-[#e3ebf5] bg-white/95 px-4 py-3 shadow-[0_-10px_30px_rgba(16,43,85,0.1)] backdrop-blur sm:hidden">
+        <div className="fixed inset-x-0 bottom-[calc(4rem+env(safe-area-inset-bottom))] z-30 border-t border-[#e2e9f3] bg-white/95 px-4 py-3 shadow-[0_-10px_30px_rgba(15,39,71,0.1)] backdrop-blur sm:hidden">
           <div className="flex gap-2.5">
             {quoteAction ? (
               <>
@@ -489,17 +489,17 @@ function TechnicianCard({ request, className }: { request: CustomerMaintenanceRe
       {request.technician ? (
         <div className="space-y-3">
           <div className="flex items-center gap-3">
-            <span className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-[#0d57ad] to-[#0b2545] text-base font-black text-white">
+            <span className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-[#1660d0] to-[#0b2c5f] text-base font-black text-white">
               {request.technician.name.split(/\s+/).slice(0, 2).map((part) => part[0]).join("").toUpperCase()}
             </span>
             <div>
-              <p className="text-base font-extrabold text-[#102b55]">{request.technician.name}</p>
+              <p className="text-base font-extrabold text-[#0f2747]">{request.technician.name}</p>
               <p className="flex items-center gap-1 text-xs font-semibold text-emerald-700"><ShieldCheck className="h-3.5 w-3.5" /> Verified Ghar Safar technician</p>
             </div>
           </div>
           {request.scheduledVisitAt && (
-            <p className="flex items-center gap-2 rounded-2xl bg-[#f6f9fd] p-3 text-sm font-semibold text-[#20385c]">
-              <CalendarClock className="h-4 w-4 text-[#0d57ad]" /> {formatDate(request.scheduledVisitAt, true)}
+            <p className="flex items-center gap-2 rounded-2xl bg-[#f5f8fd] p-3 text-sm font-semibold text-[#1e293b]">
+              <CalendarClock className="h-4 w-4 text-[#1660d0]" /> {formatDate(request.scheduledVisitAt, true)}
             </p>
           )}
           {request.technician.phone && (
@@ -509,12 +509,12 @@ function TechnicianCard({ request, className }: { request: CustomerMaintenanceRe
           )}
         </div>
       ) : (
-        <div className="flex items-start gap-3 rounded-2xl bg-[#f6f9fd] p-3">
+        <div className="flex items-start gap-3 rounded-2xl bg-[#f5f8fd] p-3">
           <span className="relative mt-1 flex h-2.5 w-2.5 shrink-0">
-            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#0d57ad]/40 motion-reduce:animate-none" />
-            <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-[#0d57ad]" />
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#1660d0]/40 motion-reduce:animate-none" />
+            <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-[#1660d0]" />
           </span>
-          <p className="text-sm leading-6 text-[#36506f]">
+          <p className="text-sm leading-6 text-[#334155]">
             {request.technicianPending
               ? "A technician has been dispatched and is confirming your visit. Their details will appear here once confirmed."
               : request.status === "cancelled"

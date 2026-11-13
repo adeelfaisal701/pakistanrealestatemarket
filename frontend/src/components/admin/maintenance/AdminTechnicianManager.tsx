@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
 import type { Paginated, TechnicianSummary } from "@/types/maintenance";
 import { EmptyState, ErrorBanner, LoadingState, Modal, SuccessBanner } from "@/components/maintenance/MaintenanceShared";
 
-const input = "min-h-10 w-full rounded-lg border border-slate-700 bg-slate-800 px-3 text-sm text-white outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30";
+const input = "min-h-10 w-full rounded-lg border border-slate-700 bg-slate-800 px-3 text-sm text-white outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/30";
 export const AVAILABILITY_LABELS: Record<string, string> = {
   available: "Available",
   busy: "Busy",
@@ -140,7 +140,7 @@ export function AdminTechnicianManager() {
         </div>
         <div className="flex gap-2">
           <button type="button" onClick={() => void load()} className="inline-flex min-h-10 items-center gap-2 rounded-lg border border-slate-700 px-3 text-sm text-slate-200 hover:bg-slate-800"><RefreshCw className={cn("h-4 w-4", loading && "animate-spin")} />Refresh</button>
-          <button type="button" onClick={() => { setFormError(null); setCreating(true); }} className="inline-flex min-h-10 items-center gap-2 rounded-lg bg-blue-600 px-4 text-sm font-semibold text-white hover:bg-blue-700"><Plus className="h-4 w-4" />Add technician</button>
+          <button type="button" onClick={() => { setFormError(null); setCreating(true); }} className="inline-flex min-h-10 items-center gap-2 rounded-lg bg-emerald-600 px-4 text-sm font-semibold text-white hover:bg-emerald-700"><Plus className="h-4 w-4" />Add technician</button>
         </div>
       </header>
 
@@ -154,7 +154,7 @@ export function AdminTechnicianManager() {
             <p className="mt-1 font-sans text-xs text-slate-400">Technicians sign in at /property-care/login and are taken to their job console automatically.</p>
           </div>
           <div className="flex gap-2">
-            <Link href={`/care-ops/technicians/${created.id}`} className="text-sm font-semibold text-blue-300 hover:underline">Open profile</Link>
+            <Link href={`/care-ops/technicians/${created.id}`} className="text-sm font-semibold text-emerald-300 hover:underline">Open profile</Link>
             <button type="button" onClick={() => setCreated(null)} className="text-sm text-slate-400 hover:text-white">Dismiss</button>
           </div>
         </div>
@@ -194,7 +194,7 @@ export function AdminTechnicianManager() {
         <ul className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
           {data.items.map((technician) => (
             <li key={technician.id}>
-              <Link href={`/care-ops/technicians/${technician.id}`} className="block h-full rounded-2xl border border-slate-800 bg-slate-900 p-4 transition hover:border-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500">
+              <Link href={`/care-ops/technicians/${technician.id}`} className="block h-full rounded-2xl border border-slate-800 bg-slate-900 p-4 transition hover:border-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500">
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0">
                     <p className="truncate font-semibold text-white">{technician.name}</p>
@@ -247,7 +247,7 @@ export function AdminTechnicianManager() {
                 {MAINTENANCE_CATEGORIES.map((category) => {
                   const checked = form.categories.includes(category.key);
                   return (
-                    <label key={category.key} className={cn("inline-flex min-h-9 cursor-pointer items-center gap-2 rounded-lg border px-3 text-sm", checked ? "border-blue-500 bg-blue-950/50 text-white" : "border-slate-700 text-slate-300")}>
+                    <label key={category.key} className={cn("inline-flex min-h-9 cursor-pointer items-center gap-2 rounded-lg border px-3 text-sm", checked ? "border-emerald-500 bg-emerald-950/50 text-white" : "border-slate-700 text-slate-300")}>
                       <input type="checkbox" checked={checked} onChange={(event) => setForm((current) => ({ ...current, categories: event.target.checked ? [...current.categories, category.key] : current.categories.filter((key) => key !== category.key) }))} className="accent-blue-500" />
                       {category.label}
                     </label>
@@ -261,7 +261,7 @@ export function AdminTechnicianManager() {
             {formError && <ErrorBanner message={formError} dark />}
             <div className="flex justify-end gap-2">
               <button type="button" onClick={() => setCreating(false)} disabled={saving} className="min-h-10 rounded-lg border border-slate-700 px-4 text-sm font-semibold text-slate-200">Cancel</button>
-              <button type="submit" disabled={saving} className="inline-flex min-h-10 items-center gap-2 rounded-lg bg-blue-600 px-4 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60">{saving && <Loader2 className="h-4 w-4 animate-spin" />}Create technician</button>
+              <button type="submit" disabled={saving} className="inline-flex min-h-10 items-center gap-2 rounded-lg bg-emerald-600 px-4 text-sm font-semibold text-white hover:bg-emerald-700 disabled:opacity-60">{saving && <Loader2 className="h-4 w-4 animate-spin" />}Create technician</button>
             </div>
           </form>
         </Modal>

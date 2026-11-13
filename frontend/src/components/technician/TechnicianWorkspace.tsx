@@ -30,24 +30,24 @@ export function TechnicianJobCard({ job }: { job: TechnicianJob }) {
   return (
     <Link
       href={`/technician/jobs/${job.id}`}
-      className={cn(pc.card, "group block p-4 transition active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0d57ad]", isNew && "border-[#9ebfe6] ring-1 ring-[#cfe1f7]")}
+      className={cn(pc.card, "group block p-4 transition active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1660d0]", isNew && "border-[#8fb8f0] ring-1 ring-[#cfe0fb]")}
     >
       <div className="flex items-start gap-3">
-        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#edf5ff] text-[#0d57ad]"><ServiceIcon category={job.category} className="h-5 w-5" /></span>
+        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#eaf2fe] text-[#1660d0]"><ServiceIcon category={job.category} className="h-5 w-5" /></span>
         <div className="min-w-0 flex-1">
           <div className="flex items-start justify-between gap-2">
             <div className="min-w-0">
               <h3 className="truncate text-[15px] font-extrabold">{job.title}</h3>
-              <p className="truncate text-xs text-[#6b7a90]">{job.categoryLabel} · <span className="font-mono">{job.reference}</span></p>
+              <p className="truncate text-xs text-[#7a8594]">{job.categoryLabel} · <span className="font-mono">{job.reference}</span></p>
             </div>
             {job.status ? <StatusBadge status={job.status} ops /> : <span className="rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-bold capitalize text-slate-600">{job.myAssignment?.status ?? "closed"}</span>}
           </div>
-          <div className="mt-3 grid gap-1.5 text-[13px] text-[#36506f]">
-            <span className="flex items-center gap-2"><MapPin className="h-4 w-4 text-[#0d57ad]" aria-hidden="true" />{job.area}, {job.city}</span>
-            {visit && <span className="flex items-center gap-2 font-semibold"><CalendarClock className="h-4 w-4 text-[#0d57ad]" aria-hidden="true" />{formatDate(visit, true)}</span>}
+          <div className="mt-3 grid gap-1.5 text-[13px] text-[#334155]">
+            <span className="flex items-center gap-2"><MapPin className="h-4 w-4 text-[#1660d0]" aria-hidden="true" />{job.area}, {job.city}</span>
+            {visit && <span className="flex items-center gap-2 font-semibold"><CalendarClock className="h-4 w-4 text-[#1660d0]" aria-hidden="true" />{formatDate(visit, true)}</span>}
             {job.myAssignment?.rejectionReason && <span className="text-xs text-rose-600">You rejected: {job.myAssignment.rejectionReason}</span>}
           </div>
-          {isNew && <span className="mt-3 inline-flex items-center gap-1 text-xs font-extrabold text-[#0d57ad]">Review & respond <ChevronRight className="h-3.5 w-3.5" /></span>}
+          {isNew && <span className="mt-3 inline-flex items-center gap-1 text-xs font-extrabold text-[#1660d0]">Review & respond <ChevronRight className="h-3.5 w-3.5" /></span>}
         </div>
       </div>
     </Link>
@@ -75,18 +75,18 @@ export function TechnicianHome() {
   const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
 
   const tiles = [
-    { key: "new", label: "New", icon: Sparkles, tone: "bg-[#edf5ff] text-[#0d57ad]" },
-    { key: "accepted", label: "Accepted", icon: BadgeCheck, tone: "bg-sky-50 text-sky-700" },
+    { key: "new", label: "New", icon: Sparkles, tone: "bg-[#eaf2fe] text-[#1660d0]" },
+    { key: "accepted", label: "Accepted", icon: BadgeCheck, tone: "bg-emerald-50 text-emerald-700" },
     { key: "in_progress", label: "Active", icon: Hammer, tone: "bg-violet-50 text-violet-700" },
     { key: "completed", label: "Done", icon: CheckCircle2, tone: "bg-emerald-50 text-emerald-700" },
   ];
 
   return (
     <div className="space-y-5">
-      <section className="rounded-[28px] bg-gradient-to-br from-[#0d57ad] to-[#0b2545] p-5 text-white shadow-[0_14px_30px_rgba(13,87,173,0.25)]">
-        <p className="flex items-center gap-1.5 text-xs font-bold text-blue-200"><Sun className="h-4 w-4" /> {new Date().toLocaleDateString("en-PK", { weekday: "long", day: "numeric", month: "long" })}</p>
+      <section className="rounded-[28px] bg-gradient-to-br from-[#1660d0] to-[#0b2c5f] p-5 text-white shadow-[0_14px_30px_rgba(22,96,208,0.25)]">
+        <p className="flex items-center gap-1.5 text-xs font-bold text-slate-300"><Sun className="h-4 w-4" /> {new Date().toLocaleDateString("en-PK", { weekday: "long", day: "numeric", month: "long" })}</p>
         <h1 className="mt-2 text-[24px] font-black tracking-[-0.02em]">{greeting}{firstName ? `, ${firstName}` : ""}</h1>
-        <p className="mt-1 text-sm text-blue-100">{today.length ? `You have ${today.length} visit${today.length > 1 ? "s" : ""} today.` : "No visits scheduled for today."}</p>
+        <p className="mt-1 text-sm text-slate-300">{today.length ? `You have ${today.length} visit${today.length > 1 ? "s" : ""} today.` : "No visits scheduled for today."}</p>
         {(counts.new ?? 0) > 0 && (
           <Link href="/technician/jobs?bucket=new" className="mt-4 flex min-h-12 items-center gap-3 rounded-2xl bg-white/15 px-4 text-sm font-bold ring-1 ring-inset ring-white/20">
             <Sparkles className="h-5 w-5" /> {counts.new} new assignment{counts.new > 1 ? "s" : ""} to review <ChevronRight className="ml-auto h-5 w-5" />
@@ -101,13 +101,13 @@ export function TechnicianHome() {
           <Link key={key} href={`/technician/jobs?bucket=${key === "in_progress" ? "in_progress" : key}`} className={cn(pc.card, "flex flex-col items-center gap-1.5 p-3 text-center")}>
             <span className={cn("flex h-9 w-9 items-center justify-center rounded-xl", tone)}><Icon className="h-4 w-4" /></span>
             <span className="text-xl font-black leading-none tabular-nums">{active.data ? counts[key] ?? 0 : "–"}</span>
-            <span className="text-[11px] font-bold text-[#5b6b82]">{label}</span>
+            <span className="text-[11px] font-bold text-[#64748b]">{label}</span>
           </Link>
         ))}
       </section>
 
       <section aria-labelledby="today-heading">
-        <div className="mb-3 flex items-center justify-between"><h2 id="today-heading" className="text-lg font-black tracking-[-0.02em]">Today&apos;s jobs</h2><Link href="/technician/jobs" className="text-sm font-bold text-[#0d57ad]">All jobs</Link></div>
+        <div className="mb-3 flex items-center justify-between"><h2 id="today-heading" className="text-lg font-black tracking-[-0.02em]">Today&apos;s jobs</h2><Link href="/technician/jobs" className="text-sm font-bold text-[#1660d0]">All jobs</Link></div>
         {active.loading && !active.data ? <LoadingState label="Loading jobs…" /> : !today.length ? (
           <EmptyState icon={<ClipboardList className="h-5 w-5" />} title="Nothing scheduled today" description="New assignments from Ghar Safar operations will appear here." />
         ) : <ul className="space-y-3">{today.map((job) => <li key={job.id}><TechnicianJobCard job={job} /></li>)}</ul>}
@@ -116,20 +116,20 @@ export function TechnicianHome() {
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
         <section aria-labelledby="upcoming-heading">
           <h2 id="upcoming-heading" className="mb-3 text-lg font-black tracking-[-0.02em]">Upcoming visits</h2>
-          {!upcoming.length ? <p className={cn(pc.card, "p-4 text-sm text-[#6b7a90]")}>No upcoming visits.</p> : (
-            <ul className={cn(pc.card, "divide-y divide-[#eef2f8]")}>
+          {!upcoming.length ? <p className={cn(pc.card, "p-4 text-sm text-[#7a8594]")}>No upcoming visits.</p> : (
+            <ul className={cn(pc.card, "divide-y divide-[#edf2f8]")}>
               {upcoming.slice(0, 5).map((job) => (
                 <li key={job.id}>
                   <Link href={`/technician/jobs/${job.id}`} className="flex items-center gap-3 p-3.5">
-                    <span className="flex w-12 shrink-0 flex-col items-center rounded-xl bg-[#f6f9fd] py-1.5">
-                      <span className="text-[10px] font-bold uppercase text-[#1768c4]">{new Date(job.scheduledVisitAt!).toLocaleDateString("en-PK", { month: "short" })}</span>
+                    <span className="flex w-12 shrink-0 flex-col items-center rounded-xl bg-[#f5f8fd] py-1.5">
+                      <span className="text-[10px] font-bold uppercase text-[#1660d0]">{new Date(job.scheduledVisitAt!).toLocaleDateString("en-PK", { month: "short" })}</span>
                       <span className="text-lg font-black leading-none">{new Date(job.scheduledVisitAt!).getDate()}</span>
                     </span>
                     <span className="min-w-0 flex-1">
                       <span className="block truncate text-sm font-bold">{job.title}</span>
-                      <span className="block text-xs text-[#6b7a90]">{new Date(job.scheduledVisitAt!).toLocaleTimeString("en-PK", { hour: "numeric", minute: "2-digit" })} · {job.area}</span>
+                      <span className="block text-xs text-[#7a8594]">{new Date(job.scheduledVisitAt!).toLocaleTimeString("en-PK", { hour: "numeric", minute: "2-digit" })} · {job.area}</span>
                     </span>
-                    <ChevronRight className="h-4 w-4 text-[#a9b8cc]" />
+                    <ChevronRight className="h-4 w-4 text-[#a7b0bc]" />
                   </Link>
                 </li>
               ))}
@@ -174,15 +174,15 @@ export function TechnicianJobs({ initialBucket }: { initialBucket?: string }) {
   return (
     <div className="space-y-4">
       <header>
-        <p className="text-[11px] font-extrabold uppercase tracking-[0.16em] text-[#1768c4]">Jobs</p>
+        <p className="text-[11px] font-extrabold uppercase tracking-[0.16em] text-[#1660d0]">Jobs</p>
         <h1 className="mt-1 text-[24px] font-black tracking-[-0.02em]">My jobs</h1>
       </header>
       <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none] sm:mx-0 sm:flex-wrap sm:px-0">
         {JOB_BUCKETS.map((item) => (
           <button key={item.key} type="button" aria-pressed={bucket === item.key} onClick={() => setBucket(item.key)}
-            className={cn("inline-flex min-h-11 shrink-0 items-center gap-1.5 rounded-full border px-4 text-[13px] font-bold transition", bucket === item.key ? "border-[#0d57ad] bg-[#0d57ad] text-white" : "border-[#d5e0ee] bg-white text-[#36506f]")}>
+            className={cn("inline-flex min-h-11 shrink-0 items-center gap-1.5 rounded-full border px-4 text-[13px] font-bold transition", bucket === item.key ? "border-[#1660d0] bg-[#1660d0] text-white" : "border-[#d4deeb] bg-white text-[#334155]")}>
             {item.label}
-            <span className={cn("rounded-full px-1.5 text-[11px] tabular-nums", bucket === item.key ? "bg-white/20" : "bg-[#edf5ff] text-[#0d57ad]")}>{all.data ? counts[item.key] : "·"}</span>
+            <span className={cn("rounded-full px-1.5 text-[11px] tabular-nums", bucket === item.key ? "bg-white/20" : "bg-[#eaf2fe] text-[#1660d0]")}>{all.data ? counts[item.key] : "·"}</span>
           </button>
         ))}
       </div>
@@ -232,9 +232,9 @@ export function TechnicianProfileView() {
   return (
     <div className="space-y-5">
       <section className={cn(pc.card, "overflow-hidden")}>
-        <div className="h-20 bg-gradient-to-r from-[#0b2545] to-[#0d57ad]" />
+        <div className="h-20 bg-gradient-to-r from-[#0b2c5f] to-[#1660d0]" />
         <div className="-mt-10 px-5 pb-5">
-          <span className="flex h-20 w-20 items-center justify-center rounded-3xl border-4 border-white bg-[#102b55] text-2xl font-black text-white">{initials}</span>
+          <span className="flex h-20 w-20 items-center justify-center rounded-3xl border-4 border-white bg-[#0f2747] text-2xl font-black text-white">{initials}</span>
           <div className="mt-3 flex flex-wrap items-start justify-between gap-2">
             <div>
               <h1 className="text-xl font-black">{p.name}</h1>
@@ -243,11 +243,11 @@ export function TechnicianProfileView() {
             <span className={cn("rounded-full px-3 py-1 text-xs font-bold", availability.tone)}>{availability.label}</span>
           </div>
           <dl className="mt-4 grid grid-cols-1 gap-2 text-sm sm:grid-cols-3">
-            <div className="rounded-2xl bg-[#f6f9fd] p-3"><dt className="text-xs text-[#6b7a90]">Email</dt><dd className="truncate font-semibold">{p.email}</dd></div>
-            <div className="rounded-2xl bg-[#f6f9fd] p-3"><dt className="text-xs text-[#6b7a90]">Phone</dt><dd className="font-semibold">{p.phone ?? "—"}</dd></div>
-            <div className="rounded-2xl bg-[#f6f9fd] p-3"><dt className="text-xs text-[#6b7a90]">City</dt><dd className="font-semibold">{p.city}</dd></div>
+            <div className="rounded-2xl bg-[#f5f8fd] p-3"><dt className="text-xs text-[#7a8594]">Email</dt><dd className="truncate font-semibold">{p.email}</dd></div>
+            <div className="rounded-2xl bg-[#f5f8fd] p-3"><dt className="text-xs text-[#7a8594]">Phone</dt><dd className="font-semibold">{p.phone ?? "—"}</dd></div>
+            <div className="rounded-2xl bg-[#f5f8fd] p-3"><dt className="text-xs text-[#7a8594]">City</dt><dd className="font-semibold">{p.city}</dd></div>
           </dl>
-          <p className="mt-3 text-xs text-[#6b7a90]">Profile details and availability are managed by Ghar Safar operations. Contact your coordinator to request changes.</p>
+          <p className="mt-3 text-xs text-[#7a8594]">Profile details and availability are managed by Ghar Safar operations. Contact your coordinator to request changes.</p>
         </div>
       </section>
 
@@ -258,9 +258,9 @@ export function TechnicianProfileView() {
           { label: "Acceptance", value: acceptance === null ? "—" : `${acceptance}%`, icon: BadgeCheck },
         ].map(({ label, value, icon: Icon }) => (
           <div key={label} className={cn(pc.card, "p-3 text-center")}>
-            <Icon className="mx-auto h-5 w-5 text-[#0d57ad]" />
+            <Icon className="mx-auto h-5 w-5 text-[#1660d0]" />
             <p className="mt-1 text-xl font-black tabular-nums">{jobs.data ? value : "–"}</p>
-            <p className="text-[11px] font-bold text-[#5b6b82]">{label}</p>
+            <p className="text-[11px] font-bold text-[#64748b]">{label}</p>
           </div>
         ))}
       </section>
@@ -270,14 +270,14 @@ export function TechnicianProfileView() {
           <h2 id="skills-heading" className="text-[15px] font-extrabold">Service categories & skills</h2>
           <ul className="mt-3 flex flex-wrap gap-2">
             {p.categories.map((key) => (
-              <li key={key} className="inline-flex items-center gap-1.5 rounded-full bg-[#edf5ff] px-3 py-1.5 text-xs font-bold text-[#0d57ad]"><ServiceIcon category={key} className="h-3.5 w-3.5" />{categoryLabel(key)}</li>
+              <li key={key} className="inline-flex items-center gap-1.5 rounded-full bg-[#eaf2fe] px-3 py-1.5 text-xs font-bold text-[#1660d0]"><ServiceIcon category={key} className="h-3.5 w-3.5" />{categoryLabel(key)}</li>
             ))}
             {p.skills.map((skill) => <li key={skill} className="rounded-full bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-700">{skill}</li>)}
           </ul>
         </section>
         <section className={cn(pc.card, "p-4 sm:p-5")} aria-labelledby="areas-heading">
           <h2 id="areas-heading" className="text-[15px] font-extrabold">Service areas</h2>
-          {!p.serviceAreas.length ? <p className="mt-2 text-sm text-[#6b7a90]">No service areas set.</p> : (
+          {!p.serviceAreas.length ? <p className="mt-2 text-sm text-[#7a8594]">No service areas set.</p> : (
             <ul className="mt-3 flex flex-wrap gap-2">{p.serviceAreas.map((area) => <li key={area} className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-3 py-1.5 text-xs font-semibold capitalize text-slate-700"><MapPin className="h-3.5 w-3.5" />{area}</li>)}</ul>
           )}
         </section>
@@ -285,7 +285,7 @@ export function TechnicianProfileView() {
 
       <section aria-labelledby="completed-heading">
         <h2 id="completed-heading" className="mb-3 text-lg font-black tracking-[-0.02em]">Completed jobs</h2>
-        {jobs.loading && !jobs.data ? <LoadingState label="Loading…" /> : !completed.length ? <p className={cn(pc.card, "p-4 text-sm text-[#6b7a90]")}>No completed jobs yet.</p> : (
+        {jobs.loading && !jobs.data ? <LoadingState label="Loading…" /> : !completed.length ? <p className={cn(pc.card, "p-4 text-sm text-[#7a8594]")}>No completed jobs yet.</p> : (
           <ul className="grid grid-cols-1 gap-3 lg:grid-cols-2">{completed.slice(0, 10).map((job) => <li key={job.id}><TechnicianJobCard job={job} /></li>)}</ul>
         )}
       </section>

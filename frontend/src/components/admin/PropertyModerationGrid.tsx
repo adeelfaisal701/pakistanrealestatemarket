@@ -348,7 +348,7 @@ export function PropertyModerationGrid({ initialSearch = "" }: { initialSearch?:
               aria-pressed={statusFilter === value}
               className={`inline-flex min-h-[38px] flex-shrink-0 items-center gap-2 rounded-xl px-3.5 text-xs font-bold ${
                 statusFilter === value
-                  ? "bg-blue-600 text-white"
+                  ? "bg-emerald-600 text-white"
                   : "bg-slate-800 text-slate-300 hover:bg-slate-700"
               }`}
             >
@@ -517,7 +517,7 @@ export function PropertyModerationGrid({ initialSearch = "" }: { initialSearch?:
                         type="button"
                         disabled={actingId === property.id}
                         onClick={() => void moderate(property, "published")}
-                        className="flex-1 gap-1 bg-blue-600 text-white hover:bg-blue-700"
+                        className="flex-1 gap-1 bg-emerald-600 text-white hover:bg-emerald-700"
                       >
                         <Check className="h-4 w-4" />
                         Approve

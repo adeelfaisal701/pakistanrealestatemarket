@@ -17,11 +17,22 @@ export function getPublishedProjects(): Promise<DevelopmentProject[]> {
   return unwrap(apiClient.get<ApiEnvelope<DevelopmentProject[]>>('/projects'));
 }
 
-/** Published projects for the landing-page carousels, featured ones first (stable otherwise). */
+let landingProjectsRequest: Promise<DevelopmentProject[]> | null = null;
+
+/**
+ * Published projects for the landing-page carousels, featured ones first
+ * (stable otherwise). The landing page mounts its mobile, tablet and desktop
+ * layouts together, so the request is shared instead of repeated per layout;
+ * a failed request is not cached.
+ */
 export function getLandingProjects(): Promise<DevelopmentProject[]> {
-  return getPublishedProjects().then((results) =>
-    [...results].sort((a, b) => Number(b.isFeatured) - Number(a.isFeatured)),
-  );
+  landingProjectsRequest ??= getPublishedProjects()
+    .then((results) => [...results].sort((a, b) => Number(b.isFeatured) - Number(a.isFeatured)))
+    .catch((error: unknown) => {
+      landingProjectsRequest = null;
+      throw error;
+    });
+  return landingProjectsRequest;
 }
 
 export function getPublishedProject(slug: string): Promise<DevelopmentProject> {

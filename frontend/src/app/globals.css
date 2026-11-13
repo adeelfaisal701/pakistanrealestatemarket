@@ -1,44 +1,106 @@
 @import "tailwindcss";
 
-:root {
-  --background: #f8fafc;
-  --foreground: #0f172a;
-  --primary: #059669;
-  --primary-foreground: #ffffff;
-  --card: #ffffff;
-  --card-foreground: #0f172a;
-  --muted: #f1f5f9;
-  --muted-foreground: #64748b;
-  --accent: #10b981;
-  --accent-foreground: #ffffff;
-  --border: #e2e8f0;
-  --radius: 0.75rem;
+/*
+ * Ghar Safar uses ONE light theme everywhere. Tailwind's `dark:` utilities
+ * previously followed the device's dark-mode setting, which turned some pages
+ * (e.g. property listings) near-black while others stayed light. They now apply
+ * only beneath an explicit `.dark` ancestor, which the app never sets.
+ */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/*
+ * Brand identity — taken from the Ghar Safar logo.
+ *   brand: emerald (#00B889 bright, #008F68 primary, #007657 pressed)
+ *   ink:   deep navy for headings, hero overlays and dark bands
+ *   gold:  sparing premium accent (featured / highlights)
+ */
+@theme {
+  --font-sans: var(--font-jakarta), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+
+  --color-brand-50: #f3fbf8;
+  --color-brand-100: #eaf7f2;
+  --color-brand-200: #c6ecdd;
+  --color-brand-500: #00b889;
+  --color-brand-600: #008f68;
+  --color-brand-700: #007657;
+
+  --color-ink-950: #071b2b;
+  --color-ink-900: #0b2538;
+  --color-ink-800: #13324a;
+  --color-ink-700: #101d32;
+
+  --color-gold-100: #f8f0dc;
+  --color-gold-500: #c8a24a;
+  --color-gold-600: #8c6b1f;
+
+  --color-canvas: #f7f8fa;
+
+  /*
+   * Maintenance (Property Care) sub-brand — blue & white. Used only by the
+   * Maintenance workflow (landing, services, requests, technician, operations).
+   */
+  --color-care-50: #f5f9ff;
+  --color-care-100: #eaf2fe;
+  --color-care-200: #cfe0fb;
+  --color-care-300: #9fc3f5;
+  --color-care-400: #5b9bef;
+  --color-care-500: #2f7de9;
+  --color-care-600: #1660d0;
+  --color-care-700: #114fb0;
+  --color-care-800: #0e3f8c;
+  --color-care-900: #0b2c5f;
+  --color-care-950: #081d40;
+  --color-care-ink: #0f2747;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #090d16;
-    --foreground: #f8fafc;
-    --primary: #10b981;
-    --primary-foreground: #042f2e;
-    --card: #111827;
-    --card-foreground: #f8fafc;
-    --muted: #1e293b;
-    --muted-foreground: #94a3b8;
-    --accent: #059669;
-    --accent-foreground: #ffffff;
-    --border: #1f2937;
-  }
+:root {
+  color-scheme: light;
+  --background: #f7f8fa;
+  --foreground: #101d32;
+  --primary: #008f68;
+  --primary-foreground: #ffffff;
+  --card: #ffffff;
+  --card-foreground: #101d32;
+  --muted: #f1f5f9;
+  --muted-foreground: #64748b;
+  --accent: #00b889;
+  --accent-foreground: #ffffff;
+  --border: #e5e9ee;
+  --radius: 0.75rem;
 }
 
 body {
   background-color: var(--background);
   color: var(--foreground);
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+  font-family: var(--font-sans);
   min-height: 100vh;
   margin: 0;
   padding: 0;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+@layer base {
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+    letter-spacing: -0.02em;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  ::selection {
+    background-color: #00b889;
+    color: #ffffff;
+  }
+
+  :focus-visible {
+    outline-color: #00b889;
+  }
 }
 
 .buyer-dashboard-banner {

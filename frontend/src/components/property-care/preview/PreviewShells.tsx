@@ -126,7 +126,7 @@ export function PreviewRouter({ path, query }: { path: string; query: Record<str
     );
   }
   return (
-    <main className="mx-auto max-w-3xl px-4 py-8 text-[#102b55]">
+    <main className="mx-auto max-w-3xl px-4 py-8 text-[#0f2747]">
       <h1 className="text-2xl font-black">Property Care UI preview</h1>
       <p className="mt-1 text-sm text-slate-600">Development-only screens rendered inside their real dashboard layouts with sample data.</p>
       <ul className="mt-6 grid grid-cols-1 gap-1 sm:grid-cols-2">

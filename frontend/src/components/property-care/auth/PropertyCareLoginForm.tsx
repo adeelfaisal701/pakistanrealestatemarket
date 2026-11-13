@@ -106,7 +106,7 @@ export function PropertyCareLoginForm() {
   if (checking) {
     return (
       <PropertyCareAuthLayout title="Welcome back" subtitle="Checking your session…">
-        <p role="status" className="flex items-center gap-2 text-sm text-[#5b6b82]"><Loader2 className="h-4 w-4 animate-spin" /> One moment…</p>
+        <p role="status" className="flex items-center gap-2 text-sm text-[#64748b]"><Loader2 className="h-4 w-4 animate-spin" /> One moment…</p>
       </PropertyCareAuthLayout>
     );
   }
@@ -119,13 +119,13 @@ export function PropertyCareLoginForm() {
       subtitle="Sign in to manage your maintenance requests, service visits and property care."
       footer={
         <div className="space-y-3 text-center">
-          <p className="text-sm text-[#5b6b82]">
+          <p className="text-sm text-[#64748b]">
             Ghar Safar technicians: use the account details provided by Ghar Safar operations.
           </p>
           <p className="text-xs text-[#94a3b8]">
-            Ghar Safar operations team? <a href={adminPortal} className="font-semibold text-[#5b6b82] underline-offset-2 hover:underline">Staff sign-in</a>
+            Ghar Safar operations team? <a href={adminPortal} className="font-semibold text-[#64748b] underline-offset-2 hover:underline">Staff sign-in</a>
             {" · "}
-            Looking for property listings? <Link href="/login" className="font-semibold text-[#5b6b82] underline-offset-2 hover:underline">Real Estate sign-in</Link>
+            Looking for property listings? <Link href="/login" className="font-semibold text-[#64748b] underline-offset-2 hover:underline">Real Estate sign-in</Link>
           </p>
         </div>
       }
@@ -164,7 +164,7 @@ export function PropertyCareLoginForm() {
         <div>
           <div className="flex items-center justify-between">
             <label className={pc.label} htmlFor="pc-password">Password</label>
-            <button type="button" onClick={() => setShowHelp((open) => !open)} aria-expanded={showHelp} aria-controls="pc-forgot" className="text-xs font-bold text-[#0d57ad] hover:underline">
+            <button type="button" onClick={() => setShowHelp((open) => !open)} aria-expanded={showHelp} aria-controls="pc-forgot" className="text-xs font-bold text-[#1660d0] hover:underline">
               Forgot password?
             </button>
           </div>
@@ -181,17 +181,17 @@ export function PropertyCareLoginForm() {
               className={cn(pc.input, "mt-0 pl-11 pr-12")}
             />
             <button type="button" onClick={() => setShowPassword((value) => !value)} aria-label={showPassword ? "Hide password" : "Show password"} aria-pressed={showPassword}
-              className="absolute right-2 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-xl text-[#5b6b82] hover:bg-[#f2f7fe]">
+              className="absolute right-2 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-xl text-[#64748b] hover:bg-[#f5f9ff]">
               {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
             </button>
           </span>
           {errors.password && <span id="pc-password-error" className="mt-1.5 block text-xs font-semibold text-rose-600">{errors.password}</span>}
           {showHelp && (
-            <div id="pc-forgot" className="mt-3 flex gap-2 rounded-2xl bg-[#edf5ff] p-3 text-xs leading-5 text-[#36506f]">
-              <HelpCircle className="h-4 w-4 shrink-0 text-[#0d57ad]" />
+            <div id="pc-forgot" className="mt-3 flex gap-2 rounded-2xl bg-[#eaf2fe] p-3 text-xs leading-5 text-[#334155]">
+              <HelpCircle className="h-4 w-4 shrink-0 text-[#1660d0]" />
               <span>
                 Online password reset isn&apos;t available yet. Contact Ghar Safar support on{" "}
-                <a href="tel:+923001234567" className="font-bold text-[#0d57ad]">+92 300 1234567</a> and we&apos;ll help you regain access.
+                <a href="tel:+923001234567" className="font-bold text-[#1660d0]">+92 300 1234567</a> and we&apos;ll help you regain access.
                 Technicians should contact their Ghar Safar coordinator.
               </span>
             </div>
@@ -205,9 +205,9 @@ export function PropertyCareLoginForm() {
         </button>
       </form>
 
-      <div className="my-6 flex items-center gap-3 text-xs text-[#94a3b8]"><span className="h-px flex-1 bg-[#e3ebf5]" />New to Property Care?<span className="h-px flex-1 bg-[#e3ebf5]" /></div>
+      <div className="my-6 flex items-center gap-3 text-xs text-[#94a3b8]"><span className="h-px flex-1 bg-[#e2e9f3]" />New to Property Care?<span className="h-px flex-1 bg-[#e2e9f3]" /></div>
       <Link href={registerHref} className={cn(pc.secondaryBtn, "w-full")}>Create customer account</Link>
-      <p className="mt-4 flex items-start gap-2 text-xs leading-5 text-[#6b7a90]">
+      <p className="mt-4 flex items-start gap-2 text-xs leading-5 text-[#7a8594]">
         <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
         Your dashboard is chosen automatically from your account — customers go to Property Care, technicians to their job console.
       </p>

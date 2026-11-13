@@ -74,7 +74,7 @@ export function OpsShell({ children }: { children: ReactNode }) {
       <Link href="/admin" className="flex min-h-9 items-center justify-center gap-1 rounded-lg text-slate-400 hover:bg-white/5 hover:text-white">
         <ArrowLeftRight className="h-3.5 w-3.5" /> Real Estate
       </Link>
-      <span aria-current="page" className="flex min-h-9 items-center justify-center rounded-lg bg-blue-600 text-white">Property Care</span>
+      <span aria-current="page" className="flex min-h-9 items-center justify-center rounded-lg bg-care-600 text-white">Property Care</span>
     </div>
   );
 
@@ -85,7 +85,7 @@ export function OpsShell({ children }: { children: ReactNode }) {
           <Image src="/images/ghar-safar-logo.png" unoptimized alt="Ghar Safar logo" width={36} height={35} className="h-9 w-9 rounded-lg bg-white p-0.5 object-contain" />
           <span className="leading-tight">
             <span className="block text-[15px] font-black">Ghar Safar</span>
-            <span className="block text-[10px] font-extrabold uppercase tracking-[0.16em] text-blue-300">Care Operations</span>
+            <span className="block text-[10px] font-extrabold uppercase tracking-[0.16em] text-care-300">Care Operations</span>
           </span>
         </Link>
         <div className="px-4 pb-3">{switcher}</div>
@@ -99,17 +99,17 @@ export function OpsShell({ children }: { children: ReactNode }) {
                 aria-current={active ? "page" : undefined}
                 className={cn(
                   "flex min-h-10 items-center gap-3 rounded-xl px-3 text-sm font-semibold transition",
-                  active ? "bg-blue-600/20 text-white ring-1 ring-inset ring-blue-500/30" : "text-slate-400 hover:bg-white/5 hover:text-white",
+                  active ? "bg-care-600/20 text-white ring-1 ring-inset ring-care-500/30" : "text-slate-400 hover:bg-white/5 hover:text-white",
                 )}
               >
-                <Icon className={cn("h-[18px] w-[18px]", active ? "text-blue-300" : "text-slate-500")} aria-hidden="true" />
+                <Icon className={cn("h-[18px] w-[18px]", active ? "text-care-300" : "text-slate-500")} aria-hidden="true" />
                 {label}
               </Link>
             );
           })}
         </nav>
         <div className="m-3 flex items-center gap-3 rounded-xl border border-white/5 bg-white/[0.03] p-3">
-          <span className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-600/30 text-xs font-black text-blue-100">{initials}</span>
+          <span className="flex h-9 w-9 items-center justify-center rounded-full bg-care-600/30 text-xs font-black text-care-100">{initials}</span>
           <span className="min-w-0">
             <span className="block truncate text-xs font-bold text-white">{name || "Administrator"}</span>
             <span className="block text-[10px] text-slate-500">Operations admin</span>
@@ -131,7 +131,7 @@ export function OpsShell({ children }: { children: ReactNode }) {
             <Link href="/admin" className="hidden min-h-9 items-center gap-1.5 rounded-lg border border-white/10 px-3 text-xs font-semibold text-slate-300 hover:bg-white/5 sm:inline-flex lg:hidden">
               <ArrowLeftRight className="h-3.5 w-3.5" /> Real Estate admin
             </Link>
-            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-600/30 text-xs font-black text-blue-100 lg:hidden">{initials}</span>
+            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-care-600/30 text-xs font-black text-care-100 lg:hidden">{initials}</span>
           </div>
         </div>
       </header>
@@ -145,8 +145,8 @@ export function OpsShell({ children }: { children: ReactNode }) {
           {OPS_NAV.filter((item) => PRIMARY.includes(item.href)).map(({ href, label, icon: Icon }) => {
             const active = isActive(path, href);
             return (
-              <Link key={href} href={href} aria-current={active ? "page" : undefined} className={cn("flex flex-col items-center justify-center gap-1 text-[10px] font-bold", active ? "text-blue-300" : "text-slate-500")}>
-                <span className={cn("flex h-7 w-12 items-center justify-center rounded-full", active && "bg-blue-500/15")}><Icon className="h-5 w-5" /></span>
+              <Link key={href} href={href} aria-current={active ? "page" : undefined} className={cn("flex flex-col items-center justify-center gap-1 text-[10px] font-bold", active ? "text-care-300" : "text-slate-500")}>
+                <span className={cn("flex h-7 w-12 items-center justify-center rounded-full", active && "bg-care-500/15")}><Icon className="h-5 w-5" /></span>
                 {label}
               </Link>
             );
@@ -156,7 +156,7 @@ export function OpsShell({ children }: { children: ReactNode }) {
             aria-expanded={moreOpen}
             aria-controls="ops-more-sheet"
             onClick={() => setMoreOpen((open) => !open)}
-            className={cn("flex flex-col items-center justify-center gap-1 text-[10px] font-bold", moreOpen || (current && !PRIMARY.includes(current.href)) ? "text-blue-300" : "text-slate-500")}
+            className={cn("flex flex-col items-center justify-center gap-1 text-[10px] font-bold", moreOpen || (current && !PRIMARY.includes(current.href)) ? "text-care-300" : "text-slate-500")}
           >
             {moreOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             More
@@ -172,8 +172,8 @@ export function OpsShell({ children }: { children: ReactNode }) {
             <div className="mb-3">{switcher}</div>
             <nav aria-label="More operations pages" className="space-y-1">
               {OPS_NAV.filter((item) => !PRIMARY.includes(item.href)).map(({ href, label, icon: Icon }) => (
-                <Link key={href} href={href} className={cn("flex min-h-12 items-center gap-3 rounded-2xl px-3 text-[15px] font-semibold", isActive(path, href) ? "bg-blue-600/20 text-white" : "text-slate-200 hover:bg-white/5")}>
-                  <Icon className="h-5 w-5 text-blue-300" />
+                <Link key={href} href={href} className={cn("flex min-h-12 items-center gap-3 rounded-2xl px-3 text-[15px] font-semibold", isActive(path, href) ? "bg-care-600/20 text-white" : "text-slate-200 hover:bg-white/5")}>
+                  <Icon className="h-5 w-5 text-care-300" />
                   <span className="flex-1">{label}</span>
                   <ChevronRight className="h-4 w-4 text-slate-500" />
                 </Link>
@@ -199,7 +199,7 @@ export function OpsPageHeader({ title, description, action }: { title: string; d
   );
 }
 
-export function OpsStat({ label, value, hint, icon, tone = "text-blue-300", href }: { label: string; value: ReactNode; hint?: string; icon: ReactNode; tone?: string; href?: string }) {
+export function OpsStat({ label, value, hint, icon, tone = "text-care-300", href }: { label: string; value: ReactNode; hint?: string; icon: ReactNode; tone?: string; href?: string }) {
   const body = (
     <>
       <div className="flex items-center justify-between">
@@ -211,7 +211,7 @@ export function OpsStat({ label, value, hint, icon, tone = "text-blue-300", href
       {hint && <p className="mt-0.5 text-[11px] text-slate-500">{hint}</p>}
     </>
   );
-  const className = "block rounded-2xl border border-white/5 bg-[#0e1b33] p-4 transition hover:border-blue-500/30";
+  const className = "block rounded-2xl border border-white/5 bg-[#0e1b33] p-4 transition hover:border-care-500/30";
   return href ? <Link href={href} className={className}>{body}</Link> : <div className={className}>{body}</div>;
 }
 

@@ -73,32 +73,32 @@ export function CustomerMaintenanceList() {
           }
         />
 
-        <section aria-label="Request a service" className="overflow-hidden rounded-3xl bg-gradient-to-br from-[#0d57ad] to-[#0b2545] p-5 text-white shadow-[0_14px_30px_rgba(13,87,173,0.25)]">
+        <section aria-label="Request a service" className="overflow-hidden rounded-3xl bg-gradient-to-br from-[#1660d0] to-[#0b2c5f] p-5 text-white shadow-[0_14px_30px_rgba(22,96,208,0.25)]">
           <div className="flex items-start justify-between gap-3">
             <div>
               <h2 className="text-lg font-black tracking-[-0.02em]">Need something fixed?</h2>
-              <p className="mt-1 text-sm text-blue-100">Pick a service to start a request.</p>
+              <p className="mt-1 text-sm text-slate-300">Pick a service to start a request.</p>
             </div>
-            <ShieldCheck className="h-8 w-8 shrink-0 text-[#9ccaff]" aria-hidden="true" />
+            <ShieldCheck className="h-8 w-8 shrink-0 text-[#9fc3f5]" aria-hidden="true" />
           </div>
           <ul className="-mx-5 mt-4 flex gap-2 overflow-x-auto px-5 pb-1 [scrollbar-width:none]">
             {PROPERTY_CARE_SERVICES.map((service) => (
               <li key={service.key} className="shrink-0">
                 <Link href={requestServiceHref(service.key)} className="flex min-h-11 items-center gap-2 rounded-2xl bg-white/12 px-3.5 text-sm font-semibold text-white ring-1 ring-inset ring-white/20 transition hover:bg-white/20">
-                  <ServiceIcon category={service.key} className="h-4 w-4 text-[#9ccaff]" />
+                  <ServiceIcon category={service.key} className="h-4 w-4 text-[#9fc3f5]" />
                   {service.shortTitle}
                 </Link>
               </li>
             ))}
           </ul>
-          <Link href="/buyer/maintenance/new" className={cn(pc.primaryBtn, "mt-4 w-full bg-white text-[#0d57ad] shadow-none hover:bg-[#eef5ff] sm:hidden")}>
+          <Link href="/buyer/maintenance/new" className={cn(pc.primaryBtn, "mt-4 w-full bg-white text-[#1660d0] shadow-none hover:bg-[#eaf2fe] sm:hidden")}>
             <Plus className="h-4 w-4" /> New request
           </Link>
         </section>
 
         <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
           <div className="min-w-0 space-y-4">
-            <div role="tablist" aria-label="Filter requests" className="grid grid-cols-4 gap-1 rounded-2xl bg-[#e6eef8] p-1">
+            <div role="tablist" aria-label="Filter requests" className="grid grid-cols-4 gap-1 rounded-2xl bg-[#e5ebf4] p-1">
               {SCOPES.map((item) => (
                 <button
                   key={item.key}
@@ -108,7 +108,7 @@ export function CustomerMaintenanceList() {
                   onClick={() => { setScope(item.key); setPage(1); }}
                   className={cn(
                     "min-h-10 rounded-xl px-2 text-[13px] font-bold transition",
-                    scope === item.key ? "bg-white text-[#0d57ad] shadow-sm" : "text-[#5b6b82] hover:text-[#102b55]",
+                    scope === item.key ? "bg-white text-[#1660d0] shadow-sm" : "text-[#64748b] hover:text-[#0f2747]",
                   )}
                 >
                   {item.label}
@@ -139,21 +139,21 @@ export function CustomerMaintenanceList() {
                         href={`/buyer/maintenance/${item.id}`}
                         className={cn(
                           pc.card,
-                          "group block p-4 transition hover:-translate-y-0.5 hover:shadow-[0_12px_28px_rgba(16,43,85,0.10)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0d57ad] sm:p-5",
+                          "group block p-4 transition hover:-translate-y-0.5 hover:shadow-[0_12px_28px_rgba(15,39,71,0.10)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1660d0] sm:p-5",
                           needsAction && "border-amber-300 ring-1 ring-amber-200",
                         )}
                       >
                         <div className="flex items-start gap-3">
-                          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#edf5ff] text-[#0d57ad]">
+                          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#eaf2fe] text-[#1660d0]">
                             <ServiceIcon category={item.category} className="h-5 w-5" />
                           </span>
                           <div className="min-w-0 flex-1">
                             <div className="flex items-start justify-between gap-2">
                               <div className="min-w-0">
-                                <h2 className="truncate text-[15px] font-extrabold text-[#102b55]">{item.title}</h2>
-                                <p className="mt-0.5 text-xs text-[#6b7a90]">{item.categoryLabel} · <span className="font-mono">{item.reference}</span></p>
+                                <h2 className="truncate text-[15px] font-extrabold text-[#0f2747]">{item.title}</h2>
+                                <p className="mt-0.5 text-xs text-[#7a8594]">{item.categoryLabel} · <span className="font-mono">{item.reference}</span></p>
                               </div>
-                              <ChevronRight className="mt-1 h-5 w-5 shrink-0 text-[#a9b8cc] transition group-hover:translate-x-0.5 group-hover:text-[#0d57ad]" aria-hidden="true" />
+                              <ChevronRight className="mt-1 h-5 w-5 shrink-0 text-[#a7b0bc] transition group-hover:translate-x-0.5 group-hover:text-[#1660d0]" aria-hidden="true" />
                             </div>
                             <div className="mt-3 flex flex-wrap items-center gap-2">
                               <StatusBadge status={item.status} />
@@ -163,13 +163,13 @@ export function CustomerMaintenanceList() {
                             </div>
                             {item.status !== "cancelled" && (
                               <div className="mt-3">
-                                <div className="h-1.5 overflow-hidden rounded-full bg-[#e6eef8]" aria-hidden="true">
-                                  <div className={cn("h-full rounded-full", item.status === "completed" ? "bg-emerald-500" : "bg-[#0d57ad]")} style={{ width: `${percent}%` }} />
+                                <div className="h-1.5 overflow-hidden rounded-full bg-[#e5ebf4]" aria-hidden="true">
+                                  <div className={cn("h-full rounded-full", item.status === "completed" ? "bg-emerald-500" : "bg-[#1660d0]")} style={{ width: `${percent}%` }} />
                                 </div>
-                                {NEXT_STEP[item.status] && <p className="mt-2 text-[13px] text-[#36506f]">{NEXT_STEP[item.status]}</p>}
+                                {NEXT_STEP[item.status] && <p className="mt-2 text-[13px] text-[#334155]">{NEXT_STEP[item.status]}</p>}
                               </div>
                             )}
-                            <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-[#6b7a90]">
+                            <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-[#7a8594]">
                               <span className="inline-flex items-center gap-1"><MapPin className="h-3.5 w-3.5" aria-hidden="true" />{item.area}, {item.city}</span>
                               <span className="inline-flex items-center gap-1">
                                 <CalendarClock className="h-3.5 w-3.5" aria-hidden="true" />
@@ -189,7 +189,7 @@ export function CustomerMaintenanceList() {
               </ul>
             )}
             {data && data.totalPages > 1 && (
-              <nav aria-label="Pagination" className="flex items-center justify-between gap-2 text-sm font-semibold text-[#36506f]">
+              <nav aria-label="Pagination" className="flex items-center justify-between gap-2 text-sm font-semibold text-[#334155]">
                 <button type="button" disabled={page <= 1 || loading} onClick={() => setPage((value) => value - 1)} className={cn(pc.secondaryBtn, "min-h-10 px-4 disabled:opacity-40")}>Previous</button>
                 <span>Page {page} of {data.totalPages}</span>
                 <button type="button" disabled={page >= data.totalPages || loading} onClick={() => setPage((value) => value + 1)} className={cn(pc.secondaryBtn, "min-h-10 px-4 disabled:opacity-40")}>Next</button>
@@ -200,7 +200,7 @@ export function CustomerMaintenanceList() {
           <aside className="space-y-4">
             <NotificationsPanel />
             <div className={cn(pc.card, "p-5")}>
-              <h2 className="text-[15px] font-extrabold text-[#102b55]">How Property Care works</h2>
+              <h2 className="text-[15px] font-extrabold text-[#0f2747]">How Property Care works</h2>
               <ol className="mt-3 space-y-3">
                 {[
                   "You submit a request with photos.",
@@ -209,8 +209,8 @@ export function CustomerMaintenanceList() {
                   "The technician completes the job with photo proof.",
                   "You confirm completion and rate the service.",
                 ].map((text, index) => (
-                  <li key={text} className="flex gap-3 text-sm text-[#36506f]">
-                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#edf5ff] text-xs font-bold text-[#0d57ad]">{index + 1}</span>
+                  <li key={text} className="flex gap-3 text-sm text-[#334155]">
+                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#eaf2fe] text-xs font-bold text-[#1660d0]">{index + 1}</span>
                     {text}
                   </li>
                 ))}

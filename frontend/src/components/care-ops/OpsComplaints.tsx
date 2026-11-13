@@ -11,7 +11,7 @@ import type { AdminMaintenanceRequest, MaintenanceComplaint } from "@/types/main
 import { EmptyState, ErrorBanner, LoadingState, StatusBadge, SuccessBanner } from "@/components/maintenance/MaintenanceShared";
 import { OpsPageHeader, OpsStat } from "./OpsShell";
 
-const input = "min-h-11 w-full rounded-xl border border-white/10 bg-white/[0.04] px-3 text-sm text-white outline-none placeholder:text-slate-500 focus:border-blue-500";
+const input = "min-h-11 w-full rounded-xl border border-white/10 bg-white/[0.04] px-3 text-sm text-white outline-none placeholder:text-slate-500 focus:border-care-500";
 type Row = { complaint: MaintenanceComplaint; request: AdminMaintenanceRequest };
 
 const TONES: Record<string, string> = {
@@ -75,7 +75,7 @@ export function OpsComplaints() {
 
       <div role="tablist" className="mb-4 grid grid-cols-3 gap-1 rounded-xl bg-white/[0.04] p-1 sm:max-w-md">
         {(["open", "disputed", "resolved"] as const).map((key) => (
-          <button key={key} type="button" role="tab" aria-selected={tab === key} onClick={() => { setTab(key); setSelectedKey(null); }} className={cn("min-h-10 rounded-lg text-xs font-bold capitalize", tab === key ? "bg-blue-600 text-white" : "text-slate-400 hover:text-white")}>
+          <button key={key} type="button" role="tab" aria-selected={tab === key} onClick={() => { setTab(key); setSelectedKey(null); }} className={cn("min-h-10 rounded-lg text-xs font-bold capitalize", tab === key ? "bg-care-600 text-white" : "text-slate-400 hover:text-white")}>
             {key === "resolved" ? "History" : key}
           </button>
         ))}
@@ -108,7 +108,7 @@ export function OpsComplaints() {
               return (
                 <li key={key}>
                   <button type="button" onClick={() => { setSelectedKey(key); setEdit({ status: row.complaint.status === "open" ? "in_review" : row.complaint.status, resolutionNote: row.complaint.resolutionNote ?? "" }); setError(null); }} aria-pressed={selectedKey === key}
-                    className={cn("w-full rounded-2xl border p-4 text-left transition", selectedKey === key ? "border-blue-500 bg-blue-600/10" : "border-white/5 bg-[#0e1b33] hover:border-white/15")}>
+                    className={cn("w-full rounded-2xl border p-4 text-left transition", selectedKey === key ? "border-care-500 bg-care-600/10" : "border-white/5 bg-[#0e1b33] hover:border-white/15")}>
                     <div className="flex items-start justify-between gap-2">
                       <span className="text-sm font-semibold text-white">{row.complaint.subject}</span>
                       <span className={cn("shrink-0 rounded-full px-2 py-0.5 text-[11px] font-bold capitalize", TONES[row.complaint.status])}>{row.complaint.status.replace("_", " ")}</span>
@@ -161,7 +161,7 @@ export function OpsComplaints() {
                   </label>
                   {error && <ErrorBanner message={error} dark />}
                   <div className="flex flex-wrap gap-2">
-                    <button type="button" onClick={() => void submit()} disabled={busy} className="min-h-11 rounded-xl bg-blue-600 px-4 text-sm font-bold text-white hover:bg-blue-700 disabled:opacity-50">Save resolution</button>
+                    <button type="button" onClick={() => void submit()} disabled={busy} className="min-h-11 rounded-xl bg-care-600 px-4 text-sm font-bold text-white hover:bg-care-700 disabled:opacity-50">Save resolution</button>
                     <Link href={`/care-ops/requests/${selected.request.id}`} className="inline-flex min-h-11 items-center rounded-xl border border-white/10 px-4 text-sm font-semibold text-slate-200 hover:bg-white/5">Open job</Link>
                   </div>
                 </div>

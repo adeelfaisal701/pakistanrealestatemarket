@@ -28,10 +28,10 @@ interface Overview {
 }
 
 const STAT_CARDS: Array<{ key: string; label: string; icon: typeof ClipboardList; tone: string; filter?: Partial<Filters> }> = [
-  { key: "total", label: "Total Requests", icon: ClipboardList, tone: "text-blue-300", filter: { status: "all" } },
+  { key: "total", label: "Total Requests", icon: ClipboardList, tone: "text-emerald-300", filter: { status: "all" } },
   { key: "pending", label: "Pending", icon: Clock3, tone: "text-amber-300", filter: { status: "pending" } },
   { key: "awaitingAcceptance", label: "Awaiting Technician", icon: Hourglass, tone: "text-indigo-300", filter: { status: "awaiting_technician_acceptance" } },
-  { key: "assigned", label: "Assigned Jobs", icon: UserCheck, tone: "text-sky-300", filter: { status: "accepted" } },
+  { key: "assigned", label: "Assigned Jobs", icon: UserCheck, tone: "text-emerald-300", filter: { status: "accepted" } },
   { key: "inProgress", label: "In Progress", icon: Hammer, tone: "text-violet-300", filter: { status: "in_progress" } },
   { key: "completed", label: "Completed", icon: CheckCircle2, tone: "text-emerald-300", filter: { status: "completed" } },
   { key: "cancelled", label: "Cancelled", icon: XCircle, tone: "text-slate-300", filter: { status: "cancelled" } },
@@ -49,7 +49,7 @@ interface Filters {
 }
 
 const EMPTY_FILTERS: Filters = { status: "all", category: "all", location: "", search: "", from: "", to: "", openComplaints: "" };
-const input = "min-h-10 rounded-lg border border-slate-700 bg-slate-800 px-3 text-sm text-white outline-none focus:border-blue-500";
+const input = "min-h-10 rounded-lg border border-slate-700 bg-slate-800 px-3 text-sm text-white outline-none focus:border-emerald-500";
 
 export function AdminMaintenanceDashboard() {
   const router = useRouter();
@@ -118,7 +118,7 @@ export function AdminMaintenanceDashboard() {
             key={key}
             type="button"
             onClick={() => { setPage(1); setFilters({ ...EMPTY_FILTERS, ...filter }); }}
-            className="rounded-2xl border border-slate-800 bg-slate-900 p-4 text-left transition hover:border-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+            className="rounded-2xl border border-slate-800 bg-slate-900 p-4 text-left transition hover:border-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
           >
             <Icon className={cn("h-5 w-5", tone)} aria-hidden="true" />
             <p className="mt-2 text-2xl font-bold text-white">{overview ? overview.stats[key] ?? 0 : "–"}</p>

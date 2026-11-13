@@ -33,28 +33,28 @@ export function RequestCard({ item }: { item: MaintenanceListItem }) {
   return (
     <Link
       href={`/care/requests/${item.id}`}
-      className={cn(pc.card, "group block p-4 transition hover:-translate-y-0.5 hover:shadow-[0_12px_28px_rgba(16,43,85,0.10)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0d57ad]", needsAction && "border-amber-300 ring-1 ring-amber-200")}
+      className={cn(pc.card, "group block p-4 transition hover:-translate-y-0.5 hover:shadow-[0_12px_28px_rgba(15,39,71,0.10)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1660d0]", needsAction && "border-amber-300 ring-1 ring-amber-200")}
     >
       <div className="flex items-start gap-3">
-        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#edf5ff] text-[#0d57ad]"><ServiceIcon category={item.category} className="h-5 w-5" /></span>
+        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#eaf2fe] text-[#1660d0]"><ServiceIcon category={item.category} className="h-5 w-5" /></span>
         <div className="min-w-0 flex-1">
           <div className="flex items-start justify-between gap-2">
             <div className="min-w-0">
-              <h3 className="truncate text-[15px] font-extrabold text-[#102b55]">{item.title}</h3>
-              <p className="mt-0.5 truncate text-xs text-[#6b7a90]">{item.categoryLabel} · <span className="font-mono">{item.reference}</span></p>
+              <h3 className="truncate text-[15px] font-extrabold text-[#0f2747]">{item.title}</h3>
+              <p className="mt-0.5 truncate text-xs text-[#7a8594]">{item.categoryLabel} · <span className="font-mono">{item.reference}</span></p>
             </div>
-            <ChevronRight className="mt-1 h-5 w-5 shrink-0 text-[#a9b8cc] transition group-hover:translate-x-0.5 group-hover:text-[#0d57ad]" aria-hidden="true" />
+            <ChevronRight className="mt-1 h-5 w-5 shrink-0 text-[#a7b0bc] transition group-hover:translate-x-0.5 group-hover:text-[#1660d0]" aria-hidden="true" />
           </div>
           <div className="mt-2.5 flex flex-wrap items-center gap-2">
             <StatusBadge status={item.status} />
             {item.quotationStatus === "sent" && <span className="rounded-full bg-amber-100 px-2.5 py-1 text-[11px] font-bold text-amber-800">Quotation needs approval</span>}
           </div>
           {item.status !== "cancelled" && (
-            <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-[#e6eef8]" aria-hidden="true">
-              <div className={cn("h-full rounded-full", item.status === "completed" ? "bg-emerald-500" : "bg-[#0d57ad]")} style={{ width: `${percent}%` }} />
+            <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-[#e5ebf4]" aria-hidden="true">
+              <div className={cn("h-full rounded-full", item.status === "completed" ? "bg-emerald-500" : "bg-[#1660d0]")} style={{ width: `${percent}%` }} />
             </div>
           )}
-          <div className="mt-2.5 flex flex-wrap gap-x-4 gap-y-1 text-xs text-[#6b7a90]">
+          <div className="mt-2.5 flex flex-wrap gap-x-4 gap-y-1 text-xs text-[#7a8594]">
             <span className="inline-flex items-center gap-1"><MapPin className="h-3.5 w-3.5" aria-hidden="true" />{item.area}</span>
             <span className="inline-flex items-center gap-1"><CalendarClock className="h-3.5 w-3.5" aria-hidden="true" />
               {item.scheduledVisitAt ? `Visit ${formatDate(item.scheduledVisitAt, true)}` : `Submitted ${formatDate(item.createdAt)}`}
@@ -68,11 +68,11 @@ export function RequestCard({ item }: { item: MaintenanceListItem }) {
 
 function StatTile({ label, value, icon, tone, href }: { label: string; value: number | string; icon: React.ReactNode; tone: string; href: string }) {
   return (
-    <Link href={href} className={cn(pc.card, "flex items-center gap-3 p-4 transition hover:shadow-[0_10px_24px_rgba(16,43,85,0.08)]")}>
+    <Link href={href} className={cn(pc.card, "flex items-center gap-3 p-4 transition hover:shadow-[0_10px_24px_rgba(15,39,71,0.08)]")}>
       <span className={cn("flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl", tone)}>{icon}</span>
       <span className="min-w-0">
-        <span className="block text-2xl font-black leading-none tabular-nums text-[#102b55]">{value}</span>
-        <span className="mt-1 block text-xs font-semibold text-[#5b6b82]">{label}</span>
+        <span className="block text-2xl font-black leading-none tabular-nums text-[#0f2747]">{value}</span>
+        <span className="mt-1 block text-xs font-semibold text-[#64748b]">{label}</span>
       </span>
     </Link>
   );
@@ -91,13 +91,13 @@ export function CareOverview() {
 
   return (
     <div className="space-y-6">
-      <section className="relative overflow-hidden rounded-[28px] bg-gradient-to-br from-[#0d57ad] via-[#0a4890] to-[#0b2545] p-5 text-white shadow-[0_18px_40px_rgba(13,87,173,0.28)] sm:p-7">
+      <section className="relative overflow-hidden rounded-[28px] bg-gradient-to-br from-[#1660d0] via-[#114fb0] to-[#0b2c5f] p-5 text-white shadow-[0_18px_40px_rgba(22,96,208,0.28)] sm:p-7">
         <Wrench aria-hidden="true" className="pointer-events-none absolute -right-6 -top-6 h-40 w-40 text-white/5" />
-        <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-[#9ccaff]">Property Care</p>
+        <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-[#9fc3f5]">Property Care</p>
         <h1 className="mt-2 text-[26px] font-black leading-tight tracking-[-0.03em] sm:text-3xl">Your home, looked after.</h1>
-        <p className="mt-2 max-w-lg text-sm leading-6 text-blue-100">Request a service and Ghar Safar takes care of the rest — a verified technician, an upfront quotation and tracking until the job is done.</p>
+        <p className="mt-2 max-w-lg text-sm leading-6 text-slate-300">Request a service and Ghar Safar takes care of the rest — a verified technician, an upfront quotation and tracking until the job is done.</p>
         <div className="mt-5 flex flex-col gap-2.5 sm:flex-row">
-          <Link href="/care/new" className={cn(pc.primaryBtn, "bg-white text-[#0d57ad] shadow-none hover:bg-[#eef5ff]")}><Plus className="h-4 w-4" /> New service request</Link>
+          <Link href="/care/new" className={cn(pc.primaryBtn, "bg-white text-[#1660d0] shadow-none hover:bg-[#eaf2fe]")}><Plus className="h-4 w-4" /> New service request</Link>
           <Link href="/care/requests" className="inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl border border-white/25 px-5 text-sm font-bold text-white hover:bg-white/10">Track requests</Link>
         </div>
       </section>
@@ -105,7 +105,7 @@ export function CareOverview() {
       {requests.error && <ErrorBanner message={requests.error} onRetry={requests.reload} />}
 
       <section aria-label="Summary" className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <StatTile label="Active requests" value={requests.data ? active.length : "–"} icon={<Wrench className="h-5 w-5" />} tone="bg-[#edf5ff] text-[#0d57ad]" href="/care/requests" />
+        <StatTile label="Active requests" value={requests.data ? active.length : "–"} icon={<Wrench className="h-5 w-5" />} tone="bg-[#eaf2fe] text-[#1660d0]" href="/care/requests" />
         <StatTile label="Pending quotations" value={requests.data ? pendingQuotes.length : "–"} icon={<ReceiptText className="h-5 w-5" />} tone="bg-amber-50 text-amber-700" href="/care/quotations" />
         <StatTile label="Completed jobs" value={requests.data ? completed.length : "–"} icon={<CheckCircle2 className="h-5 w-5" />} tone="bg-emerald-50 text-emerald-700" href="/care/history" />
         <StatTile label="Total requests" value={requests.data ? requests.data.total : "–"} icon={<ClipboardList className="h-5 w-5" />} tone="bg-slate-100 text-slate-700" href="/care/requests" />
@@ -117,8 +117,8 @@ export function CareOverview() {
           <ul className="mt-2 space-y-2">
             {actionNeeded.map((item) => (
               <li key={item.id}>
-                <Link href={`/care/requests/${item.id}`} className="flex min-h-12 items-center gap-3 rounded-2xl bg-white px-3 text-sm font-semibold text-[#102b55] shadow-sm">
-                  <ServiceIcon category={item.category} className="h-4 w-4 shrink-0 text-[#0d57ad]" />
+                <Link href={`/care/requests/${item.id}`} className="flex min-h-12 items-center gap-3 rounded-2xl bg-white px-3 text-sm font-semibold text-[#0f2747] shadow-sm">
+                  <ServiceIcon category={item.category} className="h-4 w-4 shrink-0 text-[#1660d0]" />
                   <span className="min-w-0 flex-1 truncate">{item.quotationStatus === "sent" ? "Approve quotation" : "Confirm completion"} · {item.title}</span>
                   <ArrowRight className="h-4 w-4 shrink-0 text-amber-700" />
                 </Link>
@@ -132,7 +132,7 @@ export function CareOverview() {
         <section aria-labelledby="active-heading" className="min-w-0">
           <div className="mb-3 flex items-center justify-between">
             <h2 id="active-heading" className="text-lg font-black tracking-[-0.02em]">Active requests</h2>
-            <Link href="/care/requests" className="text-sm font-bold text-[#0d57ad]">View all</Link>
+            <Link href="/care/requests" className="text-sm font-bold text-[#1660d0]">View all</Link>
           </div>
           {requests.loading && !requests.data ? <LoadingState label="Loading requests…" /> : !active.length ? (
             <EmptyState icon={<Sparkles className="h-5 w-5" />} title="No active requests" description="When something needs fixing, start a request and we'll take it from there." action={<Link href="/care/new" className={pc.primaryBtn}>Request a service</Link>} />
@@ -144,7 +144,7 @@ export function CareOverview() {
           <ul className="-mx-4 flex gap-2.5 overflow-x-auto px-4 pb-1 [scrollbar-width:none] sm:mx-0 sm:grid sm:grid-cols-4 sm:overflow-visible sm:px-0 xl:grid-cols-4">
             {PROPERTY_CARE_SERVICES.map((service) => (
               <li key={service.key} className="w-32 shrink-0 sm:w-auto">
-                <Link href={requestServiceHref(service.key)} className={cn(pc.card, "flex h-full flex-col gap-2 p-3.5 transition hover:border-[#bcd3ef]")}>
+                <Link href={requestServiceHref(service.key)} className={cn(pc.card, "flex h-full flex-col gap-2 p-3.5 transition hover:border-[#9fc3f5]")}>
                   <span className={cn("flex h-10 w-10 items-center justify-center rounded-xl", service.accent)}><ServiceIcon category={service.key} className="h-5 w-5" /></span>
                   <span className="text-[13px] font-extrabold leading-tight">{service.shortTitle}</span>
                 </Link>
@@ -155,19 +155,19 @@ export function CareOverview() {
 
         <aside className="space-y-4">
           <section className={cn(pc.card, "p-4 sm:p-5")} aria-labelledby="upcoming-heading">
-            <h2 id="upcoming-heading" className="flex items-center gap-2 text-[15px] font-extrabold"><CalendarClock className="h-4 w-4 text-[#0d57ad]" /> Upcoming visits</h2>
-            {!upcoming.length ? <p className="mt-3 text-sm text-[#6b7a90]">No visits scheduled.</p> : (
+            <h2 id="upcoming-heading" className="flex items-center gap-2 text-[15px] font-extrabold"><CalendarClock className="h-4 w-4 text-[#1660d0]" /> Upcoming visits</h2>
+            {!upcoming.length ? <p className="mt-3 text-sm text-[#7a8594]">No visits scheduled.</p> : (
               <ul className="mt-3 space-y-2">
                 {upcoming.slice(0, 3).map((item) => (
                   <li key={item.id}>
-                    <Link href={`/care/requests/${item.id}`} className="flex gap-3 rounded-2xl bg-[#f6f9fd] p-3">
+                    <Link href={`/care/requests/${item.id}`} className="flex gap-3 rounded-2xl bg-[#f5f8fd] p-3">
                       <span className="flex w-12 shrink-0 flex-col items-center justify-center rounded-xl bg-white py-1 text-center shadow-sm">
-                        <span className="text-[10px] font-bold uppercase text-[#1768c4]">{new Date(item.scheduledVisitAt!).toLocaleDateString("en-PK", { month: "short" })}</span>
+                        <span className="text-[10px] font-bold uppercase text-[#1660d0]">{new Date(item.scheduledVisitAt!).toLocaleDateString("en-PK", { month: "short" })}</span>
                         <span className="text-lg font-black leading-none">{new Date(item.scheduledVisitAt!).getDate()}</span>
                       </span>
                       <span className="min-w-0">
                         <span className="block truncate text-sm font-bold">{item.title}</span>
-                        <span className="block text-xs text-[#6b7a90]">{new Date(item.scheduledVisitAt!).toLocaleTimeString("en-PK", { hour: "numeric", minute: "2-digit" })} · {item.area}</span>
+                        <span className="block text-xs text-[#7a8594]">{new Date(item.scheduledVisitAt!).toLocaleTimeString("en-PK", { hour: "numeric", minute: "2-digit" })} · {item.area}</span>
                       </span>
                     </Link>
                   </li>
@@ -219,8 +219,8 @@ export function CareRequests() {
       <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none] sm:mx-0 sm:flex-wrap sm:px-0">
         {REQUEST_TABS.map((t) => (
           <button key={t.key} type="button" aria-pressed={tab === t.key} onClick={() => setTab(t.key)}
-            className={cn("inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-full border px-4 text-[13px] font-bold transition", tab === t.key ? "border-[#0d57ad] bg-[#0d57ad] text-white" : "border-[#d5e0ee] bg-white text-[#36506f] hover:border-[#0d57ad]")}>
-            {t.label}<span className={cn("rounded-full px-1.5 text-[11px]", tab === t.key ? "bg-white/20" : "bg-[#edf5ff] text-[#0d57ad]")}>{counts[t.key] ?? 0}</span>
+            className={cn("inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-full border px-4 text-[13px] font-bold transition", tab === t.key ? "border-[#1660d0] bg-[#1660d0] text-white" : "border-[#d4deeb] bg-white text-[#334155] hover:border-[#1660d0]")}>
+            {t.label}<span className={cn("rounded-full px-1.5 text-[11px]", tab === t.key ? "bg-white/20" : "bg-[#eaf2fe] text-[#1660d0]")}>{counts[t.key] ?? 0}</span>
           </button>
         ))}
       </div>
@@ -255,7 +255,7 @@ export function CareRequests() {
       ) : (
         <ul className="grid grid-cols-1 gap-3 lg:grid-cols-2">{visible.map((item) => <li key={item.id}><RequestCard item={item} /></li>)}</ul>
       )}
-      {requests.data && requests.data.total > items.length && <p className="text-xs text-[#6b7a90]">Showing your latest {items.length} requests.</p>}
+      {requests.data && requests.data.total > items.length && <p className="text-xs text-[#7a8594]">Showing your latest {items.length} requests.</p>}
     </div>
   );
 }
@@ -271,22 +271,22 @@ export function CareHistory() {
       {result.loading && !result.data ? <LoadingState label="Loading history…" /> : !details.length ? (
         <EmptyState icon={<History className="h-5 w-5" />} title="No history yet" description="Completed jobs will be listed here." />
       ) : (
-        <ol className="relative space-y-3 border-l-2 border-[#dbe5f2] pl-5">
+        <ol className="relative space-y-3 border-l-2 border-[#dbe4f0] pl-5">
           {details.map((request) => (
             <li key={request.id} className="relative">
-              <span className={cn("absolute -left-[29px] top-5 h-4 w-4 rounded-full ring-4 ring-[#f4f8fd]", request.status === "completed" ? "bg-emerald-500" : "bg-slate-400")} aria-hidden="true" />
-              <Link href={`/care/requests/${request.id}`} className={cn(pc.card, "block p-4 transition hover:shadow-[0_10px_24px_rgba(16,43,85,0.08)]")}>
+              <span className={cn("absolute -left-[29px] top-5 h-4 w-4 rounded-full ring-4 ring-[#f5f9ff]", request.status === "completed" ? "bg-emerald-500" : "bg-slate-400")} aria-hidden="true" />
+              <Link href={`/care/requests/${request.id}`} className={cn(pc.card, "block p-4 transition hover:shadow-[0_10px_24px_rgba(15,39,71,0.08)]")}>
                 <div className="flex flex-wrap items-start justify-between gap-2">
                   <div className="min-w-0">
-                    <p className="text-xs font-bold text-[#1768c4]">{formatDate(request.completedAt ?? request.updatedAt)}</p>
+                    <p className="text-xs font-bold text-[#1660d0]">{formatDate(request.completedAt ?? request.updatedAt)}</p>
                     <h3 className="truncate text-[15px] font-extrabold">{request.title}</h3>
-                    <p className="text-xs text-[#6b7a90]">{request.categoryLabel} · {request.reference}</p>
+                    <p className="text-xs text-[#7a8594]">{request.categoryLabel} · {request.reference}</p>
                   </div>
                   <StatusBadge status={request.status} />
                 </div>
-                <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-[#5b6b82]">
-                  {request.technician && <span>Technician: <b className="text-[#102b55]">{request.technician.name}</b></span>}
-                  {request.quotation && <span>Cost: <b className="text-[#102b55]">{formatMoney(request.quotation.total)}</b></span>}
+                <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-[#64748b]">
+                  {request.technician && <span>Technician: <b className="text-[#0f2747]">{request.technician.name}</b></span>}
+                  {request.quotation && <span>Cost: <b className="text-[#0f2747]">{formatMoney(request.quotation.total)}</b></span>}
                   {request.feedback && <span>Your rating: <b className="text-amber-600">{"★".repeat(request.feedback.rating)}</b></span>}
                 </div>
               </Link>
@@ -294,7 +294,7 @@ export function CareHistory() {
           ))}
         </ol>
       )}
-      {result.data?.truncated && <p className="text-xs text-[#6b7a90]">Showing the latest 20 records.</p>}
+      {result.data?.truncated && <p className="text-xs text-[#7a8594]">Showing the latest 20 records.</p>}
     </div>
   );
 }

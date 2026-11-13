@@ -21,7 +21,7 @@ import {
 import { PcPageHeader, ServiceIcon, pc } from "@/components/property-care/PropertyCareUI";
 
 function TruncationNote({ truncated }: { truncated?: boolean }) {
-  return truncated ? <p className="text-xs text-[#6b7a90]">Showing your latest 20 records.</p> : null;
+  return truncated ? <p className="text-xs text-[#7a8594]">Showing your latest 20 records.</p> : null;
 }
 
 const QUOTE_TONES: Record<string, string> = {
@@ -63,9 +63,9 @@ export function CareQuotations() {
       <PcPageHeader eyebrow="Property Care" title="Quotations" description="Review itemised quotations from Ghar Safar. Chargeable work starts only after you approve." />
       {notice && <SuccessBanner message={notice} />}
       {result.error && <ErrorBanner message={result.error} onRetry={result.reload} />}
-      <div role="tablist" className="grid grid-cols-3 gap-1 rounded-2xl bg-[#e6eef8] p-1 sm:max-w-md">
+      <div role="tablist" className="grid grid-cols-3 gap-1 rounded-2xl bg-[#e5ebf4] p-1 sm:max-w-md">
         {(["sent", "approved", "rejected"] as const).map((key) => (
-          <button key={key} type="button" role="tab" aria-selected={tab === key} onClick={() => setTab(key)} className={cn("min-h-11 rounded-xl text-[13px] font-bold", tab === key ? "bg-white text-[#0d57ad] shadow-sm" : "text-[#5b6b82]")}>
+          <button key={key} type="button" role="tab" aria-selected={tab === key} onClick={() => setTab(key)} className={cn("min-h-11 rounded-xl text-[13px] font-bold", tab === key ? "bg-white text-[#1660d0] shadow-sm" : "text-[#64748b]")}>
             {key === "sent" ? "To approve" : key === "approved" ? "Approved" : "Rejected"} <span className="tabular-nums opacity-70">{result.data ? count(key) : ""}</span>
           </button>
         ))}
@@ -86,21 +86,21 @@ export function CareQuotations() {
             return (
               <li key={request.id} className={cn(pc.card, "flex flex-col p-4 sm:p-5", quote.status === "sent" && "border-amber-300 ring-1 ring-amber-200")}>
                 <div className="flex items-start gap-3">
-                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#edf5ff] text-[#0d57ad]"><ServiceIcon category={request.category} className="h-5 w-5" /></span>
+                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#eaf2fe] text-[#1660d0]"><ServiceIcon category={request.category} className="h-5 w-5" /></span>
                   <div className="min-w-0 flex-1">
                     <Link href={`/care/requests/${request.id}`} className="block truncate text-[15px] font-extrabold hover:underline">{request.title}</Link>
-                    <p className="text-xs text-[#6b7a90]">{request.reference} · v{quote.version}{quote.sentAt ? ` · sent ${formatDate(quote.sentAt)}` : ""}</p>
+                    <p className="text-xs text-[#7a8594]">{request.reference} · v{quote.version}{quote.sentAt ? ` · sent ${formatDate(quote.sentAt)}` : ""}</p>
                   </div>
                   <span className={cn("shrink-0 rounded-full px-2.5 py-1 text-[11px] font-bold", QUOTE_TONES[quote.status])}>{QUOTATION_LABELS[quote.status]}</span>
                 </div>
-                <dl className="mt-4 divide-y divide-[#eef2f8] text-sm">
+                <dl className="mt-4 divide-y divide-[#edf2f8] text-sm">
                   {lines.map(([label, amount]) => (
-                    <div key={label} className="flex justify-between py-2"><dt className="text-[#6b7a90]">{label}</dt><dd className="font-semibold">{formatMoney(amount)}</dd></div>
+                    <div key={label} className="flex justify-between py-2"><dt className="text-[#7a8594]">{label}</dt><dd className="font-semibold">{formatMoney(amount)}</dd></div>
                   ))}
                 </dl>
-                <div className="mt-2 flex items-center justify-between rounded-2xl bg-[#102b55] px-4 py-3 text-white"><span className="text-sm">Total</span><span className="text-lg font-black">{formatMoney(quote.total)}</span></div>
-                {quote.notes && <p className="mt-3 text-sm text-[#5b6b82]">{quote.notes}</p>}
-                {quote.customerNote && <p className="mt-2 text-xs text-[#6b7a90]">Your note: {quote.customerNote}</p>}
+                <div className="mt-2 flex items-center justify-between rounded-2xl bg-[#0f2747] px-4 py-3 text-white"><span className="text-sm">Total</span><span className="text-lg font-black">{formatMoney(quote.total)}</span></div>
+                {quote.notes && <p className="mt-3 text-sm text-[#64748b]">{quote.notes}</p>}
+                {quote.customerNote && <p className="mt-2 text-xs text-[#7a8594]">Your note: {quote.customerNote}</p>}
                 {request.actions.canRespondToQuotation && (
                   <div className="mt-4 grid grid-cols-2 gap-2">
                     <button type="button" onClick={() => { setError(null); setDialog({ request, decision: "reject" }); }} className={pc.secondaryBtn}>Request changes</button>
@@ -144,10 +144,10 @@ export function CarePayments() {
       <PcPageHeader eyebrow="Property Care" title="Payments" description="Payment status for approved quotations and the payments Ghar Safar has recorded." />
       {result.error && <ErrorBanner message={result.error} onRetry={result.reload} />}
       <section className="grid grid-cols-2 gap-3">
-        <div className={cn(pc.card, "p-4")}><p className="text-xs font-semibold text-[#6b7a90]">Paid</p><p className="mt-1 text-xl font-black text-emerald-700">{result.data ? formatMoney(paid) : "–"}</p></div>
-        <div className={cn(pc.card, "p-4")}><p className="text-xs font-semibold text-[#6b7a90]">Outstanding</p><p className="mt-1 text-xl font-black text-amber-700">{result.data ? formatMoney(due) : "–"}</p></div>
+        <div className={cn(pc.card, "p-4")}><p className="text-xs font-semibold text-[#7a8594]">Paid</p><p className="mt-1 text-xl font-black text-emerald-700">{result.data ? formatMoney(paid) : "–"}</p></div>
+        <div className={cn(pc.card, "p-4")}><p className="text-xs font-semibold text-[#7a8594]">Outstanding</p><p className="mt-1 text-xl font-black text-amber-700">{result.data ? formatMoney(due) : "–"}</p></div>
       </section>
-      <p className="rounded-2xl bg-[#edf5ff] p-3 text-xs text-[#36506f]">Online payments are not available yet. Payments made to Ghar Safar are recorded by our team and appear here.</p>
+      <p className="rounded-2xl bg-[#eaf2fe] p-3 text-xs text-[#334155]">Online payments are not available yet. Payments made to Ghar Safar are recorded by our team and appear here.</p>
 
       {result.loading && !result.data ? <LoadingState label="Loading payments…" /> : !details.length ? (
         <EmptyState icon={<CreditCard className="h-5 w-5" />} title="No payments due" description="Payment details appear once you approve a quotation." />
@@ -162,11 +162,11 @@ export function CarePayments() {
                   <li key={request.id}>
                     <Link href={`/care/requests/${request.id}`} className={cn(pc.card, "block p-4")}>
                       <div className="flex items-start justify-between gap-2">
-                        <div className="min-w-0"><p className="truncate font-extrabold">{request.title}</p><p className="text-xs text-[#6b7a90]">{request.reference}</p></div>
+                        <div className="min-w-0"><p className="truncate font-extrabold">{request.title}</p><p className="text-xs text-[#7a8594]">{request.reference}</p></div>
                         <span className={cn("shrink-0 rounded-full px-2.5 py-1 text-[11px] font-bold capitalize", STATUS_TONE[request.paymentStatus])}>{request.paymentStatus.replace("_", " ")}</span>
                       </div>
-                      <div className="mt-3 h-2 overflow-hidden rounded-full bg-[#e6eef8]"><div className="h-full rounded-full bg-emerald-500" style={{ width: `${request.quotation?.total ? Math.min(100, (jobPaid / request.quotation.total) * 100) : 0}%` }} /></div>
-                      <p className="mt-2 text-xs text-[#5b6b82]">{formatMoney(jobPaid)} of {formatMoney(request.quotation?.total)} paid</p>
+                      <div className="mt-3 h-2 overflow-hidden rounded-full bg-[#e5ebf4]"><div className="h-full rounded-full bg-emerald-500" style={{ width: `${request.quotation?.total ? Math.min(100, (jobPaid / request.quotation.total) * 100) : 0}%` }} /></div>
+                      <p className="mt-2 text-xs text-[#64748b]">{formatMoney(jobPaid)} of {formatMoney(request.quotation?.total)} paid</p>
                     </Link>
                   </li>
                 );
@@ -175,14 +175,14 @@ export function CarePayments() {
           </section>
           <section aria-labelledby="tx-heading" className={cn(pc.card, "p-4 sm:p-5")}>
             <h2 id="tx-heading" className="mb-2 text-[15px] font-extrabold">Transaction history</h2>
-            {!transactions.length ? <p className="text-sm text-[#6b7a90]">No payments recorded yet.</p> : (
-              <ul className="divide-y divide-[#eef2f8]">
+            {!transactions.length ? <p className="text-sm text-[#7a8594]">No payments recorded yet.</p> : (
+              <ul className="divide-y divide-[#edf2f8]">
                 {transactions.map((row) => (
                   <li key={row.id} className="flex items-center gap-3 py-3">
                     <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-emerald-700"><CheckCircle2 className="h-5 w-5" /></span>
                     <span className="min-w-0 flex-1">
                       <span className="block truncate text-sm font-bold">{row.request.title}</span>
-                      <span className="block text-xs capitalize text-[#6b7a90]">{row.method.replace("_", " ")} · {formatDate(row.recordedAt, true)}</span>
+                      <span className="block text-xs capitalize text-[#7a8594]">{row.method.replace("_", " ")} · {formatDate(row.recordedAt, true)}</span>
                     </span>
                     <span className="text-sm font-black tabular-nums">{formatMoney(row.amount)}</span>
                   </li>
@@ -220,30 +220,30 @@ export function CarePassport() {
         const spend = property.jobs.reduce((sum, job) => sum + (job.quotation?.total ?? 0), 0);
         return (
           <section key={`${property.address.line}-${property.address.area}`} className={cn(pc.card, "overflow-hidden")}>
-            <header className="flex flex-wrap items-center gap-3 bg-gradient-to-r from-[#0b2545] to-[#0d57ad] p-4 text-white sm:p-5">
+            <header className="flex flex-wrap items-center gap-3 bg-gradient-to-r from-[#0b2c5f] to-[#1660d0] p-4 text-white sm:p-5">
               <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/15"><Home className="h-6 w-6" /></span>
               <div className="min-w-0 flex-1">
                 <h2 className="truncate text-base font-extrabold">{property.address.line}</h2>
-                <p className="text-xs text-blue-100">{property.address.area}, {property.address.city} · <span className="capitalize">{property.propertyType}</span></p>
+                <p className="text-xs text-slate-300">{property.address.area}, {property.address.city} · <span className="capitalize">{property.propertyType}</span></p>
               </div>
               <div className="flex w-full gap-6 border-t border-white/15 pt-3 sm:w-auto sm:border-0 sm:pt-0 sm:text-right">
-                <div><p className="text-lg font-black">{property.jobs.length}</p><p className="text-[10px] uppercase tracking-wide text-blue-200">Services</p></div>
-                <div><p className="text-lg font-black">{formatMoney(spend)}</p><p className="text-[10px] uppercase tracking-wide text-blue-200">Total cost</p></div>
+                <div><p className="text-lg font-black">{property.jobs.length}</p><p className="text-[10px] uppercase tracking-wide text-slate-300">Services</p></div>
+                <div><p className="text-lg font-black">{formatMoney(spend)}</p><p className="text-[10px] uppercase tracking-wide text-slate-300">Total cost</p></div>
               </div>
             </header>
-            <ol className="divide-y divide-[#eef2f8]">
+            <ol className="divide-y divide-[#edf2f8]">
               {property.jobs.map((job) => (
                 <li key={job.id} className="p-4 sm:p-5">
                   <div className="flex flex-wrap items-start gap-3">
-                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#edf5ff] text-[#0d57ad]"><ServiceIcon category={job.category} className="h-5 w-5" /></span>
+                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#eaf2fe] text-[#1660d0]"><ServiceIcon category={job.category} className="h-5 w-5" /></span>
                     <div className="min-w-0 flex-1">
-                      <p className="text-xs font-bold text-[#1768c4]">{formatDate(job.completedAt ?? job.updatedAt)}</p>
+                      <p className="text-xs font-bold text-[#1660d0]">{formatDate(job.completedAt ?? job.updatedAt)}</p>
                       <Link href={`/care/requests/${job.id}`} className="block text-[15px] font-extrabold hover:underline">{job.title}</Link>
-                      <p className="text-xs text-[#6b7a90]">{job.categoryLabel} · {job.reference}{job.technician ? ` · ${job.technician.name}` : ""}</p>
+                      <p className="text-xs text-[#7a8594]">{job.categoryLabel} · {job.reference}{job.technician ? ` · ${job.technician.name}` : ""}</p>
                     </div>
                     {job.quotation && <span className="text-sm font-black">{formatMoney(job.quotation.total)}</span>}
                   </div>
-                  {job.completionReport?.summary && <p className="mt-3 rounded-2xl bg-[#f6f9fd] p-3 text-sm text-[#36506f]">{job.completionReport.summary}</p>}
+                  {job.completionReport?.summary && <p className="mt-3 rounded-2xl bg-[#f5f8fd] p-3 text-sm text-[#334155]">{job.completionReport.summary}</p>}
                   {job.images.some((image) => image.kind !== "problem") && (
                     <div className="mt-3"><ImageGallery images={job.images} kinds={["before", "after"]} emptyLabel="" /></div>
                   )}
@@ -318,11 +318,11 @@ export function CareComplaints() {
                   <div className="flex flex-wrap items-start justify-between gap-2">
                     <div className="min-w-0">
                       <p className="font-extrabold">{complaint.subject}</p>
-                      <Link href={`/care/requests/${request.id}`} className="text-xs text-[#0d57ad] hover:underline">{request.title} · {request.reference}</Link>
+                      <Link href={`/care/requests/${request.id}`} className="text-xs text-[#1660d0] hover:underline">{request.title} · {request.reference}</Link>
                     </div>
                     <span className={cn("rounded-full px-2.5 py-1 text-[11px] font-bold capitalize", COMPLAINT_TONE[complaint.status])}>{complaint.status.replace("_", " ")}</span>
                   </div>
-                  <p className="mt-2 text-sm text-[#5b6b82]">{complaint.description}</p>
+                  <p className="mt-2 text-sm text-[#64748b]">{complaint.description}</p>
                   {complaint.resolutionNote && <p className="mt-3 rounded-2xl bg-emerald-50 p-3 text-sm text-emerald-900"><b>Ghar Safar:</b> {complaint.resolutionNote}</p>}
                   <p className="mt-2 text-xs text-[#94a3b8]">Raised {formatDate(complaint.createdAt, true)}{complaint.resolvedAt ? ` · resolved ${formatDate(complaint.resolvedAt)}` : ""}</p>
                 </li>
@@ -333,13 +333,13 @@ export function CareComplaints() {
         <aside>
           <section className={cn(pc.card, "p-4 sm:p-5")} aria-labelledby="ratings-heading">
             <h2 id="ratings-heading" className="flex items-center gap-2 text-[15px] font-extrabold"><Star className="h-4 w-4 text-amber-500" /> Your ratings</h2>
-            {!feedback.length ? <p className="mt-2 text-sm text-[#6b7a90]">Rate completed jobs from their request page.</p> : (
+            {!feedback.length ? <p className="mt-2 text-sm text-[#7a8594]">Rate completed jobs from their request page.</p> : (
               <ul className="mt-3 space-y-3">
                 {feedback.map((request) => (
-                  <li key={request.id} className="rounded-2xl bg-[#f6f9fd] p-3">
+                  <li key={request.id} className="rounded-2xl bg-[#f5f8fd] p-3">
                     <p className="truncate text-sm font-bold">{request.title}</p>
-                    <p className="text-amber-500" aria-label={`${request.feedback!.rating} out of 5`}>{"★".repeat(request.feedback!.rating)}<span className="text-[#cfdcee]">{"★".repeat(5 - request.feedback!.rating)}</span></p>
-                    {request.feedback!.comment && <p className="mt-1 text-xs text-[#5b6b82]">“{request.feedback!.comment}”</p>}
+                    <p className="text-amber-500" aria-label={`${request.feedback!.rating} out of 5`}>{"★".repeat(request.feedback!.rating)}<span className="text-[#d2ddec]">{"★".repeat(5 - request.feedback!.rating)}</span></p>
+                    {request.feedback!.comment && <p className="mt-1 text-xs text-[#64748b]">“{request.feedback!.comment}”</p>}
                   </li>
                 ))}
               </ul>
@@ -363,7 +363,7 @@ export function CareComplaints() {
             <label className={pc.label}>What went wrong?
               <textarea value={form.description} maxLength={2000} rows={4} onChange={(event) => setForm((current) => ({ ...current, description: event.target.value }))} className={cn(pc.input, "py-3")} />
             </label>
-            <p className="text-xs text-[#6b7a90]">If the job is awaiting your confirmation or already completed, it will move to dispute review.</p>
+            <p className="text-xs text-[#7a8594]">If the job is awaiting your confirmation or already completed, it will move to dispute review.</p>
             {error && <ErrorBanner message={error} />}
             <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
               <button type="button" onClick={() => setOpen(false)} disabled={busy} className={pc.secondaryBtn}>Cancel</button>

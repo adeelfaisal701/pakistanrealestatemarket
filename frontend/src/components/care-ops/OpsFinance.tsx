@@ -51,7 +51,7 @@ export function OpsQuotations() {
       {list.error && <div className="mb-4"><ErrorBanner message={list.error} onRetry={list.reload} dark /></div>}
       <div className="-mx-4 mb-4 flex gap-2 overflow-x-auto px-4 [scrollbar-width:none] sm:mx-0 sm:px-0">
         {QUOTE_TABS.map((item) => (
-          <button key={item.key} type="button" aria-pressed={tab === item.key} onClick={() => { setTab(item.key); setSelectedId(null); }} className={cn("min-h-9 shrink-0 rounded-full border px-3.5 text-xs font-bold", tab === item.key ? "border-blue-500 bg-blue-600 text-white" : "border-white/10 text-slate-300 hover:bg-white/5")}>
+          <button key={item.key} type="button" aria-pressed={tab === item.key} onClick={() => { setTab(item.key); setSelectedId(null); }} className={cn("min-h-9 shrink-0 rounded-full border px-3.5 text-xs font-bold", tab === item.key ? "border-care-500 bg-care-600 text-white" : "border-white/10 text-slate-300 hover:bg-white/5")}>
             {item.label} <span className="ml-1 tabular-nums opacity-70">{groups[item.key]?.length ?? 0}</span>
           </button>
         ))}
@@ -65,7 +65,7 @@ export function OpsQuotations() {
             <ul className="space-y-2">
               {visible.map((item) => (
                 <li key={item.id}>
-                  <button type="button" onClick={() => setSelectedId(item.id)} aria-pressed={selectedId === item.id} className={cn("flex w-full items-center gap-3 rounded-2xl border p-3.5 text-left transition", selectedId === item.id ? "border-blue-500 bg-blue-600/10" : "border-white/5 bg-[#0e1b33] hover:border-white/15")}>
+                  <button type="button" onClick={() => setSelectedId(item.id)} aria-pressed={selectedId === item.id} className={cn("flex w-full items-center gap-3 rounded-2xl border p-3.5 text-left transition", selectedId === item.id ? "border-care-500 bg-care-600/10" : "border-white/5 bg-[#081d40] hover:border-white/15")}>
                     <span className="min-w-0 flex-1">
                       <span className="block truncate text-sm font-semibold text-white">{item.title}</span>
                       <span className="block text-xs text-slate-500">{item.reference} · {item.customerName}</span>
@@ -87,25 +87,25 @@ export function OpsQuotations() {
             ) : detail.loading ? <LoadingState label="Loading…" dark /> : detail.error ? <ErrorBanner message={detail.error} dark /> : !quotation ? (
               <div className="space-y-3">
                 <p className="text-sm text-slate-400">No quotation yet for this request.</p>
-                <Link href={`/care-ops/requests/${selectedId}#mr-quotation`} className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-blue-600 px-4 text-sm font-bold text-white hover:bg-blue-700">Create quotation</Link>
+                <Link href={`/care-ops/requests/${selectedId}#mr-quotation`} className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-care-600 px-4 text-sm font-bold text-white hover:bg-care-700">Create quotation</Link>
               </div>
             ) : (
-              <div className="rounded-2xl bg-white p-4 text-[#102b55]">
+              <div className="rounded-2xl bg-white p-4 text-[#0f2747]">
                 <div className="flex items-center justify-between">
-                  <p className="text-xs font-bold uppercase tracking-wide text-[#1768c4]">Quotation v{quotation.version}</p>
-                  <span className="text-[11px] font-bold text-[#5b6b82]">{QUOTATION_LABELS[quotation.status]}</span>
+                  <p className="text-xs font-bold uppercase tracking-wide text-[#1660d0]">Quotation v{quotation.version}</p>
+                  <span className="text-[11px] font-bold text-[#64748b]">{QUOTATION_LABELS[quotation.status]}</span>
                 </div>
-                <dl className="mt-3 divide-y divide-[#eef2f8] text-sm">
+                <dl className="mt-3 divide-y divide-[#edf2f8] text-sm">
                   {[["Inspection", quotation.inspectionCharge], ["Labour", quotation.laborCharge], ["Materials", quotation.materialCharge], ...quotation.additionalCharges.map((line) => [line.label, line.amount] as const)].map(([label, amount]) => (
-                    <div key={String(label)} className="flex justify-between py-2"><dt className="text-[#6b7a90]">{label}</dt><dd className="font-semibold">{formatMoney(Number(amount))}</dd></div>
+                    <div key={String(label)} className="flex justify-between py-2"><dt className="text-[#7a8594]">{label}</dt><dd className="font-semibold">{formatMoney(Number(amount))}</dd></div>
                   ))}
                 </dl>
-                <div className="mt-2 flex justify-between rounded-xl bg-[#102b55] px-3 py-2.5 text-white"><span className="text-sm">Total</span><span className="font-black">{formatMoney(quotation.total)}</span></div>
-                {quotation.notes && <p className="mt-2 text-xs text-[#5b6b82]">{quotation.notes}</p>}
+                <div className="mt-2 flex justify-between rounded-xl bg-[#0f2747] px-3 py-2.5 text-white"><span className="text-sm">Total</span><span className="font-black">{formatMoney(quotation.total)}</span></div>
+                {quotation.notes && <p className="mt-2 text-xs text-[#64748b]">{quotation.notes}</p>}
               </div>
             )}
             {selectedId && (
-              <Link href={`/care-ops/requests/${selectedId}#mr-quotation`} className="mt-3 inline-flex items-center gap-1 text-xs font-bold text-blue-300 hover:underline">
+              <Link href={`/care-ops/requests/${selectedId}#mr-quotation`} className="mt-3 inline-flex items-center gap-1 text-xs font-bold text-care-300 hover:underline">
                 Open quotation editor <ExternalLink className="h-3.5 w-3.5" />
               </Link>
             )}
@@ -135,10 +135,10 @@ export function OpsPayments() {
       {result.data?.truncated && <p className="mb-3 text-xs text-slate-500">Showing jobs from the latest 20 approved quotations.</p>}
 
       <section className="mb-4 grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <OpsStat label="Recorded" value={result.data ? formatMoney(total) : "–"} icon={<CreditCard className="h-5 w-5" />} tone="text-emerald-300" />
+        <OpsStat label="Recorded" value={result.data ? formatMoney(total) : "–"} icon={<CreditCard className="h-5 w-5" />} tone="text-care-300" />
         <OpsStat label="Outstanding" value={result.data ? formatMoney(outstanding) : "–"} icon={<ReceiptText className="h-5 w-5" />} tone="text-amber-300" />
         <OpsStat label="Transactions" value={result.data ? rows.length : "–"} icon={<CreditCard className="h-5 w-5" />} />
-        <OpsStat label="Fully paid jobs" value={result.data ? result.data.details.filter((request) => request.paymentStatus === "paid").length : "–"} icon={<CreditCard className="h-5 w-5" />} tone="text-sky-300" />
+        <OpsStat label="Fully paid jobs" value={result.data ? result.data.details.filter((request) => request.paymentStatus === "paid").length : "–"} icon={<CreditCard className="h-5 w-5" />} tone="text-emerald-300" />
       </section>
 
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1fr)_320px]">

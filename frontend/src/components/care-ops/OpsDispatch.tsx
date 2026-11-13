@@ -13,7 +13,7 @@ import { ConfirmDialog, EmptyState, ErrorBanner, LoadingState, StatusBadge, Succ
 import { ServiceIcon } from "@/components/property-care/PropertyCareUI";
 import { OpsPageHeader } from "./OpsShell";
 
-const input = "min-h-11 w-full rounded-xl border border-white/10 bg-white/[0.04] px-3 text-sm text-white outline-none placeholder:text-slate-500 focus:border-blue-500";
+const input = "min-h-11 w-full rounded-xl border border-white/10 bg-white/[0.04] px-3 text-sm text-white outline-none placeholder:text-slate-500 focus:border-care-500";
 
 const QUEUES = [
   { key: "pending", label: "Needs review", statuses: ["pending"] },
@@ -102,7 +102,7 @@ export function OpsDispatch() {
         <section aria-label="Dispatch queue" className={cn(selected && "hidden lg:block")}>
           <div role="tablist" className="mb-3 grid grid-cols-3 gap-1 rounded-xl bg-white/[0.04] p-1">
             {QUEUES.map((q) => (
-              <button key={q.key} type="button" role="tab" aria-selected={queue === q.key} onClick={() => setQueue(q.key)} className={cn("min-h-11 rounded-lg px-1 text-[11px] font-bold leading-tight transition", queue === q.key ? "bg-blue-600 text-white" : "text-slate-400 hover:text-white")}>
+              <button key={q.key} type="button" role="tab" aria-selected={queue === q.key} onClick={() => setQueue(q.key)} className={cn("min-h-11 rounded-lg px-1 text-[11px] font-bold leading-tight transition", queue === q.key ? "bg-care-600 text-white" : "text-slate-400 hover:text-white")}>
                 {q.label}
                 <span className="block text-[13px] tabular-nums">{counts[q.key] ?? 0}</span>
               </button>
@@ -120,10 +120,10 @@ export function OpsDispatch() {
                     type="button"
                     onClick={() => { setSelectedId(item.id); setNotice(null); setError(null); }}
                     aria-pressed={selectedId === item.id}
-                    className={cn("w-full rounded-2xl border p-3.5 text-left transition", selectedId === item.id ? "border-blue-500 bg-blue-600/10" : "border-white/5 bg-[#0e1b33] hover:border-white/15")}
+                    className={cn("w-full rounded-2xl border p-3.5 text-left transition", selectedId === item.id ? "border-care-500 bg-care-600/10" : "border-white/5 bg-[#0e1b33] hover:border-white/15")}
                   >
                     <div className="flex items-start gap-3">
-                      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-blue-500/10 text-blue-300"><ServiceIcon category={item.category} className="h-4 w-4" /></span>
+                      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-care-500/10 text-care-300"><ServiceIcon category={item.category} className="h-4 w-4" /></span>
                       <span className="min-w-0 flex-1">
                         <span className="block truncate text-sm font-semibold text-white">{item.title}</span>
                         <span className="block text-xs text-slate-500">{item.reference} · {item.categoryLabel}</span>
@@ -167,7 +167,7 @@ export function OpsDispatch() {
                 <div className="rounded-2xl border border-white/5 bg-[#0e1b33] p-5">
                   <h3 className="text-sm font-bold text-white">Review before dispatch</h3>
                   <p className="mt-1 text-sm text-slate-400">Check the request details and photos, then move it under review to unlock technician assignment.</p>
-                  <button type="button" onClick={() => { setError(null); setConfirm("review"); }} className="mt-4 min-h-11 rounded-xl bg-blue-600 px-4 text-sm font-bold text-white hover:bg-blue-700">Move to under review</button>
+                  <button type="button" onClick={() => { setError(null); setConfirm("review"); }} className="mt-4 min-h-11 rounded-xl bg-care-600 px-4 text-sm font-bold text-white hover:bg-care-700">Move to under review</button>
                 </div>
               ) : (
                 <form
@@ -192,7 +192,7 @@ export function OpsDispatch() {
                       <ul className="grid grid-cols-1 gap-2 xl:grid-cols-2">
                         {eligible?.map((tech) => (
                           <li key={tech.id}>
-                            <label className={cn("flex h-full cursor-pointer gap-3 rounded-xl border p-3 transition", form.technicianId === tech.id ? "border-blue-500 bg-blue-600/10" : "border-white/10 hover:border-white/20")}>
+                            <label className={cn("flex h-full cursor-pointer gap-3 rounded-xl border p-3 transition", form.technicianId === tech.id ? "border-care-500 bg-care-600/10" : "border-white/10 hover:border-white/20")}>
                               <input type="radio" name="technician" value={tech.id} checked={form.technicianId === tech.id} onChange={() => setForm((current) => ({ ...current, technicianId: tech.id }))} className="mt-1 accent-blue-500" />
                               <span className="min-w-0 flex-1">
                                 <span className="flex flex-wrap items-center gap-1.5 text-sm font-semibold text-white">
@@ -224,7 +224,7 @@ export function OpsDispatch() {
                   </div>
 
                   <div className="sticky bottom-[calc(4rem+env(safe-area-inset-bottom))] z-10 -mx-4 border-t border-white/10 bg-[#08111f]/95 px-4 py-3 backdrop-blur sm:static sm:mx-0 sm:border-0 sm:bg-transparent sm:p-0">
-                    <button type="submit" disabled={busy || !eligible?.length} className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 text-sm font-bold text-white hover:bg-blue-700 disabled:opacity-50 sm:w-auto">
+                    <button type="submit" disabled={busy || !eligible?.length} className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-care-600 px-5 text-sm font-bold text-white hover:bg-care-700 disabled:opacity-50 sm:w-auto">
                       <UserCog className="h-4 w-4" />{replacing ? "Reassign technician" : "Assign technician"}
                     </button>
                   </div>

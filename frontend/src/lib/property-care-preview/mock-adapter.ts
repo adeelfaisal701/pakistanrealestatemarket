@@ -29,12 +29,12 @@ function page<T>(items: T[]) {
 
 function samplePhoto(kind: string, id: string): Blob {
   const palette: Record<string, [string, string]> = {
-    problem: ["#c7ddf7", "#7aa7dc"],
+    problem: ["#cfe0fb", "#7fb0f2"],
     before: ["#f6dcc2", "#d99a5e"],
     after: ["#c9ecd9", "#5bb487"],
   };
   const [from, to] = palette[kind] ?? palette.problem;
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="480" height="480" viewBox="0 0 480 480"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${from}"/><stop offset="1" stop-color="${to}"/></linearGradient></defs><rect width="480" height="480" fill="url(#g)"/><text x="240" y="230" text-anchor="middle" font-family="sans-serif" font-size="34" font-weight="700" fill="#102b55">Sample photo</text><text x="240" y="275" text-anchor="middle" font-family="sans-serif" font-size="22" fill="#102b55">${kind} · ${id}</text></svg>`;
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="480" height="480" viewBox="0 0 480 480"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${from}"/><stop offset="1" stop-color="${to}"/></linearGradient></defs><rect width="480" height="480" fill="url(#g)"/><text x="240" y="230" text-anchor="middle" font-family="sans-serif" font-size="34" font-weight="700" fill="#0f2747">Sample photo</text><text x="240" y="275" text-anchor="middle" font-family="sans-serif" font-size="22" fill="#0f2747">${kind} · ${id}</text></svg>`;
   return new Blob([svg], { type: "image/svg+xml" });
 }
 

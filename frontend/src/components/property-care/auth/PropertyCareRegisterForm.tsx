@@ -145,7 +145,7 @@ export function PropertyCareRegisterForm() {
           <span className="relative mt-1.5 block">
             <input {...field("password")} type={showPassword ? "text" : "password"} value={form.password} onChange={(event) => update("password", event.target.value)} autoComplete="new-password" maxLength={72} className={cn(pc.input, "mt-0 pr-12")} />
             <button type="button" onClick={() => setShowPassword((value) => !value)} aria-label={showPassword ? "Hide password" : "Show password"} aria-pressed={showPassword}
-              className="absolute right-2 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-xl text-[#5b6b82] hover:bg-[#f2f7fe]">
+              className="absolute right-2 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-xl text-[#64748b] hover:bg-[#f5f9ff]">
               {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
             </button>
           </span>
@@ -170,8 +170,8 @@ export function PropertyCareRegisterForm() {
         </label>
 
         <div>
-          <label className="flex cursor-pointer items-start gap-3 rounded-2xl bg-[#f6f9fd] p-3 text-sm text-[#36506f]">
-            <input {...field("terms")} type="checkbox" checked={form.terms} onChange={(event) => update("terms", event.target.checked)} className="mt-0.5 h-5 w-5 shrink-0 accent-[#0d57ad]" />
+          <label className="flex cursor-pointer items-start gap-3 rounded-2xl bg-[#f5f8fd] p-3 text-sm text-[#334155]">
+            <input {...field("terms")} type="checkbox" checked={form.terms} onChange={(event) => update("terms", event.target.checked)} className="mt-0.5 h-5 w-5 shrink-0 accent-[#1660d0]" />
             <span>I agree to Ghar Safar&apos;s terms of use and privacy policy, and to Ghar Safar sharing my address and phone with the technician assigned to my request.</span>
           </label>
           {errorText("terms")}
@@ -188,8 +188,8 @@ export function PropertyCareRegisterForm() {
           {submitting ? <><Loader2 className="h-4 w-4 animate-spin" /> Creating account…</> : <>Create account <ArrowRight className="h-4 w-4" /></>}
         </button>
       </form>
-      <p className="mt-6 text-center text-sm text-[#5b6b82]">
-        Already have an account? <Link href={loginHref} className="font-bold text-[#0d57ad] hover:underline">Sign in</Link>
+      <p className="mt-6 text-center text-sm text-[#64748b]">
+        Already have an account? <Link href={loginHref} className="font-bold text-[#1660d0] hover:underline">Sign in</Link>
       </p>
     </PropertyCareAuthLayout>
   );

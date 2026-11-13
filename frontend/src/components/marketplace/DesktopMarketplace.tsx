@@ -21,6 +21,7 @@ import { FeaturedAgencies, FeaturedAgents } from './FeaturedDirectory';
 import DualCTA from './DualCTA';
 import Navbar from './Navbar';
 import { PagedCarousel } from './PagedCarousel';
+import { useMediaQuery } from '@/hooks/use-media-query';
 
 function PropertyCategories() {
   const categories = [
@@ -272,8 +273,12 @@ export default function DesktopMarketplace() {
   const [properties, setProperties] = useState<MarketplaceProperty[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  // The landing page mounts every layout and hides the others with CSS; only the
+  // visible desktop layout needs this (large) listings request.
+  const isDesktop = useMediaQuery('(min-width: 1280px)');
 
   useEffect(() => {
+    if (!isDesktop) return;
     let active = true;
     fetchPublicProperties({ limit: 100, sortBy: 'featured' })
       .then((results) => {
@@ -293,7 +298,7 @@ export default function DesktopMarketplace() {
     return () => {
       active = false;
     };
-  }, []);
+  }, [isDesktop]);
 
   return (
     <main className="min-h-screen bg-slate-50 font-sans text-slate-900 dark:bg-slate-950 dark:text-slate-100">

@@ -22,7 +22,7 @@ export function AdminMaintenanceTabs() {
             aria-current={active ? "page" : undefined}
             className={cn(
               "inline-flex min-h-9 items-center whitespace-nowrap rounded-lg px-4 text-sm font-semibold transition",
-              active ? "bg-blue-600 text-white" : "text-slate-400 hover:text-white",
+              active ? "bg-emerald-600 text-white" : "text-slate-400 hover:text-white",
             )}
           >
             {tab.label}

@@ -46,7 +46,7 @@ export function OpsOverview() {
     stats?.needsReassignment ? { text: `${stats.needsReassignment} job(s) need a new technician`, href: "/care-ops/dispatch", tone: "text-amber-300" } : null,
     stats?.openComplaints ? { text: `${stats.openComplaints} open complaint(s) awaiting resolution`, href: "/care-ops/complaints", tone: "text-rose-300" } : null,
     stalePending ? { text: `${stalePending} request(s) pending review for more than 24 hours`, href: "/care-ops/requests?status=pending", tone: "text-amber-300" } : null,
-    stats?.awaitingAcceptance ? { text: `${stats.awaitingAcceptance} assignment(s) awaiting technician acceptance`, href: "/care-ops/requests?status=awaiting_technician_acceptance", tone: "text-sky-300" } : null,
+    stats?.awaitingAcceptance ? { text: `${stats.awaitingAcceptance} assignment(s) awaiting technician acceptance`, href: "/care-ops/requests?status=awaiting_technician_acceptance", tone: "text-care-300" } : null,
   ].filter(Boolean) as Array<{ text: string; href: string; tone: string }>;
 
   const error = overview.error || list.error;
@@ -67,12 +67,12 @@ export function OpsOverview() {
       <section aria-label="Key metrics" className="grid grid-cols-2 gap-3 md:grid-cols-4">
         <OpsStat label="Total requests" value={stats?.total ?? "–"} icon={<ClipboardList className="h-5 w-5" />} href="/care-ops/requests" />
         <OpsStat label="New requests" value={stats?.pending ?? "–"} hint="Awaiting review" icon={<Inbox className="h-5 w-5" />} tone="text-amber-300" href="/care-ops/requests?status=pending" />
-        <OpsStat label="Pending review" value={stats?.underReview ?? "–"} hint="Ready to dispatch" icon={<Search className="h-5 w-5" />} tone="text-sky-300" href="/care-ops/dispatch" />
+        <OpsStat label="Pending review" value={stats?.underReview ?? "–"} hint="Ready to dispatch" icon={<Search className="h-5 w-5" />} tone="text-care-300" href="/care-ops/dispatch" />
         <OpsStat label="Active jobs" value={stats ? (stats.inProgress ?? 0) + (stats.assigned ?? 0) + (stats.awaitingAcceptance ?? 0) : "–"} hint="Assigned → in progress" icon={<Hammer className="h-5 w-5" />} tone="text-violet-300" />
-        <OpsStat label="Technicians" value={overview.data ? `${overview.data.technicians.available}/${overview.data.technicians.active}` : "–"} hint="Available / active" icon={<HardHat className="h-5 w-5" />} tone="text-emerald-300" href="/care-ops/technicians" />
+        <OpsStat label="Technicians" value={overview.data ? `${overview.data.technicians.available}/${overview.data.technicians.active}` : "–"} hint="Available / active" icon={<HardHat className="h-5 w-5" />} tone="text-care-300" href="/care-ops/technicians" />
         <OpsStat label="Completed jobs" value={stats?.completed ?? "–"} icon={<CheckCircle2 className="h-5 w-5" />} tone="text-emerald-300" />
         <OpsStat label="Open complaints" value={stats?.openComplaints ?? "–"} icon={<MessageSquareWarning className="h-5 w-5" />} tone="text-rose-300" href="/care-ops/complaints" />
-        <OpsStat label="Recorded payments" value={payments.data ? formatMoney(recorded) : "–"} hint={payments.data?.truncated ? "Latest 20 completed jobs" : "Completed jobs"} icon={<Wallet className="h-5 w-5" />} tone="text-blue-300" href="/care-ops/payments" />
+        <OpsStat label="Recorded payments" value={payments.data ? formatMoney(recorded) : "–"} hint={payments.data?.truncated ? "Latest 20 completed jobs" : "Completed jobs"} icon={<Wallet className="h-5 w-5" />} tone="text-care-300" href="/care-ops/payments" />
       </section>
 
       {alerts.length > 0 && (
@@ -101,13 +101,13 @@ export function OpsOverview() {
       </div>
 
       <div className="mt-4 grid grid-cols-1 gap-4 xl:grid-cols-3">
-        <OpsPanel title="Recent requests" className="xl:col-span-2" action={<Link href="/care-ops/requests" className="text-xs font-bold text-blue-300 hover:underline">View all</Link>}>
+        <OpsPanel title="Recent requests" className="xl:col-span-2" action={<Link href="/care-ops/requests" className="text-xs font-bold text-care-300 hover:underline">View all</Link>}>
           {!items.length ? <p className="text-sm text-slate-500">No requests yet.</p> : (
             <ul className="divide-y divide-white/5">
               {items.slice(0, 6).map((item) => (
                 <li key={item.id}>
                   <Link href={`/care-ops/requests/${item.id}`} className="flex items-center gap-3 py-3 hover:opacity-90">
-                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-blue-500/10 text-blue-300"><ServiceIcon category={item.category} className="h-4 w-4" /></span>
+                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-care-500/10 text-care-300"><ServiceIcon category={item.category} className="h-4 w-4" /></span>
                     <span className="min-w-0 flex-1">
                       <span className="block truncate text-sm font-semibold text-white">{item.title}</span>
                       <span className="block truncate text-xs text-slate-500">{item.reference} · {item.area} · {formatDate(item.createdAt)}</span>
@@ -125,7 +125,7 @@ export function OpsOverview() {
               {upcoming.map((item) => (
                 <li key={item.id}>
                   <Link href={`/care-ops/requests/${item.id}`} className="flex items-start gap-3 rounded-xl bg-white/[0.03] p-3 hover:bg-white/[0.06]">
-                    <CalendarClock className="mt-0.5 h-4 w-4 shrink-0 text-blue-300" />
+                    <CalendarClock className="mt-0.5 h-4 w-4 shrink-0 text-care-300" />
                     <span className="min-w-0">
                       <span className="block text-sm font-semibold text-white">{formatDate(item.scheduledVisitAt, true)}</span>
                       <span className="block truncate text-xs text-slate-400">{item.title} · {item.technician?.name ?? "Unassigned"}</span>
@@ -138,7 +138,7 @@ export function OpsOverview() {
         </OpsPanel>
       </div>
 
-      <OpsPanel title="Technician activity" className="mt-4" action={<Link href="/care-ops/technicians" className="text-xs font-bold text-blue-300 hover:underline">Manage</Link>}>
+      <OpsPanel title="Technician activity" className="mt-4" action={<Link href="/care-ops/technicians" className="text-xs font-bold text-care-300 hover:underline">Manage</Link>}>
         {!technicians.data?.items.length ? <p className="text-sm text-slate-500">No active technicians.</p> : (
           <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
             {technicians.data.items.slice(0, 8).map((tech) => (

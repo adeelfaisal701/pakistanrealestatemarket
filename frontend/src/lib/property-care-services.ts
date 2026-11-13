@@ -44,7 +44,7 @@ export const PROPERTY_CARE_SERVICES: PropertyCareService[] = [
       "If possible, turn off the main valve for active leaks before the visit.",
       "Photos of the leak or fitting help the technician bring the right parts.",
     ],
-    accent: "bg-sky-50 text-sky-700",
+    accent: "bg-care-100 text-care-600",
   },
   {
     key: "electrical",
@@ -72,7 +72,7 @@ export const PROPERTY_CARE_SERVICES: PropertyCareService[] = [
       "Do not attempt repairs on live wiring — switch off the affected circuit if safe to do so.",
       "Note which rooms or appliances are affected.",
     ],
-    accent: "bg-amber-50 text-amber-700",
+    accent: "bg-care-100 text-care-600",
   },
   {
     key: "ac_repair",
@@ -100,7 +100,7 @@ export const PROPERTY_CARE_SERVICES: PropertyCareService[] = [
       "Share the AC brand, tonnage and model if you know it.",
       "Clear access to indoor and outdoor units speeds up the visit.",
     ],
-    accent: "bg-cyan-50 text-cyan-700",
+    accent: "bg-care-100 text-care-600",
   },
   {
     key: "general_handyman",
@@ -127,7 +127,7 @@ export const PROPERTY_CARE_SERVICES: PropertyCareService[] = [
     goodToKnow: [
       "List every small task in one request so they can be done in a single visit.",
     ],
-    accent: "bg-indigo-50 text-indigo-700",
+    accent: "bg-care-100 text-care-600",
   },
   {
     key: "painting",
@@ -155,7 +155,7 @@ export const PROPERTY_CARE_SERVICES: PropertyCareService[] = [
       "Larger jobs usually start with an inspection visit so the quotation is accurate.",
       "Share photos of each wall and any damp patches.",
     ],
-    accent: "bg-rose-50 text-rose-700",
+    accent: "bg-care-100 text-care-600",
   },
   {
     key: "carpentry",
@@ -182,7 +182,7 @@ export const PROPERTY_CARE_SERVICES: PropertyCareService[] = [
     goodToKnow: [
       "Measurements and photos help the technician bring matching hardware.",
     ],
-    accent: "bg-orange-50 text-orange-700",
+    accent: "bg-care-100 text-care-600",
   },
   {
     key: "water_tank_cleaning",
@@ -208,7 +208,7 @@ export const PROPERTY_CARE_SERVICES: PropertyCareService[] = [
       "Water supply is interrupted during cleaning — plan for a few hours without tank water.",
       "Mention tank size and location (roof or underground).",
     ],
-    accent: "bg-teal-50 text-teal-700",
+    accent: "bg-care-100 text-care-600",
   },
 ];
 

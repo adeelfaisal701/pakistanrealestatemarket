@@ -10,7 +10,7 @@ import type { TechnicianDetail } from "@/types/maintenance";
 import { ConfirmDialog, ErrorBanner, LoadingState, SectionCard, StatusBadge, SuccessBanner } from "@/components/maintenance/MaintenanceShared";
 import { AVAILABILITY_LABELS, splitList } from "./AdminTechnicianManager";
 
-const input = "min-h-10 w-full rounded-lg border border-slate-700 bg-slate-800 px-3 text-sm text-white outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30";
+const input = "min-h-10 w-full rounded-lg border border-slate-700 bg-slate-800 px-3 text-sm text-white outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/30";
 
 export function AdminTechnicianProfile({ id }: { id: string }) {
   const [technician, setTechnician] = useState<TechnicianDetail | null>(null);
@@ -143,7 +143,7 @@ export function AdminTechnicianProfile({ id }: { id: string }) {
       </section>
 
       <div className="grid grid-cols-1 gap-5 xl:grid-cols-[420px_minmax(0,1fr)]">
-        <SectionCard title="Profile" icon={<UserRound className="h-4 w-4 text-blue-300" />} dark>
+        <SectionCard title="Profile" icon={<UserRound className="h-4 w-4 text-emerald-300" />} dark>
           <form onSubmit={save} className="space-y-3">
             <label className="block text-xs font-semibold text-slate-400">Name<input required maxLength={100} value={form.name} onChange={(event) => setForm((current) => ({ ...current, name: event.target.value }))} className={cn(input, "mt-1")} /></label>
             <label className="block text-xs font-semibold text-slate-400">Phone<input required maxLength={20} value={form.phone} onChange={(event) => setForm((current) => ({ ...current, phone: event.target.value }))} className={cn(input, "mt-1")} /></label>
@@ -159,7 +159,7 @@ export function AdminTechnicianProfile({ id }: { id: string }) {
                 {MAINTENANCE_CATEGORIES.map((category) => {
                   const checked = form.categories.includes(category.key);
                   return (
-                    <label key={category.key} className={cn("inline-flex min-h-8 cursor-pointer items-center gap-2 rounded-lg border px-2.5 text-xs", checked ? "border-blue-500 bg-blue-950/50 text-white" : "border-slate-700 text-slate-300")}>
+                    <label key={category.key} className={cn("inline-flex min-h-8 cursor-pointer items-center gap-2 rounded-lg border px-2.5 text-xs", checked ? "border-emerald-500 bg-emerald-950/50 text-white" : "border-slate-700 text-slate-300")}>
                       <input type="checkbox" checked={checked} onChange={(event) => setForm((current) => ({ ...current, categories: event.target.checked ? [...current.categories, category.key] : current.categories.filter((key) => key !== category.key) }))} className="accent-blue-500" />
                       {category.label}
                     </label>
@@ -170,13 +170,13 @@ export function AdminTechnicianProfile({ id }: { id: string }) {
             <label className="block text-xs font-semibold text-slate-400">Skills (comma separated)<input value={form.skills} onChange={(event) => setForm((current) => ({ ...current, skills: event.target.value }))} className={cn(input, "mt-1")} /></label>
             <label className="block text-xs font-semibold text-slate-400">Service areas (comma separated)<input value={form.serviceAreas} onChange={(event) => setForm((current) => ({ ...current, serviceAreas: event.target.value }))} className={cn(input, "mt-1")} /></label>
             <label className="block text-xs font-semibold text-slate-400">Internal notes<textarea value={form.internalNotes} maxLength={2000} rows={3} onChange={(event) => setForm((current) => ({ ...current, internalNotes: event.target.value }))} className={cn(input, "mt-1 py-2")} /></label>
-            <button type="submit" disabled={saving} className="inline-flex min-h-10 items-center gap-2 rounded-lg bg-blue-600 px-4 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60">
+            <button type="submit" disabled={saving} className="inline-flex min-h-10 items-center gap-2 rounded-lg bg-emerald-600 px-4 text-sm font-semibold text-white hover:bg-emerald-700 disabled:opacity-60">
               {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}Save profile
             </button>
           </form>
         </SectionCard>
 
-        <SectionCard title="Job & acceptance history" icon={<History className="h-4 w-4 text-blue-300" />} dark>
+        <SectionCard title="Job & acceptance history" icon={<History className="h-4 w-4 text-emerald-300" />} dark>
           {technician.history.length ? (
             <div className="overflow-x-auto">
               <table className="w-full min-w-[640px] text-left text-sm">

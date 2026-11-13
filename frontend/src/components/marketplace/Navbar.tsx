@@ -57,7 +57,7 @@ export default function Navbar({ showSearch = false, showPostButton = true }: Na
                 <span className="text-xl sm:text-2xl xl:text-[26px] font-black tracking-tight text-slate-900 dark:text-white">
                   Ghar Safar
                 </span>
-                <span className="px-1.5 py-0.5 text-[9px] sm:text-[10px] font-bold uppercase tracking-wider bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-400 rounded-md border border-emerald-200 dark:border-emerald-800">
+                <span className="px-1.5 py-0.5 text-[9px] sm:text-[10px] font-bold uppercase tracking-wider bg-brand-100 text-brand-700 rounded-md border border-brand-200">
                   Lahore
                 </span>
               </div>
@@ -71,27 +71,27 @@ export default function Navbar({ showSearch = false, showPostButton = true }: Na
           <nav className="hidden xl:flex items-center gap-1 lg:gap-2">
             <Link
               href="/properties?purpose=Sale"
-              className="px-3.5 py-2 text-sm font-semibold text-slate-700 dark:text-slate-200 hover:text-emerald-600 dark:hover:text-emerald-400 rounded-lg hover:bg-emerald-50/60 dark:hover:bg-emerald-950/40 transition-colors"
+              className="px-3.5 py-2 text-sm font-semibold text-slate-600 hover:text-ink-700 rounded-lg hover:bg-slate-100/80 transition-colors"
             >
               Buy
             </Link>
             <Link
               href="/properties?purpose=Rent"
-              className="px-3.5 py-2 text-sm font-semibold text-slate-700 dark:text-slate-200 hover:text-emerald-600 dark:hover:text-emerald-400 rounded-lg hover:bg-emerald-50/60 dark:hover:bg-emerald-950/40 transition-colors"
+              className="px-3.5 py-2 text-sm font-semibold text-slate-600 hover:text-ink-700 rounded-lg hover:bg-slate-100/80 transition-colors"
             >
               Rent
             </Link>
             <Link
               href={showSearch ? "/#popular-locations" : "#popular-locations"}
-              className="px-3.5 py-2 text-sm font-semibold text-slate-700 dark:text-slate-200 hover:text-emerald-600 dark:hover:text-emerald-400 rounded-lg hover:bg-emerald-50/60 dark:hover:bg-emerald-950/40 transition-colors"
+              className="px-3.5 py-2 text-sm font-semibold text-slate-600 hover:text-ink-700 rounded-lg hover:bg-slate-100/80 transition-colors"
             >
               Popular Locations
             </Link>
             <Link
               href="/agent"
-              className="px-3.5 py-2 text-sm font-semibold text-slate-700 dark:text-slate-200 hover:text-emerald-600 dark:hover:text-emerald-400 rounded-lg hover:bg-emerald-50/60 dark:hover:bg-emerald-950/40 transition-colors flex items-center gap-1.5"
+              className="px-3.5 py-2 text-sm font-semibold text-slate-600 hover:text-ink-700 rounded-lg hover:bg-slate-100/80 transition-colors flex items-center gap-1.5"
             >
-              <ShieldCheck className="h-4 w-4 text-emerald-600 flex-shrink-0" />
+              <ShieldCheck className="h-4 w-4 text-brand-600 flex-shrink-0" />
               <span>Agent CRM</span>
             </Link>
           </nav>
@@ -113,7 +113,7 @@ export default function Navbar({ showSearch = false, showPostButton = true }: Na
               />
               <button
                 type="submit"
-                className="rounded-lg bg-blue-700 px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-blue-800"
+                className="rounded-lg bg-brand-600 px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-brand-700"
               >
                 Search
               </button>
@@ -132,7 +132,7 @@ export default function Navbar({ showSearch = false, showPostButton = true }: Na
             {showPostButton && (
               <Link
                 href="/agent/add-property"
-                className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-bold text-white bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 rounded-xl shadow-md shadow-emerald-600/20 hover:shadow-emerald-600/30 transition-all hover:-translate-y-0.5 active:translate-y-0"
+                className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-bold text-white bg-brand-600 hover:bg-brand-700 rounded-xl shadow-[0_6px_16px_-6px_rgba(0,143,104,0.55)] transition-colors"
               >
                 <PlusCircle className="h-4 w-4 flex-shrink-0" />
                 <span>Post Property Free</span>
@@ -145,7 +145,7 @@ export default function Navbar({ showSearch = false, showPostButton = true }: Na
             {showPostButton && (
               <Link
                 href="/agent/add-property"
-                className="inline-flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl shadow-sm min-h-[40px] flex-shrink-0"
+                className="inline-flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-bold text-white bg-brand-600 hover:bg-brand-700 rounded-xl shadow-sm min-h-[40px] flex-shrink-0"
               >
                 <PlusCircle className="h-3.5 w-3.5 flex-shrink-0" />
                 <span>Post Free</span>
@@ -180,7 +180,7 @@ export default function Navbar({ showSearch = false, showPostButton = true }: Na
                   aria-label="Search properties"
                   className="min-w-0 flex-1 bg-transparent px-2 py-2 text-sm text-slate-800 outline-none placeholder:text-slate-400 dark:text-slate-100"
                 />
-                <button type="submit" className="rounded-lg bg-blue-700 px-3 py-2 text-xs font-semibold text-white">
+                <button type="submit" className="rounded-lg bg-emerald-700 px-3 py-2 text-xs font-semibold text-white">
                   Search
                 </button>
               </form>
@@ -215,7 +215,7 @@ export default function Navbar({ showSearch = false, showPostButton = true }: Na
               className="flex items-center justify-between px-3.5 py-3 rounded-xl text-sm font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-50/70 dark:bg-emerald-950/40 min-h-[44px]"
             >
               <div className="flex items-center gap-2">
-                <ShieldCheck className="h-4 w-4 text-emerald-600 flex-shrink-0" />
+                <ShieldCheck className="h-4 w-4 text-brand-600 flex-shrink-0" />
                 <span>Agent CRM & Leads Pipeline</span>
               </div>
               <span className="text-[10px] font-bold px-2 py-0.5 bg-emerald-600 text-white rounded-full">

@@ -64,7 +64,7 @@ export function FeaturedAgents() {
   }, []);
 
   return (
-    <section aria-labelledby="featured-agents-heading" className="bg-white px-4 py-5 text-[#101D32] sm:px-6 md:bg-gradient-to-br md:from-emerald-950 md:via-slate-900 md:to-slate-950 md:py-8 md:text-white lg:px-8 lg:py-10">
+    <section aria-labelledby="featured-agents-heading" className="bg-white px-4 py-5 text-[#101D32] sm:px-6 md:bg-gradient-to-br md:from-ink-900 md:via-ink-950 md:to-ink-950 md:py-8 md:text-white lg:px-8 lg:py-10">
       <div className="mx-auto max-w-7xl">
         <div className="mb-3 flex items-end justify-between gap-2 md:mb-4 md:gap-4">
           <div>

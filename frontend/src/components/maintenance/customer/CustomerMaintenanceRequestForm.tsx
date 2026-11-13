@@ -243,19 +243,19 @@ export function CustomerMaintenanceRequestForm() {
           <span className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 ring-8 ring-emerald-50">
             <CheckCircle2 className="h-10 w-10" />
           </span>
-          <h1 className="mt-6 text-[26px] font-black tracking-[-0.03em] text-[#102b55]">Request submitted</h1>
-          <p className="mt-2 text-sm leading-6 text-[#5b6b82]">
+          <h1 className="mt-6 text-[26px] font-black tracking-[-0.03em] text-[#0f2747]">Request submitted</h1>
+          <p className="mt-2 text-sm leading-6 text-[#64748b]">
             Our operations team will review your request and assign a verified Ghar Safar technician. We&apos;ll update you at every step.
           </p>
           <div className={cn(pc.card, "mt-6 p-5")}>
-            <p className="text-[11px] font-extrabold uppercase tracking-[0.16em] text-[#1768c4]">Your reference ID</p>
-            <p className="mt-2 font-mono text-2xl font-bold tracking-wider text-[#102b55]">{created.request.reference}</p>
+            <p className="text-[11px] font-extrabold uppercase tracking-[0.16em] text-[#1660d0]">Your reference ID</p>
+            <p className="mt-2 font-mono text-2xl font-bold tracking-wider text-[#0f2747]">{created.request.reference}</p>
             <button
               type="button"
               onClick={() => {
                 void navigator.clipboard?.writeText(created.request.reference).then(() => setCopied(true)).catch(() => undefined);
               }}
-              className="mt-3 inline-flex min-h-9 items-center gap-1.5 rounded-full bg-[#edf5ff] px-3 text-xs font-bold text-[#0d57ad]"
+              className="mt-3 inline-flex min-h-9 items-center gap-1.5 rounded-full bg-[#eaf2fe] px-3 text-xs font-bold text-[#1660d0]"
             >
               {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />} {copied ? "Copied" : "Copy reference"}
             </button>
@@ -283,8 +283,8 @@ export function CustomerMaintenanceRequestForm() {
     <PropertyCareSurface>
       <div ref={topRef} className="mx-auto max-w-3xl scroll-mt-20">
         <PcBackLink href="/care/requests" label="My requests" />
-        <h1 className="mt-2 text-[26px] font-black tracking-[-0.03em] text-[#102b55] sm:text-3xl">Request a service</h1>
-        <p className="mt-1 text-sm text-[#5b6b82]">Takes about two minutes. You never have to search for a technician.</p>
+        <h1 className="mt-2 text-[26px] font-black tracking-[-0.03em] text-[#0f2747] sm:text-3xl">Request a service</h1>
+        <p className="mt-1 text-sm text-[#64748b]">Takes about two minutes. You never have to search for a technician.</p>
 
         <ol aria-label="Request steps" className="mt-5 grid grid-cols-4 gap-1.5">
           {STEPS.map((item, index) => {
@@ -298,8 +298,8 @@ export function CustomerMaintenanceRequestForm() {
                   onClick={() => index < step && goTo(index)}
                   className="w-full text-left disabled:cursor-default"
                 >
-                  <span className={cn("block h-1.5 rounded-full transition", done || current ? "bg-[#0d57ad]" : "bg-[#dbe5f2]")} />
-                  <span className={cn("mt-2 block truncate text-[11px] font-bold sm:text-xs", current ? "text-[#0d57ad]" : done ? "text-[#36506f]" : "text-[#9aa9bd]")}>
+                  <span className={cn("block h-1.5 rounded-full transition", done || current ? "bg-[#1660d0]" : "bg-[#dbe4f0]")} />
+                  <span className={cn("mt-2 block truncate text-[11px] font-bold sm:text-xs", current ? "text-[#1660d0]" : done ? "text-[#334155]" : "text-[#94a3b8]")}>
                     {index + 1}. {item.label}
                   </span>
                 </button>
@@ -313,7 +313,7 @@ export function CustomerMaintenanceRequestForm() {
 
           {step === 0 && (
             <fieldset>
-              <legend className="text-lg font-extrabold text-[#102b55]">What do you need help with?</legend>
+              <legend className="text-lg font-extrabold text-[#0f2747]">What do you need help with?</legend>
               <div id="mr-category" tabIndex={-1} role="radiogroup" aria-label="Service category" className="mt-3 grid grid-cols-1 gap-2.5 min-[420px]:grid-cols-2">
                 {PROPERTY_CARE_SERVICES.map((item) => {
                   const selected = form.category === item.key;
@@ -321,8 +321,8 @@ export function CustomerMaintenanceRequestForm() {
                     <label
                       key={item.key}
                       className={cn(
-                        "relative flex cursor-pointer items-center gap-3 rounded-3xl border-2 bg-white p-4 transition focus-within:ring-4 focus-within:ring-[#0d57ad]/15",
-                        selected ? "border-[#0d57ad] bg-[#f2f7fe]" : "border-transparent shadow-[0_2px_10px_rgba(16,43,85,0.06)] hover:border-[#cfdcee]",
+                        "relative flex cursor-pointer items-center gap-3 rounded-3xl border-2 bg-white p-4 transition focus-within:ring-4 focus-within:ring-[#1660d0]/15",
+                        selected ? "border-[#1660d0] bg-[#f5f9ff]" : "border-transparent shadow-[0_2px_10px_rgba(15,39,71,0.06)] hover:border-[#d2ddec]",
                       )}
                     >
                       <input type="radio" name="category" value={item.key} checked={selected} onChange={() => update("category", item.key)} className="sr-only" />
@@ -330,10 +330,10 @@ export function CustomerMaintenanceRequestForm() {
                         <ServiceIcon category={item.key} className="h-6 w-6" />
                       </span>
                       <span className="min-w-0 flex-1">
-                        <span className="block text-[15px] font-extrabold text-[#102b55]">{item.title}</span>
-                        <span className="block text-xs leading-5 text-[#5b6b82]">{item.tagline}</span>
+                        <span className="block text-[15px] font-extrabold text-[#0f2747]">{item.title}</span>
+                        <span className="block text-xs leading-5 text-[#64748b]">{item.tagline}</span>
                       </span>
-                      <span className={cn("flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2", selected ? "border-[#0d57ad] bg-[#0d57ad] text-white" : "border-[#cfdcee]")}>
+                      <span className={cn("flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2", selected ? "border-[#1660d0] bg-[#1660d0] text-white" : "border-[#d2ddec]")}>
                         {selected && <Check className="h-3.5 w-3.5" />}
                       </span>
                     </label>
@@ -347,10 +347,10 @@ export function CustomerMaintenanceRequestForm() {
           {step === 1 && (
             <div className="space-y-5">
               {service && (
-                <div className="flex items-center gap-3 rounded-2xl bg-white p-3 shadow-[0_2px_10px_rgba(16,43,85,0.05)]">
+                <div className="flex items-center gap-3 rounded-2xl bg-white p-3 shadow-[0_2px_10px_rgba(15,39,71,0.05)]">
                   <span className={cn("flex h-10 w-10 items-center justify-center rounded-xl", service.accent)}><ServiceIcon category={service.key} className="h-5 w-5" /></span>
-                  <span className="flex-1 text-sm font-bold text-[#102b55]">{service.title}</span>
-                  <button type="button" onClick={() => goTo(0)} className="text-xs font-bold text-[#0d57ad]">Change</button>
+                  <span className="flex-1 text-sm font-bold text-[#0f2747]">{service.title}</span>
+                  <button type="button" onClick={() => goTo(0)} className="text-xs font-bold text-[#1660d0]">Change</button>
                 </div>
               )}
               <div className={cn(pc.card, "space-y-4 p-4 sm:p-5")}>
@@ -372,10 +372,10 @@ export function CustomerMaintenanceRequestForm() {
 
               <div className={cn(pc.card, "p-4 sm:p-5")}>
                 <div className="flex items-baseline justify-between gap-2">
-                  <p className="text-[15px] font-extrabold text-[#102b55]">Photos of the problem</p>
-                  <span className="text-xs font-semibold text-[#6b7a90]">{files.length}/{MAX_PROBLEM_IMAGES} · optional</span>
+                  <p className="text-[15px] font-extrabold text-[#0f2747]">Photos of the problem</p>
+                  <span className="text-xs font-semibold text-[#7a8594]">{files.length}/{MAX_PROBLEM_IMAGES} · optional</span>
                 </div>
-                <p className="mt-1 text-xs text-[#6b7a90]">Clear photos help us send the right technician with the right parts.</p>
+                <p className="mt-1 text-xs text-[#7a8594]">Clear photos help us send the right technician with the right parts.</p>
                 <div className="mt-3 grid grid-cols-3 gap-2 sm:grid-cols-6">
                   {previews.map((preview, index) => (
                     <div key={preview.url} className="relative">
@@ -387,7 +387,7 @@ export function CustomerMaintenanceRequestForm() {
                     </div>
                   ))}
                   {files.length < MAX_PROBLEM_IMAGES && (
-                    <label htmlFor="mr-photos" className="flex aspect-square cursor-pointer flex-col items-center justify-center gap-1 rounded-2xl border-2 border-dashed border-[#bcd3ef] bg-[#f6f9fd] text-[#0d57ad] transition hover:bg-[#edf5ff]">
+                    <label htmlFor="mr-photos" className="flex aspect-square cursor-pointer flex-col items-center justify-center gap-1 rounded-2xl border-2 border-dashed border-[#9fc3f5] bg-[#f5f8fd] text-[#1660d0] transition hover:bg-[#eaf2fe]">
                       <Camera className="h-6 w-6" />
                       <span className="text-[11px] font-bold">Add photo</span>
                     </label>
@@ -403,12 +403,12 @@ export function CustomerMaintenanceRequestForm() {
           {step === 2 && (
             <div className="space-y-5">
               <div className={cn(pc.card, "space-y-4 p-4 sm:p-5")}>
-                <p className="flex items-center gap-2 text-[15px] font-extrabold text-[#102b55]"><MapPin className="h-4 w-4 text-[#0d57ad]" /> Property</p>
+                <p className="flex items-center gap-2 text-[15px] font-extrabold text-[#0f2747]"><MapPin className="h-4 w-4 text-[#1660d0]" /> Property</p>
                 <fieldset>
                   <legend className={pc.label}>Property type</legend>
                   <div id="mr-propertyType" className="mt-2 flex flex-wrap gap-2">
                     {PROPERTY_TYPES.map((type) => (
-                      <label key={type.key} className={cn("inline-flex min-h-10 cursor-pointer items-center rounded-full border px-3.5 text-sm font-semibold transition focus-within:ring-2 focus-within:ring-[#0d57ad]", form.propertyType === type.key ? "border-[#0d57ad] bg-[#0d57ad] text-white" : "border-[#d5e0ee] bg-white text-[#36506f]")}>
+                      <label key={type.key} className={cn("inline-flex min-h-10 cursor-pointer items-center rounded-full border px-3.5 text-sm font-semibold transition focus-within:ring-2 focus-within:ring-[#1660d0]", form.propertyType === type.key ? "border-[#1660d0] bg-[#1660d0] text-white" : "border-[#d4deeb] bg-white text-[#334155]")}>
                         <input type="radio" name="propertyType" value={type.key} checked={form.propertyType === type.key} onChange={() => update("propertyType", type.key)} className="sr-only" />
                         {type.label}
                       </label>
@@ -433,14 +433,14 @@ export function CustomerMaintenanceRequestForm() {
                     {errorText("city")}
                   </label>
                 </div>
-                <p className="flex items-start gap-2 rounded-2xl bg-[#f2f7fe] p-3 text-xs leading-5 text-[#36506f]">
-                  <Lock className="mt-0.5 h-4 w-4 shrink-0 text-[#0d57ad]" />
+                <p className="flex items-start gap-2 rounded-2xl bg-[#f5f9ff] p-3 text-xs leading-5 text-[#334155]">
+                  <Lock className="mt-0.5 h-4 w-4 shrink-0 text-[#1660d0]" />
                   Your exact address and phone are shared only with the technician Ghar Safar assigns, after they accept the job.
                 </p>
               </div>
 
               <div className={cn(pc.card, "space-y-4 p-4 sm:p-5")}>
-                <p className="flex items-center gap-2 text-[15px] font-extrabold text-[#102b55]"><CalendarDays className="h-4 w-4 text-[#0d57ad]" /> Preferred visit</p>
+                <p className="flex items-center gap-2 text-[15px] font-extrabold text-[#0f2747]"><CalendarDays className="h-4 w-4 text-[#1660d0]" /> Preferred visit</p>
                 <label className={pc.label}>
                   Date <span className="font-normal text-[#94a3b8]">(optional)</span>
                   <input id="mr-preferredVisitDate" type="date" min={todayInput()} value={form.preferredVisitDate} onChange={(event) => update("preferredVisitDate", event.target.value)} className={pc.input} {...invalid("preferredVisitDate")} />
@@ -450,7 +450,7 @@ export function CustomerMaintenanceRequestForm() {
                   <legend className={pc.label}>Time of day</legend>
                   <div className="mt-2 grid grid-cols-2 gap-2">
                     {TIME_SLOTS.map((slot) => (
-                      <label key={slot.key} className={cn("flex min-h-12 cursor-pointer items-center rounded-2xl border px-3 text-[13px] font-semibold transition focus-within:ring-2 focus-within:ring-[#0d57ad]", form.preferredTimeSlot === slot.key ? "border-[#0d57ad] bg-[#f2f7fe] text-[#0d57ad]" : "border-[#d5e0ee] bg-white text-[#36506f]")}>
+                      <label key={slot.key} className={cn("flex min-h-12 cursor-pointer items-center rounded-2xl border px-3 text-[13px] font-semibold transition focus-within:ring-2 focus-within:ring-[#1660d0]", form.preferredTimeSlot === slot.key ? "border-[#1660d0] bg-[#f5f9ff] text-[#1660d0]" : "border-[#d4deeb] bg-white text-[#334155]")}>
                         <input type="radio" name="preferredTimeSlot" value={slot.key} checked={form.preferredTimeSlot === slot.key} onChange={() => update("preferredTimeSlot", slot.key)} className="sr-only" />
                         {slot.label}
                       </label>
@@ -460,7 +460,7 @@ export function CustomerMaintenanceRequestForm() {
               </div>
 
               <div className={cn(pc.card, "space-y-4 p-4 sm:p-5")}>
-                <p className="flex items-center gap-2 text-[15px] font-extrabold text-[#102b55]"><UserRound className="h-4 w-4 text-[#0d57ad]" /> Contact for the visit</p>
+                <p className="flex items-center gap-2 text-[15px] font-extrabold text-[#0f2747]"><UserRound className="h-4 w-4 text-[#1660d0]" /> Contact for the visit</p>
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <label className={pc.label}>
                     Name
@@ -484,30 +484,30 @@ export function CustomerMaintenanceRequestForm() {
 
           {step === 3 && (
             <div className="space-y-4">
-              <p className="text-lg font-extrabold text-[#102b55]">Review your request</p>
+              <p className="text-lg font-extrabold text-[#0f2747]">Review your request</p>
               {[
-                { title: "Service", stepIndex: 0, content: service ? <span className="flex items-center gap-2"><ServiceIcon category={service.key} className="h-4 w-4 text-[#0d57ad]" />{service.title}</span> : "—" },
-                { title: "Problem", stepIndex: 1, content: <><span className="block font-bold">{form.title}</span><span className="mt-1 block whitespace-pre-line text-[#5b6b82]">{form.description}</span><span className="mt-1 block text-xs text-[#6b7a90]">{files.length} photo(s) attached</span></> },
+                { title: "Service", stepIndex: 0, content: service ? <span className="flex items-center gap-2"><ServiceIcon category={service.key} className="h-4 w-4 text-[#1660d0]" />{service.title}</span> : "—" },
+                { title: "Problem", stepIndex: 1, content: <><span className="block font-bold">{form.title}</span><span className="mt-1 block whitespace-pre-line text-[#64748b]">{form.description}</span><span className="mt-1 block text-xs text-[#7a8594]">{files.length} photo(s) attached</span></> },
                 { title: "Location", stepIndex: 2, content: <>{propertyLabel} · {form.line}, {form.area}, {form.city}</> },
                 { title: "Visit", stepIndex: 2, content: <>{form.preferredVisitDate || "Flexible date"} · {slotLabel}</> },
-                { title: "Contact", stepIndex: 2, content: <span className="flex items-center gap-2"><Phone className="h-3.5 w-3.5 text-[#0d57ad]" />{form.contactName} · {form.contactPhone}</span> },
-                ...(form.instructions.trim() ? [{ title: "Instructions", stepIndex: 2, content: <span className="whitespace-pre-line text-[#5b6b82]">{form.instructions}</span> }] : []),
+                { title: "Contact", stepIndex: 2, content: <span className="flex items-center gap-2"><Phone className="h-3.5 w-3.5 text-[#1660d0]" />{form.contactName} · {form.contactPhone}</span> },
+                ...(form.instructions.trim() ? [{ title: "Instructions", stepIndex: 2, content: <span className="whitespace-pre-line text-[#64748b]">{form.instructions}</span> }] : []),
               ].map((row) => (
                 <div key={row.title} className={cn(pc.card, "flex items-start justify-between gap-3 p-4")}>
-                  <div className="min-w-0 text-sm text-[#102b55]">
-                    <p className="mb-1 text-[11px] font-extrabold uppercase tracking-[0.14em] text-[#1768c4]">{row.title}</p>
+                  <div className="min-w-0 text-sm text-[#0f2747]">
+                    <p className="mb-1 text-[11px] font-extrabold uppercase tracking-[0.14em] text-[#1660d0]">{row.title}</p>
                     {row.content}
                   </div>
-                  <button type="button" onClick={() => goTo(row.stepIndex)} className="shrink-0 text-xs font-bold text-[#0d57ad]">Edit</button>
+                  <button type="button" onClick={() => goTo(row.stepIndex)} className="shrink-0 text-xs font-bold text-[#1660d0]">Edit</button>
                 </div>
               ))}
-              <p className="text-xs leading-5 text-[#6b7a90]">
+              <p className="text-xs leading-5 text-[#7a8594]">
                 By submitting, you agree that Ghar Safar may share your address and phone with the assigned technician once they accept the job. Pricing is always quoted for your approval first.
               </p>
             </div>
           )}
 
-          <div className="fixed inset-x-0 bottom-[calc(4rem+env(safe-area-inset-bottom))] z-30 border-t border-[#e3ebf5] bg-white/95 px-4 py-3 backdrop-blur sm:static sm:border-0 sm:bg-transparent sm:p-0">
+          <div className="fixed inset-x-0 bottom-[calc(4rem+env(safe-area-inset-bottom))] z-30 border-t border-[#e2e9f3] bg-white/95 px-4 py-3 backdrop-blur sm:static sm:border-0 sm:bg-transparent sm:p-0">
             <div className="mx-auto flex max-w-3xl gap-2.5 sm:justify-end">
               {step > 0 ? (
                 <button type="button" onClick={() => goTo(step - 1)} className={cn(pc.secondaryBtn, "flex-1 sm:flex-none")}>

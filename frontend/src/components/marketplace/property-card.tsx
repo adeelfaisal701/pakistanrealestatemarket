@@ -67,7 +67,7 @@ export function PropertyCard({ property }: PropertyCardProps) {
         )}
         {property.isFeatured && (
           <div className="absolute left-2.5 top-2.5 flex gap-1.5 max-sm:left-1.5 max-sm:top-1.5">
-            <Badge variant="warning" className="font-bold text-[10px] sm:text-xs max-sm:px-1.5 max-sm:py-0 max-sm:text-[9px]">
+            <Badge variant="warning" className="bg-gold-600 font-bold tracking-[0.08em] text-white shadow-sm text-[10px] sm:text-xs max-sm:px-1.5 max-sm:py-0 max-sm:text-[9px]">
               FEATURED
             </Badge>
           </div>

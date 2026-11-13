@@ -82,7 +82,7 @@ export function LoadingState({ label, dark = false }: { label: string; dark?: bo
       role="status"
       className={cn(
         "flex items-center justify-center gap-2 rounded-2xl border p-10 text-center text-sm",
-        dark ? "border-slate-800 bg-slate-900 text-slate-400" : "border-[#e3ebf5] bg-white text-slate-500",
+        dark ? "border-slate-800 bg-slate-900 text-slate-400" : "border-[#e2e9f3] bg-white text-slate-500",
       )}
     >
       <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
@@ -108,11 +108,11 @@ export function EmptyState({
     <div
       className={cn(
         "rounded-2xl border border-dashed p-8 text-center",
-        dark ? "border-slate-700 bg-slate-900/60" : "border-[#cfdcee] bg-white",
+        dark ? "border-slate-700 bg-slate-900/60" : "border-[#d2ddec] bg-white",
       )}
     >
-      {icon && <div className={cn("mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-full", dark ? "bg-slate-800 text-slate-300" : "bg-blue-50 text-blue-700")}>{icon}</div>}
-      <h3 className={cn("text-sm font-semibold", dark ? "text-white" : "text-[#102b55]")}>{title}</h3>
+      {icon && <div className={cn("mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-full", dark ? "bg-slate-800 text-slate-300" : "bg-care-50 text-care-700")}>{icon}</div>}
+      <h3 className={cn("text-sm font-semibold", dark ? "text-white" : "text-[#0f2747]")}>{title}</h3>
       {description && <p className={cn("mx-auto mt-1 max-w-md text-sm", dark ? "text-slate-400" : "text-slate-500")}>{description}</p>}
       {action && <div className="mt-4">{action}</div>}
     </div>
@@ -186,7 +186,7 @@ export function ImageGallery({
             <button
               type="button"
               onClick={() => setPreview(image)}
-              className="block w-full overflow-hidden rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+              className="block w-full overflow-hidden rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-care-500"
               aria-label={`Open ${kindLabel[image.kind].toLowerCase()} photo`}
             >
               <SecureImage src={image.url} alt={`${kindLabel[image.kind]} photo`} className="aspect-square w-full" />
@@ -248,7 +248,7 @@ export function Modal({
         className={cn(
           "relative max-h-[92vh] w-full overflow-y-auto rounded-t-2xl border p-5 shadow-2xl sm:rounded-2xl",
           wide ? "sm:max-w-3xl" : "sm:max-w-lg",
-          dark ? "border-slate-700 bg-slate-900 text-slate-100" : "border-[#e3ebf5] bg-white text-slate-900",
+          dark ? "border-slate-700 bg-slate-900 text-slate-100" : "border-[#e2e9f3] bg-white text-slate-900",
         )}
       >
         <div className="mb-4 flex items-start justify-between gap-3">
@@ -306,7 +306,7 @@ export function ConfirmDialog({
         }}
         className="space-y-4"
       >
-        <p className={cn("text-sm", dark ? "text-slate-300" : "text-[#5b6b82]")}>{description}</p>
+        <p className={cn("text-sm", dark ? "text-slate-300" : "text-[#64748b]")}>{description}</p>
         {reasonLabel && (
           <label htmlFor={reasonId} className="block text-sm font-medium">
             {reasonLabel}
@@ -320,8 +320,8 @@ export function ConfirmDialog({
               required={reasonRequired}
               aria-invalid={invalid}
               className={cn(
-                "mt-1.5 w-full rounded-xl border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500",
-                dark ? "border-slate-700 bg-slate-800 text-white" : "border-[#cfdcee] bg-white",
+                "mt-1.5 w-full rounded-xl border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-care-500",
+                dark ? "border-slate-700 bg-slate-800 text-white" : "border-[#d2ddec] bg-white",
               )}
             />
             {reasonRequired && reasonMinLength > 1 && (
@@ -337,7 +337,7 @@ export function ConfirmDialog({
             disabled={busy}
             className={cn(
               "min-h-10 rounded-xl border px-4 text-sm font-semibold",
-              dark ? "border-slate-700 text-slate-200 hover:bg-slate-800" : "border-[#cfdcee] text-[#0d57ad] hover:bg-[#f2f7fe]",
+              dark ? "border-slate-700 text-slate-200 hover:bg-slate-800" : "border-[#d2ddec] text-[#1660d0] hover:bg-[#f5f9ff]",
             )}
           >
             Go back
@@ -347,7 +347,7 @@ export function ConfirmDialog({
             disabled={invalid || busy}
             className={cn(
               "inline-flex min-h-10 items-center justify-center gap-2 rounded-xl px-4 text-sm font-semibold text-white disabled:opacity-50",
-              tone === "danger" ? "bg-rose-600 hover:bg-rose-700" : "bg-[#0d57ad] hover:bg-[#0a4890]",
+              tone === "danger" ? "bg-rose-600 hover:bg-rose-700" : "bg-[#1660d0] hover:bg-[#114fb0]",
             )}
           >
             {busy && <Loader2 className="h-4 w-4 animate-spin" />}
@@ -378,13 +378,13 @@ export function Timeline({
           <span
             className={cn(
               "absolute -left-[26px] top-1 h-3 w-3 rounded-full ring-4",
-              event.toStatus === "completed" ? "bg-emerald-500" : event.internal ? "bg-amber-500" : "bg-blue-600",
+              event.toStatus === "completed" ? "bg-emerald-500" : event.internal ? "bg-amber-500" : "bg-care-600",
               dark ? "ring-slate-900" : "ring-white",
             )}
             aria-hidden="true"
           />
           <div className="flex flex-wrap items-center gap-2">
-            <p className={cn("text-sm font-semibold", dark ? "text-white" : "text-[#102b55]")}>
+            <p className={cn("text-sm font-semibold", dark ? "text-white" : "text-[#0f2747]")}>
               {event.toStatus && event.event === "status_changed"
                 ? <>Moved to <StatusBadge status={event.toStatus} dark={dark} ops={showInternal} className="ml-1 align-middle" /></>
                 : eventLabel(event.event)}
@@ -397,7 +397,7 @@ export function Timeline({
             {actor[event.actorRole] ?? event.actorRole} · {formatDate(event.at, true)}
           </p>
           {event.note && (
-            <p className={cn("mt-1 whitespace-pre-line text-sm", dark ? "text-slate-300" : "text-[#5b6b82]")}>{event.note}</p>
+            <p className={cn("mt-1 whitespace-pre-line text-sm", dark ? "text-slate-300" : "text-[#64748b]")}>{event.note}</p>
           )}
         </li>
       ))}
@@ -457,16 +457,16 @@ export function NotificationsPanel({ dark = false, limit = 8 }: { dark?: boolean
       aria-labelledby="maintenance-notifications-heading"
       className={cn(
         "rounded-3xl border p-4",
-        dark ? "border-slate-800 bg-slate-900" : "border-[#e3ebf5] bg-white",
+        dark ? "border-slate-800 bg-slate-900" : "border-[#e2e9f3] bg-white",
       )}
     >
       <header className="mb-3 flex items-center justify-between gap-2">
-        <h2 id="maintenance-notifications-heading" className={cn("flex items-center gap-2 text-sm font-bold", dark ? "text-white" : "text-[#102b55]")}>
+        <h2 id="maintenance-notifications-heading" className={cn("flex items-center gap-2 text-sm font-bold", dark ? "text-white" : "text-[#0f2747]")}>
           <Bell className="h-4 w-4" aria-hidden="true" /> Updates
           {unread > 0 && <span className="rounded-full bg-rose-600 px-2 py-0.5 text-[10px] text-white">{unread} new</span>}
         </h2>
         {unread > 0 && (
-          <button type="button" onClick={() => void markAll()} className="text-xs font-semibold text-blue-500 hover:underline">
+          <button type="button" onClick={() => void markAll()} className="text-xs font-semibold text-care-500 hover:underline">
             Mark all read
           </button>
         )}
@@ -484,19 +484,19 @@ export function NotificationsPanel({ dark = false, limit = 8 }: { dark?: boolean
               key={item.id}
               className={cn(
                 "rounded-xl px-3 py-2 text-sm",
-                item.readAt ? "opacity-70" : dark ? "bg-blue-950/40" : "bg-blue-50",
+                item.readAt ? "opacity-70" : dark ? "bg-care-950/40" : "bg-care-50",
               )}
             >
               <div className="flex items-start justify-between gap-2">
                 <div className="min-w-0">
                   {item.link ? (
-                    <Link href={item.link} onClick={() => !item.readAt && void markOne(item.id)} className={cn("font-semibold hover:underline", dark ? "text-white" : "text-[#102b55]")}>
+                    <Link href={item.link} onClick={() => !item.readAt && void markOne(item.id)} className={cn("font-semibold hover:underline", dark ? "text-white" : "text-[#0f2747]")}>
                       {item.title}
                     </Link>
                   ) : (
-                    <p className={cn("font-semibold", dark ? "text-white" : "text-[#102b55]")}>{item.title}</p>
+                    <p className={cn("font-semibold", dark ? "text-white" : "text-[#0f2747]")}>{item.title}</p>
                   )}
-                  <p className={cn("text-xs", dark ? "text-slate-400" : "text-[#5b6b82]")}>{item.message}</p>
+                  <p className={cn("text-xs", dark ? "text-slate-400" : "text-[#64748b]")}>{item.message}</p>
                   <p className="mt-0.5 text-[11px] text-slate-500">{formatDate(item.createdAt, true)}</p>
                 </div>
                 {!item.readAt && (
@@ -535,12 +535,12 @@ export function SectionCard({
       id={id}
       className={cn(
         "scroll-mt-28 rounded-3xl border p-4 sm:p-5",
-        dark ? "border-slate-800 bg-slate-900" : "border-[#e3ebf5] bg-white",
+        dark ? "border-slate-800 bg-slate-900" : "border-[#e2e9f3] bg-white",
         className,
       )}
     >
       <header className="mb-3 flex flex-wrap items-center justify-between gap-2">
-        <h2 className={cn("flex items-center gap-2 text-base font-bold", dark ? "text-white" : "text-[#102b55]")}>
+        <h2 className={cn("flex items-center gap-2 text-base font-bold", dark ? "text-white" : "text-[#0f2747]")}>
           {icon}
           {title}
         </h2>
@@ -573,7 +573,7 @@ export function FileUploadField({
       htmlFor={id}
       className={cn(
         "flex min-h-24 cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed px-4 py-4 text-center text-sm transition",
-        disabled ? "cursor-not-allowed opacity-50" : "hover:border-blue-500",
+        disabled ? "cursor-not-allowed opacity-50" : "hover:border-care-500",
         dark ? "border-slate-700 text-slate-300" : "border-slate-300 text-slate-600",
       )}
     >

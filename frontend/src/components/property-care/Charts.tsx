@@ -7,7 +7,7 @@
  */
 import { cn } from "@/lib/utils";
 
-export const CHART_COLORS = ["#3b82f6", "#22c55e", "#f59e0b", "#a855f7", "#06b6d4", "#ef4444", "#64748b", "#ec4899"];
+export const CHART_COLORS = ["#1660d0", "#22c55e", "#f59e0b", "#a855f7", "#06b6d4", "#ef4444", "#64748b", "#ec4899"];
 
 export function BarChart({
   data,
@@ -31,12 +31,12 @@ export function BarChart({
       <div aria-hidden="true" className="flex items-end gap-1.5 sm:gap-2" style={{ height }}>
         {data.map((item) => (
           <div key={item.label} className="flex h-full min-w-0 flex-1 flex-col items-center justify-end gap-1">
-            <span className={cn("text-[10px] font-bold tabular-nums", dark ? "text-slate-300" : "text-[#36506f]")}>{item.value}</span>
+            <span className={cn("text-[10px] font-bold tabular-nums", dark ? "text-slate-300" : "text-[#334155]")}>{item.value}</span>
             <div
-              className="w-full max-w-[38px] rounded-t-lg bg-gradient-to-t from-[#1d4ed8] to-[#60a5fa] transition-all"
+              className="w-full max-w-[38px] rounded-t-lg bg-gradient-to-t from-[#114fb0] to-[#5b9bef] transition-all"
               style={{ height: `${Math.max(3, (item.value / max) * (height - 36))}px` }}
             />
-            <span className={cn("w-full truncate text-center text-[10px] font-semibold", dark ? "text-slate-500" : "text-[#6b7a90]")}>{item.label}</span>
+            <span className={cn("w-full truncate text-center text-[10px] font-semibold", dark ? "text-slate-500" : "text-[#7a8594]")}>{item.label}</span>
           </div>
         ))}
       </div>
@@ -65,7 +65,7 @@ export function DonutChart({
         {label}: {data.map((item) => `${item.label} ${item.value}`).join(", ")}
       </figcaption>
       <svg viewBox="0 0 120 120" className="h-36 w-36 shrink-0 -rotate-90" aria-hidden="true">
-        <circle cx="60" cy="60" r={radius} fill="none" strokeWidth="16" className={dark ? "stroke-slate-800" : "stroke-[#e6eef8]"} />
+        <circle cx="60" cy="60" r={radius} fill="none" strokeWidth="16" className={dark ? "stroke-slate-800" : "stroke-[#e5ebf4]"} />
         {total > 0 &&
           data.map((item, index) => {
             const length = (item.value / total) * circumference;
@@ -85,7 +85,7 @@ export function DonutChart({
             offset += length;
             return segment;
           })}
-        <text x="60" y="60" textAnchor="middle" dominantBaseline="central" transform="rotate(90 60 60)" className={cn("text-[20px] font-black", dark ? "fill-white" : "fill-[#102b55]")}>
+        <text x="60" y="60" textAnchor="middle" dominantBaseline="central" transform="rotate(90 60 60)" className={cn("text-[20px] font-black", dark ? "fill-white" : "fill-[#0f2747]")}>
           {centerLabel ?? total}
         </text>
       </svg>
@@ -93,8 +93,8 @@ export function DonutChart({
         {data.map((item, index) => (
           <li key={item.label} className="flex items-center gap-2 text-xs">
             <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ background: CHART_COLORS[index % CHART_COLORS.length] }} />
-            <span className={cn("min-w-0 flex-1 truncate", dark ? "text-slate-300" : "text-[#36506f]")}>{item.label}</span>
-            <span className={cn("font-bold tabular-nums", dark ? "text-white" : "text-[#102b55]")}>{item.value}</span>
+            <span className={cn("min-w-0 flex-1 truncate", dark ? "text-slate-300" : "text-[#334155]")}>{item.label}</span>
+            <span className={cn("font-bold tabular-nums", dark ? "text-white" : "text-[#0f2747]")}>{item.value}</span>
           </li>
         ))}
       </ul>
@@ -127,17 +127,17 @@ export function LineChart({
       <svg viewBox={`0 0 ${width} ${height}`} preserveAspectRatio="none" className="h-40 w-full" aria-hidden="true">
         <defs>
           <linearGradient id="pc-line-fill" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stopColor="#3b82f6" stopOpacity="0.35" />
-            <stop offset="1" stopColor="#3b82f6" stopOpacity="0" />
+            <stop offset="0" stopColor="#2f7de9" stopOpacity="0.35" />
+            <stop offset="1" stopColor="#2f7de9" stopOpacity="0" />
           </linearGradient>
         </defs>
         {[0.25, 0.5, 0.75].map((ratio) => (
-          <line key={ratio} x1="0" x2={width} y1={(height - 20) * ratio} y2={(height - 20) * ratio} className={dark ? "stroke-slate-800" : "stroke-[#e6eef8]"} strokeWidth="1" />
+          <line key={ratio} x1="0" x2={width} y1={(height - 20) * ratio} y2={(height - 20) * ratio} className={dark ? "stroke-slate-800" : "stroke-[#e5ebf4]"} strokeWidth="1" />
         ))}
         <path d={area} fill="url(#pc-line-fill)" />
-        <path d={path} fill="none" stroke="#3b82f6" strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
+        <path d={path} fill="none" stroke="#2f7de9" strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
       </svg>
-      <div aria-hidden="true" className={cn("mt-1 flex justify-between text-[10px] font-semibold", dark ? "text-slate-500" : "text-[#6b7a90]")}>
+      <div aria-hidden="true" className={cn("mt-1 flex justify-between text-[10px] font-semibold", dark ? "text-slate-500" : "text-[#7a8594]")}>
         {data.filter((_, index) => index % Math.ceil(data.length / 6) === 0 || index === data.length - 1).map((item) => (
           <span key={item.label}>{item.label}</span>
         ))}
@@ -147,9 +147,9 @@ export function LineChart({
 }
 
 export function ProgressBar({ value, max, dark = false, tone = "blue" }: { value: number; max: number; dark?: boolean; tone?: "blue" | "green" | "amber" | "rose" }) {
-  const toneClass = { blue: "bg-[#3b82f6]", green: "bg-emerald-500", amber: "bg-amber-500", rose: "bg-rose-500" }[tone];
+  const toneClass = { blue: "bg-[#1660d0]", green: "bg-emerald-500", amber: "bg-amber-500", rose: "bg-rose-500" }[tone];
   return (
-    <div className={cn("h-2 overflow-hidden rounded-full", dark ? "bg-slate-800" : "bg-[#e6eef8]")} aria-hidden="true">
+    <div className={cn("h-2 overflow-hidden rounded-full", dark ? "bg-slate-800" : "bg-[#e5ebf4]")} aria-hidden="true">
       <div className={cn("h-full rounded-full", toneClass)} style={{ width: `${max ? Math.min(100, (value / max) * 100) : 0}%` }} />
     </div>
   );

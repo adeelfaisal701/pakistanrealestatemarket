@@ -144,12 +144,12 @@ export function TechnicianJobDetail({ id }: { id: string }) {
           <div className="flex items-start gap-3">
             <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-slate-100 text-slate-500"><ServiceIcon category={job.category} className="h-5 w-5" /></span>
             <div>
-              <p className="font-mono text-xs text-[#6b7a90]">{job.reference}</p>
+              <p className="font-mono text-xs text-[#7a8594]">{job.reference}</p>
               <h1 className="text-lg font-black">{job.title}</h1>
-              <p className="text-sm text-[#5b6b82]">{job.categoryLabel} · {job.area}, {job.city}</p>
+              <p className="text-sm text-[#64748b]">{job.categoryLabel} · {job.area}, {job.city}</p>
             </div>
           </div>
-          <div className="mt-4 flex items-start gap-2 rounded-2xl bg-slate-50 p-3 text-sm text-[#36506f]">
+          <div className="mt-4 flex items-start gap-2 rounded-2xl bg-slate-50 p-3 text-sm text-[#334155]">
             <Lock className="mt-0.5 h-4 w-4 shrink-0 text-slate-500" />
             <span>This job is no longer assigned to you (<span className="font-bold capitalize">{job.myAssignment?.status}</span>). Customer details are hidden.</span>
           </div>
@@ -184,22 +184,22 @@ export function TechnicianJobDetail({ id }: { id: string }) {
     <div className={cn("space-y-4", primary && "pb-24 sm:pb-0")}>
       <PcBackLink href="/technician/jobs" label="My jobs" />
 
-      <section className="overflow-hidden rounded-3xl bg-gradient-to-br from-[#0d57ad] to-[#0b2545] text-white shadow-[0_14px_30px_rgba(13,87,173,0.25)]">
+      <section className="overflow-hidden rounded-3xl bg-gradient-to-br from-[#1660d0] to-[#0b2c5f] text-white shadow-[0_14px_30px_rgba(22,96,208,0.25)]">
         <div className="p-5">
           <div className="flex items-start justify-between gap-3">
             <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/15"><ServiceIcon category={job.category} className="h-6 w-6" /></span>
             {job.status && <StatusBadge status={job.status} ops className="bg-white/90 ring-white" />}
           </div>
-          <p className="mt-4 font-mono text-xs text-blue-200">{job.reference}</p>
+          <p className="mt-4 font-mono text-xs text-slate-300">{job.reference}</p>
           <h1 className="mt-0.5 text-[22px] font-black leading-tight tracking-[-0.02em]">{job.title}</h1>
-          <p className="mt-1 text-sm text-blue-100">{job.categoryLabel} · <span className="capitalize">{job.propertyType}</span></p>
+          <p className="mt-1 text-sm text-slate-300">{job.categoryLabel} · <span className="capitalize">{job.propertyType}</span></p>
           <div className="mt-4 grid grid-cols-2 gap-2 text-sm">
             <div className="rounded-2xl bg-white/10 p-3">
-              <p className="text-[11px] font-bold uppercase tracking-wide text-blue-200">Visit</p>
+              <p className="text-[11px] font-bold uppercase tracking-wide text-slate-300">Visit</p>
               <p className="mt-0.5 font-bold">{formatDate(job.scheduledVisitAt, true)}</p>
             </div>
             <div className="rounded-2xl bg-white/10 p-3">
-              <p className="text-[11px] font-bold uppercase tracking-wide text-blue-200">Area</p>
+              <p className="text-[11px] font-bold uppercase tracking-wide text-slate-300">Area</p>
               <p className="mt-0.5 font-bold">{job.area}</p>
             </div>
           </div>
@@ -208,7 +208,7 @@ export function TechnicianJobDetail({ id }: { id: string }) {
           <ol aria-label="Work progress" className="grid grid-cols-4 gap-1.5 bg-black/15 px-5 py-3">
             {WORK_STEPS.map((item, index) => (
               <li key={item.label} aria-current={index === workStep ? "step" : undefined}>
-                <span className={cn("block h-1.5 rounded-full", index <= workStep ? "bg-[#9ccaff]" : "bg-white/20")} />
+                <span className={cn("block h-1.5 rounded-full", index <= workStep ? "bg-[#9fc3f5]" : "bg-white/20")} />
                 <span className={cn("mt-1.5 block text-[11px] font-bold", index <= workStep ? "text-white" : "text-white/50")}>{item.label}</span>
               </li>
             ))}
@@ -218,7 +218,7 @@ export function TechnicianJobDetail({ id }: { id: string }) {
 
       {notice && <SuccessBanner message={notice} />}
       {actionError && !dialog && <ErrorBanner message={actionError} />}
-      {statusMessage && <p className="rounded-2xl border border-[#cfe1f7] bg-[#edf5ff] p-3 text-sm font-semibold text-[#0d4f9e]">{statusMessage}</p>}
+      {statusMessage && <p className="rounded-2xl border border-[#cfe0fb] bg-[#eaf2fe] p-3 text-sm font-semibold text-[#114fb0]">{statusMessage}</p>}
       {job.status === "on_the_way" && !actions.canStartWork && (
         <p className="rounded-2xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">The quotation is awaiting customer approval. Wait for approval before starting chargeable work.</p>
       )}
@@ -238,12 +238,12 @@ export function TechnicianJobDetail({ id }: { id: string }) {
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_340px]">
         <div className="min-w-0 space-y-4">
           <PcCard title="Job details" icon={<FileText className="h-4 w-4" />}>
-            <p className="whitespace-pre-line text-sm leading-6 text-[#36506f]">{job.description}</p>
+            <p className="whitespace-pre-line text-sm leading-6 text-[#334155]">{job.description}</p>
             {job.myAssignment?.dispatchNotes && (
-              <p className="mt-3 rounded-2xl bg-[#edf5ff] p-3 text-sm text-[#0d4f9e]"><span className="font-bold">Dispatch note:</span> {job.myAssignment.dispatchNotes}</p>
+              <p className="mt-3 rounded-2xl bg-[#eaf2fe] p-3 text-sm text-[#114fb0]"><span className="font-bold">Dispatch note:</span> {job.myAssignment.dispatchNotes}</p>
             )}
             <div className="mt-4">
-              <p className="mb-2 text-xs font-bold uppercase tracking-wide text-[#6b7a90]">Photos</p>
+              <p className="mb-2 text-xs font-bold uppercase tracking-wide text-[#7a8594]">Photos</p>
               <ImageGallery images={job.images ?? []} emptyLabel="No photos yet." />
             </div>
           </PcCard>
@@ -263,7 +263,7 @@ export function TechnicianJobDetail({ id }: { id: string }) {
               <fieldset className="space-y-2">
                 <legend className="sr-only">Completion checklist</legend>
                 {checklist.map((item, index) => (
-                  <label key={item.label} className={cn("flex min-h-14 cursor-pointer items-center gap-3 rounded-2xl border px-4 text-sm font-semibold transition", item.done ? "border-emerald-300 bg-emerald-50 text-emerald-900" : "border-[#e3ebf5] text-[#20385c]")}>
+                  <label key={item.label} className={cn("flex min-h-14 cursor-pointer items-center gap-3 rounded-2xl border px-4 text-sm font-semibold transition", item.done ? "border-emerald-300 bg-emerald-50 text-emerald-900" : "border-[#e2e9f3] text-[#1e293b]")}>
                     <input type="checkbox" checked={item.done} onChange={(event) => setChecklist((current) => current.map((entry, i) => (i === index ? { ...entry, done: event.target.checked } : entry)))} className="h-5 w-5 accent-emerald-600" />
                     {item.label}
                   </label>
@@ -281,7 +281,7 @@ export function TechnicianJobDetail({ id }: { id: string }) {
             {job.workNotes?.length ? (
               <ul className="mb-3 space-y-2">
                 {job.workNotes.map((item) => (
-                  <li key={item.id} className="rounded-2xl bg-[#f6f9fd] p-3 text-sm text-[#20385c]">
+                  <li key={item.id} className="rounded-2xl bg-[#f5f8fd] p-3 text-sm text-[#1e293b]">
                     {item.note}
                     <p className="mt-1 text-[11px] text-[#94a3b8]">{formatDate(item.createdAt, true)}</p>
                   </li>
@@ -294,7 +294,7 @@ export function TechnicianJobDetail({ id }: { id: string }) {
               <form onSubmit={addNote} className="flex items-end gap-2">
                 <label htmlFor="tech-note" className="sr-only">Add a work note</label>
                 <textarea id="tech-note" value={note} onChange={(event) => setNote(event.target.value)} maxLength={2000} rows={2} placeholder="Parts used, findings, follow-ups…" className={cn(pc.input, "mt-0 flex-1 py-3")} />
-                <button type="submit" aria-label="Add note" disabled={busy || note.trim().length < 2} className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#0d57ad] text-white disabled:opacity-40">
+                <button type="submit" aria-label="Add note" disabled={busy || note.trim().length < 2} className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#1660d0] text-white disabled:opacity-40">
                   <Send className="h-5 w-5" />
                 </button>
               </form>
@@ -306,21 +306,21 @@ export function TechnicianJobDetail({ id }: { id: string }) {
           <PcCard title="Customer & location" icon={<MapPin className="h-4 w-4" />}>
             {job.address && job.contact ? (
               <div className="space-y-3 text-sm">
-                <p className="flex items-start gap-2 text-[#20385c]"><MapPin className="mt-0.5 h-4 w-4 shrink-0 text-[#0d57ad]" />{job.address.line}, {job.address.area}, {job.address.city}</p>
-                <p className="flex items-center gap-2 text-[#20385c]"><UserRound className="h-4 w-4 text-[#0d57ad]" />{job.contact.name}</p>
+                <p className="flex items-start gap-2 text-[#1e293b]"><MapPin className="mt-0.5 h-4 w-4 shrink-0 text-[#1660d0]" />{job.address.line}, {job.address.area}, {job.address.city}</p>
+                <p className="flex items-center gap-2 text-[#1e293b]"><UserRound className="h-4 w-4 text-[#1660d0]" />{job.contact.name}</p>
                 <a href={`tel:${job.contact.phone}`} className={cn(pc.secondaryBtn, "w-full")}><Phone className="h-4 w-4" /> Call {job.contact.phone}</a>
               </div>
             ) : (
-              <div className="rounded-2xl bg-[#f6f9fd] p-4 text-center">
-                <span className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-white text-[#0d57ad] shadow-sm"><Lock className="h-5 w-5" /></span>
+              <div className="rounded-2xl bg-[#f5f8fd] p-4 text-center">
+                <span className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-white text-[#1660d0] shadow-sm"><Lock className="h-5 w-5" /></span>
                 <p className="mt-2 text-sm font-bold">{job.area}, {job.city}</p>
-                <p className="mt-1 text-xs leading-5 text-[#5b6b82]">Exact address and customer phone unlock after you accept the job.</p>
+                <p className="mt-1 text-xs leading-5 text-[#64748b]">Exact address and customer phone unlock after you accept the job.</p>
               </div>
             )}
           </PcCard>
 
           <PcCard title="Schedule" icon={<CalendarClock className="h-4 w-4" />}>
-            <dl className="divide-y divide-[#eef2f8]">
+            <dl className="divide-y divide-[#edf2f8]">
               <PcInfoRow label="Scheduled">{formatDate(job.scheduledVisitAt, true)}</PcInfoRow>
               <PcInfoRow label="Customer prefers">{job.preferredVisitDate ? formatDate(job.preferredVisitDate) : "Flexible"} · {timeSlotLabel(job.preferredTimeSlot)}</PcInfoRow>
             </dl>
@@ -330,17 +330,17 @@ export function TechnicianJobDetail({ id }: { id: string }) {
             {job.quotation ? (
               <div className="flex items-center justify-between">
                 <span className="text-lg font-black">{formatMoney(job.quotation.total)}</span>
-                <span className="rounded-full bg-[#edf5ff] px-2.5 py-1 text-[11px] font-bold text-[#0d57ad]">{QUOTATION_LABELS[job.quotation.status]}</span>
+                <span className="rounded-full bg-[#eaf2fe] px-2.5 py-1 text-[11px] font-bold text-[#1660d0]">{QUOTATION_LABELS[job.quotation.status]}</span>
               </div>
             ) : (
-              <p className="text-sm text-[#5b6b82]">No quotation issued. Quotations are prepared by Ghar Safar operations.</p>
+              <p className="text-sm text-[#64748b]">No quotation issued. Quotations are prepared by Ghar Safar operations.</p>
             )}
           </PcCard>
         </aside>
       </div>
 
       {primary && (
-        <div className="fixed inset-x-0 bottom-[calc(4rem+env(safe-area-inset-bottom))] z-30 border-t border-[#e3ebf5] bg-white/95 px-4 py-3 shadow-[0_-10px_30px_rgba(16,43,85,0.1)] backdrop-blur sm:hidden">
+        <div className="fixed inset-x-0 bottom-[calc(4rem+env(safe-area-inset-bottom))] z-30 border-t border-[#e2e9f3] bg-white/95 px-4 py-3 shadow-[0_-10px_30px_rgba(15,39,71,0.1)] backdrop-blur sm:hidden">
           <div className="flex gap-2.5">
             {actions.canAccept && <button type="button" onClick={() => open("reject")} className={cn(pc.dangerBtn, "flex-1 px-3")}>Reject</button>}
             <button type="button" onClick={primary.onClick} disabled={primary.disabled} className={cn(primary.tone, "flex-[2] px-3")}>

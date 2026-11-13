@@ -29,6 +29,7 @@ import { useBuyerSavedProperties } from '@/components/buyer/BuyerSavedProperties
 import { FeaturedAgencies, FeaturedAgents } from './FeaturedDirectory';
 import { getLandingProjects } from '@/lib/projects';
 import { PagedCarousel } from './PagedCarousel';
+import { useMediaQuery } from '@/hooks/use-media-query';
 
 /* ─────────────────────── HELPERS ─────────────────────── */
 function HouseIcon({ className }: { className?: string }) {
@@ -126,6 +127,9 @@ function MobileHeader() {
 /* ─────────────────────── HERO SECTION ─────────────────────── */
 function MobileHero() {
   const router = useRouter();
+  useEffect(() => {
+    router.prefetch('/maintenance');
+  }, [router]);
   const [selectedHeroOption, setSelectedHeroOption] = useState<'Property' | 'Maintenance'>('Property');
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [searchLabelIndex, setSearchLabelIndex] = useState(0);
@@ -720,8 +724,11 @@ function MobileListCTA() {
 export default function MobileMarketplace() {
   const [properties, setProperties] = useState<MarketplaceProperty[]>([]);
   const [propertiesError, setPropertiesError] = useState('');
+  // Only the visible mobile layout needs this request (see DesktopMarketplace).
+  const isMobile = useMediaQuery('(max-width: 767px)');
 
   useEffect(() => {
+    if (!isMobile) return;
     let active = true;
     setPropertiesError('');
     fetchPublicProperties({ limit: 6, sortBy: 'featured' })
@@ -737,7 +744,7 @@ export default function MobileMarketplace() {
     return () => {
       active = false;
     };
-  }, []);
+  }, [isMobile]);
 
   return (
     <div className="min-h-screen bg-white font-sans text-slate-900">

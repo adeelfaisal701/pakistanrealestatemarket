@@ -61,14 +61,14 @@ export function CareAccessGate({ children }: { children: ReactNode }) {
   if (state.status === "allowed") return <>{children}</>;
 
   return (
-    <main className="flex min-h-dvh items-center justify-center bg-[#f4f8fd] px-4 py-12 text-[#102b55]">
+    <main className="flex min-h-dvh items-center justify-center bg-[#f5f9ff] px-4 py-12 text-[#0f2747]">
       {state.status === "checking" ? (
-        <p role="status" className="flex items-center gap-2 text-sm font-semibold text-[#5b6b82]"><Loader2 className="h-4 w-4 animate-spin" /> Opening Property Care…</p>
+        <p role="status" className="flex items-center gap-2 text-sm font-semibold text-[#64748b]"><Loader2 className="h-4 w-4 animate-spin" /> Opening Property Care…</p>
       ) : (
-        <section className="w-full max-w-md rounded-3xl border border-[#e3ebf5] bg-white p-8 text-center shadow-[0_10px_30px_rgba(16,43,85,0.08)]">
+        <section className="w-full max-w-md rounded-3xl border border-[#e2e9f3] bg-white p-8 text-center shadow-[0_10px_30px_rgba(15,39,71,0.08)]">
           <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-50 text-amber-600"><ShieldAlert className="h-7 w-7" /></span>
           <h1 className="mt-4 text-xl font-black">{state.status === "denied" ? "Customer account required" : "Couldn't open Property Care"}</h1>
-          <p role="alert" className="mt-2 text-sm leading-6 text-[#5b6b82]">
+          <p role="alert" className="mt-2 text-sm leading-6 text-[#64748b]">
             {state.status === "denied"
               ? `You're signed in with a ${state.role} account. Property Care requests are made from a customer account.`
               : state.message}

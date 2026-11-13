@@ -22,7 +22,7 @@ function SocialIcon({ label }: { label: 'Facebook' | 'Instagram' | 'YouTube' | '
       role="img"
       aria-label={label}
       title={`${label} link is not configured`}
-      className="flex h-10 w-10 items-center justify-center rounded-full border border-white/80 text-white/90 max-sm:h-11 max-sm:w-11 max-sm:border-emerald-500"
+      className="flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-white/[0.04] text-slate-300 transition-colors hover:border-brand-500/60 hover:text-white max-sm:h-11 max-sm:w-11"
     >
       <svg viewBox="0 0 24 24" aria-hidden="true" className="h-5 w-5" fill="currentColor">
         <path d={paths[label]} />
@@ -33,15 +33,16 @@ function SocialIcon({ label }: { label: 'Facebook' | 'Instagram' | 'YouTube' | '
 
 export function HomepageFooter({ showBackToTop = false }: { showBackToTop?: boolean }) {
   return (
-    <footer className="relative isolate overflow-hidden border-t-2 border-emerald-500 bg-[#031a29] text-white max-sm:bg-[#071B2B]">
+    <footer className="relative isolate overflow-hidden bg-ink-950 text-white">
+      <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-brand-500/70 to-transparent" />
       <div aria-hidden="true" className="pointer-events-none absolute inset-y-0 right-0 -z-10 w-44 sm:w-56 max-sm:w-36">
         <img
           src="/images/Lahore.jpg"
           alt=""
-          className="h-full w-full object-cover object-[center_48%] opacity-35 max-sm:opacity-15"
+          className="h-full w-full object-cover object-[center_48%] opacity-25 max-sm:opacity-10"
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-[#031a29] via-[#031a29]/65 to-[#031a29]/20" />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#031a29]/50 via-transparent to-[#031a29]/45" />
+        <div className="absolute inset-0 bg-gradient-to-r from-ink-950 via-ink-950/70 to-ink-950/25" />
+        <div className="absolute inset-0 bg-gradient-to-t from-ink-950/50 via-transparent to-ink-950/45" />
       </div>
 
       <div className="mx-auto grid max-w-7xl grid-cols-2 gap-x-5 gap-y-7 px-5 py-7 sm:px-8 sm:py-9 lg:grid-cols-[1.55fr_0.78fr_0.9fr_1.5fr] lg:gap-8 lg:py-8 max-sm:gap-x-4 max-sm:gap-y-5 max-sm:px-4 max-sm:py-5">
@@ -59,7 +60,7 @@ export function HomepageFooter({ showBackToTop = false }: { showBackToTop?: bool
               Ghar Safar
             </span>
           </Link>
-          <p className="mt-1 text-[15px] leading-6 text-slate-100 max-sm:text-[13px] max-sm:leading-5">Har Khwab Ki Manzil, Apna Ghar.</p>
+          <p className="mt-1 text-[15px] leading-6 text-slate-300 max-sm:text-[13px] max-sm:leading-5">Har Khwab Ki Manzil, Apna Ghar.</p>
           <div className="mt-4 flex flex-wrap items-center gap-3 max-sm:mt-3 max-sm:gap-2.5" aria-label="Social networks">
             <SocialIcon label="Facebook" />
             <SocialIcon label="Instagram" />
@@ -69,36 +70,36 @@ export function HomepageFooter({ showBackToTop = false }: { showBackToTop?: bool
         </section>
 
         <nav aria-label="Quick Links">
-          <h2 className="mb-3 text-[16px] font-bold text-white max-sm:mb-2 max-sm:text-sm">Quick Links</h2>
-          <ul className="space-y-2 text-[14px] text-slate-100 max-sm:space-y-1.5 max-sm:text-xs">
-            <li><Link href="/properties" className="transition-colors hover:text-emerald-400">Properties</Link></li>
-            <li><Link href="/agencies" className="transition-colors hover:text-emerald-400">Agencies</Link></li>
-            <li><Link href="/agent/add-property" className="transition-colors hover:text-emerald-400">Post Free Listing</Link></li>
+          <h2 className="mb-3 text-xs font-bold uppercase tracking-[0.14em] text-slate-400 max-sm:mb-2">Quick Links</h2>
+          <ul className="space-y-2 text-[14px] text-slate-300 max-sm:space-y-1.5 max-sm:text-xs">
+            <li><Link href="/properties" className="transition-colors hover:text-white">Properties</Link></li>
+            <li><Link href="/agencies" className="transition-colors hover:text-white">Agencies</Link></li>
+            <li><Link href="/agent/add-property" className="transition-colors hover:text-white">Post Free Listing</Link></li>
           </ul>
         </nav>
 
         <nav aria-label="Legal">
-          <h2 className="mb-3 text-[16px] font-bold text-white max-sm:mb-2 max-sm:text-sm">Legal</h2>
-          <ul className="space-y-2 text-[14px] text-slate-100 max-sm:space-y-1.5 max-sm:text-xs">
-            <li><Link href="/terms" className="transition-colors hover:text-emerald-400">Terms &amp; Conditions</Link></li>
-            <li><Link href="/privacy" className="transition-colors hover:text-emerald-400">Privacy Policy</Link></li>
-            <li><Link href="/agent/verification" className="transition-colors hover:text-emerald-400">Agent Verification</Link></li>
+          <h2 className="mb-3 text-xs font-bold uppercase tracking-[0.14em] text-slate-400 max-sm:mb-2">Legal</h2>
+          <ul className="space-y-2 text-[14px] text-slate-300 max-sm:space-y-1.5 max-sm:text-xs">
+            <li><Link href="/terms" className="transition-colors hover:text-white">Terms &amp; Conditions</Link></li>
+            <li><Link href="/privacy" className="transition-colors hover:text-white">Privacy Policy</Link></li>
+            <li><Link href="/agent/verification" className="transition-colors hover:text-white">Agent Verification</Link></li>
           </ul>
         </nav>
 
         <section className="relative z-10 max-sm:col-span-2">
-          <h2 className="mb-3 text-[16px] font-bold text-white max-sm:mb-2 max-sm:text-sm">Get In Touch</h2>
-          <ul className="space-y-2.5 text-[14px] text-slate-100 max-sm:space-y-1.5 max-sm:text-xs">
+          <h2 className="mb-3 text-xs font-bold uppercase tracking-[0.14em] text-slate-400 max-sm:mb-2">Get In Touch</h2>
+          <ul className="space-y-2.5 text-[14px] text-slate-300 max-sm:space-y-1.5 max-sm:text-xs">
             <li className="flex min-w-0 items-center gap-3">
-              <Phone className="h-5 w-5 shrink-0 text-emerald-500 max-sm:h-4 max-sm:w-4" />
+              <Phone className="h-5 w-5 shrink-0 text-brand-500 max-sm:h-4 max-sm:w-4" />
               <a href="tel:+923001234567" className="transition-colors hover:text-emerald-300 max-sm:whitespace-nowrap">+92 300 1234567</a>
             </li>
             <li className="flex min-w-0 items-center gap-3">
-              <Mail className="h-5 w-5 shrink-0 text-emerald-500 max-sm:h-4 max-sm:w-4" />
+              <Mail className="h-5 w-5 shrink-0 text-brand-500 max-sm:h-4 max-sm:w-4" />
               <a href="mailto:support@zameenconnect.pk" className="break-all transition-colors hover:text-emerald-300 max-sm:whitespace-nowrap max-sm:break-normal">Ghar Safar Support</a>
             </li>
             <li className="flex min-w-0 items-center gap-3">
-              <MapPin className="h-5 w-5 shrink-0 text-emerald-500 max-sm:h-4 max-sm:w-4" />
+              <MapPin className="h-5 w-5 shrink-0 text-brand-500 max-sm:h-4 max-sm:w-4" />
               <span className="max-sm:whitespace-nowrap">Lahore / Islamabad, Pakistan</span>
             </li>
             <li>
@@ -115,8 +116,8 @@ export function HomepageFooter({ showBackToTop = false }: { showBackToTop?: bool
         </section>
       </div>
 
-      <div className="border-t border-emerald-500/90">
-        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-5 py-5 text-sm text-slate-200 sm:px-8 max-sm:flex-col max-sm:gap-1 max-sm:px-4 max-sm:py-3 max-sm:text-center max-sm:text-xs">
+      <div className="border-t border-white/10">
+        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-5 py-5 text-sm text-slate-400 sm:px-8 max-sm:flex-col max-sm:gap-1 max-sm:px-4 max-sm:py-3 max-sm:text-center max-sm:text-xs">
           <p>© {new Date().getFullYear()} Ghar Safar. All rights reserved.</p>
           {showBackToTop && (
             <button
