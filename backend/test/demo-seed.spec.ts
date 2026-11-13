@@ -20,7 +20,32 @@ import {
 } from '../src/database/demo-seed/demo-seed';
 import { PropertyType } from '../src/modules/properties/schemas/property.schema';
 import { DevelopmentProjectStatus } from '../src/modules/projects/schemas/development-project.schema';
+import mongoose = require('mongoose');
+import { PropertySchema } from '../src/modules/properties/schemas/property.schema';
+import { PropertyAdvertisementSchema } from '../src/modules/properties/schemas/property-advertisement.schema';
 import { createHarness, newId } from './demo-seed-harness';
+
+/**
+ * Makes reference-id lookups behave like the real database: Property.agentId
+ * and PropertyAdvertisement.propertyId are Mixed paths, so a hex string never
+ * matches a stored ObjectId. Records which value types the seeder queried with.
+ */
+function emulateMixedReferenceLookups(harness: ReturnType<typeof createHarness>) {
+  const queried: unknown[] = [];
+  const strictOn = (collection: { findOne: Function; findMany: Function }, field: string) => {
+    const findOne = collection.findOne.bind(collection);
+    const findMany = collection.findMany.bind(collection);
+    const isString = (filter: Record<string, unknown>) => {
+      if (field in filter) queried.push(filter[field]);
+      return typeof filter[field] === 'string';
+    };
+    collection.findOne = async (filter: Record<string, unknown>) => (isString(filter) ? null : findOne(filter));
+    collection.findMany = async (filter: Record<string, unknown>) => (isString(filter) ? [] : findMany(filter));
+  };
+  strictOn(harness.properties.collection, 'agentId');
+  strictOn(harness.advertisements.collection, 'propertyId');
+  return queried;
+}
 
 const PASSWORD = 'Local-Demo-Pass-2026';
 const BASE_ENV = { ALLOW_DEMO_SEED: 'true', NODE_ENV: 'development' };
@@ -393,6 +418,62 @@ test('an agency profile with a demo agency name that the seeder did not create i
     assert.equal(harness.totalWrites(), 0);
     assert.equal(harness.manifest.entries.size, 0);
     assert.deepEqual(harness.agencies.records, [foreign], 'existing agency untouched');
+  } finally {
+    await harness.connection.close();
+  }
+});
+
+test('regression: the reference paths the seeder looks up are Mixed, so strings are not cast', () => {
+  // Documents the real-database behaviour behind the duplicate-listing bug.
+  assert.equal(PropertySchema.path('agentId').instance, 'Mixed');
+  assert.equal(PropertyAdvertisementSchema.path('propertyId').instance, 'Mixed');
+});
+
+test('regression: re-running against ObjectId-typed references never duplicates listings or ads', async () => {
+  const harness = createHarness();
+  const queried = emulateMixedReferenceLookups(harness);
+  try {
+    await seedDemoData(harness.collections, PASSWORD);
+    const writes = harness.totalWrites();
+    queried.length = 0;
+    const second = await seedDemoData(harness.collections, PASSWORD);
+    assert.deepEqual(second.properties, { created: 0, updated: 0, unchanged: 25 });
+    assert.deepEqual(second.advertisements, { created: 0, updated: 0, unchanged: 25 });
+    assert.equal(harness.properties.records.length, 25, 'no duplicate listings');
+    assert.equal(harness.advertisements.records.length, 25, 'no duplicate advertisements');
+    assert.equal(harness.manifest.entries.size, 69);
+    assert.equal(harness.totalWrites(), writes, 'no writes on re-run');
+    assert.equal(queried.length, 50, 'one listing and one advertisement lookup per demo property');
+    assert.ok(
+      queried.every((value) => value instanceof mongoose.Types.ObjectId),
+      'reference ids are queried as real ObjectIds',
+    );
+  } finally {
+    await harness.connection.close();
+  }
+});
+
+test('regression: duplicate demo listings for one agent stop the seeder before any write', async () => {
+  const harness = createHarness();
+  try {
+    await seedDemoData(harness.collections, PASSWORD);
+    // Recreate the production state: a second manifest-owned copy of a listing.
+    const original = harness.properties.records[0];
+    const copy = { ...original, _id: newId() };
+    harness.properties.records.push(copy);
+    await harness.manifest.manifest.add({ kind: 'property', recordId: copy._id, seedKey: 'copy' });
+    const writes = harness.totalWrites();
+    const manifestSize = harness.manifest.entries.size;
+    await assert.rejects(
+      seedDemoData(harness.collections, PASSWORD),
+      (error: unknown) =>
+        error instanceof DemoSeedError &&
+        error.message.includes(`2 listings titled "${original.title}"`) &&
+        error.message.includes('No records were changed'),
+    );
+    assert.equal(harness.totalWrites(), writes, 'nothing written');
+    assert.equal(harness.manifest.entries.size, manifestSize, 'manifest unchanged');
+    assert.equal(harness.properties.records.length, 26);
   } finally {
     await harness.connection.close();
   }

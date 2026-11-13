@@ -13,13 +13,14 @@ import {
 } from 'lucide-react';
 import { getApiErrorMessage } from '@/lib/api-client';
 import { fetchPublicProperties } from '@/lib/public-properties';
-import { getFeaturedProjects } from '@/lib/projects';
+import { getLandingProjects } from '@/lib/projects';
 import type { MarketplaceProperty } from '@/types/marketplace';
 import type { DevelopmentProject } from '@/types/development-project';
 import HeroSearch from './HeroSearch';
 import { FeaturedAgencies, FeaturedAgents } from './FeaturedDirectory';
 import DualCTA from './DualCTA';
 import Navbar from './Navbar';
+import { PagedCarousel } from './PagedCarousel';
 
 function PropertyCategories() {
   const categories = [
@@ -156,6 +157,53 @@ function PopularLocations({
   );
 }
 
+function ProjectCard({ project }: { project: DevelopmentProject }) {
+  return (
+    <Link
+      href={`/projects/${encodeURIComponent(project.slug)}`}
+      className="group flex h-full flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_1px_3px_rgba(16,29,50,0.06)] transition duration-200 hover:-translate-y-0.5 hover:border-emerald-300 hover:shadow-[0_14px_30px_rgba(16,29,50,0.10)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 dark:border-slate-800 dark:bg-slate-900"
+    >
+      <div className="relative aspect-[16/10] overflow-hidden bg-gradient-to-br from-emerald-50 to-slate-100 dark:from-emerald-950 dark:to-slate-800">
+        {project.coverImage ? (
+          <img
+            src={project.coverImage}
+            alt={project.name}
+            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+            loading="lazy"
+          />
+        ) : (
+          <span className="flex h-full items-center justify-center">
+            <Building2 aria-hidden="true" className="h-9 w-9 text-emerald-700 dark:text-emerald-300" />
+          </span>
+        )}
+        <span className="absolute left-3 top-3 rounded-full bg-white/95 px-2.5 py-1 text-[11px] font-bold text-emerald-700 shadow-sm">
+          {project.status}
+        </span>
+      </div>
+      <div className="flex flex-1 flex-col p-4">
+        <h3 className="line-clamp-1 text-base font-bold text-slate-900 transition-colors group-hover:text-emerald-700 dark:text-white">
+          {project.name}
+        </h3>
+        <p className="mt-1 flex min-w-0 items-center gap-1 text-xs text-slate-500 dark:text-slate-400">
+          <MapPin aria-hidden="true" className="h-3.5 w-3.5 shrink-0 text-emerald-600" />
+          <span className="truncate">{project.location}</span>
+        </p>
+        {project.shortDescription && (
+          <p className="mt-2 line-clamp-2 text-xs leading-5 text-slate-600 dark:text-slate-300">{project.shortDescription}</p>
+        )}
+        <div className="mt-auto flex items-center justify-between gap-3 border-t border-slate-100 pt-3 dark:border-slate-800">
+          <span className="min-w-0 truncate text-sm font-extrabold text-emerald-700 dark:text-emerald-400">
+            {project.priceRange || project.projectType}
+          </span>
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-emerald-200 text-emerald-700 transition-colors group-hover:bg-emerald-600 group-hover:text-white dark:border-emerald-800 dark:text-emerald-300">
+            <ArrowRight aria-hidden="true" className="h-4 w-4" />
+          </span>
+        </div>
+      </div>
+    </Link>
+  );
+}
+
 export function OurProjects() {
   const [projects, setProjects] = useState<DevelopmentProject[]>([]);
   const [loading, setLoading] = useState(true);
@@ -163,7 +211,7 @@ export function OurProjects() {
 
   useEffect(() => {
     let active = true;
-    getFeaturedProjects()
+    getLandingProjects()
       .then((results) => {
         if (active) setProjects(results);
       })
@@ -198,40 +246,22 @@ export function OurProjects() {
         {error ? (
           <p role="alert" className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">{error}</p>
         ) : loading ? (
-          <p className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-500">Loading featured projects…</p>
+          <div className="grid grid-cols-3 gap-4 lg:gap-5">
+            {[1, 2, 3].map((item) => (
+              <div key={item} className="h-[320px] animate-pulse rounded-2xl border border-slate-200 bg-slate-100 dark:border-slate-800 dark:bg-slate-900" />
+            ))}
+          </div>
         ) : projects.length === 0 ? (
-          <p className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-500">No featured projects are available right now.</p>
+          <p className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-500">No projects are available right now.</p>
         ) : (
-        <div className="grid gap-4 sm:grid-cols-2">
-          {projects.map((project) => (
-            <Link
-              key={project.id}
-              href={`/projects/${encodeURIComponent(project.slug)}`}
-              className="group overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition-shadow hover:shadow-md dark:border-slate-800 dark:bg-slate-900"
-            >
-              <div className="flex aspect-[2.4/1] items-center justify-center bg-gradient-to-br from-emerald-50 to-slate-100 dark:from-emerald-950 dark:to-slate-800">
-                {project.coverImage ? (
-                  <img src={project.coverImage} alt={project.name} className="h-full w-full object-cover" loading="lazy" />
-                ) : (
-                  <Building2 className="h-9 w-9 text-emerald-700 dark:text-emerald-300" />
-                )}
-              </div>
-              <div className="flex items-center justify-between gap-4 p-3 sm:p-4">
-                <div className="min-w-0">
-                  <h3 className="truncate text-sm font-bold text-slate-900 transition-colors group-hover:text-emerald-700 dark:text-white sm:text-base">
-                    {project.name}
-                  </h3>
-                  <p className="mt-1 flex items-center gap-1 text-xs text-slate-500">
-                    <MapPin className="h-3.5 w-3.5 shrink-0 text-emerald-600" /> {project.location}
-                  </p>
-                </div>
-                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-emerald-200 text-emerald-700 transition-colors group-hover:bg-emerald-600 group-hover:text-white">
-                  <ArrowRight aria-hidden="true" className="h-4 w-4" />
-                </div>
-              </div>
-            </Link>
-          ))}
-        </div>
+          <PagedCarousel
+            items={projects}
+            pageSize={3}
+            label="Our projects"
+            pageClassName="grid grid-cols-3 gap-4 lg:gap-5"
+            getKey={(project) => project.id}
+            renderItem={(project) => <ProjectCard project={project} />}
+          />
         )}
       </div>
     </section>

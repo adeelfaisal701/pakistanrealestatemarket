@@ -5,7 +5,6 @@ import Image from 'next/image';
 import Link from 'next/link';
 import {
   ArrowRight,
-  BadgeCheck,
   Camera,
   CheckCircle2,
   ChevronDown,
@@ -26,12 +25,11 @@ import {
   Sparkles,
   Star,
   UserRoundCheck,
-  Wrench,
   Youtube,
 } from 'lucide-react';
 import { PROPERTY_CARE_SERVICES, REQUEST_SERVICE_PATH } from '@/lib/property-care-services';
 import { ServiceIcon, pc } from '@/components/property-care/PropertyCareUI';
-import { cn } from '@/lib/utils';
+import { MaintenanceHeader, MaintenanceHeroSearch, MaintenanceMobileHero } from './MaintenanceHero';
 
 const steps = [
   {
@@ -167,110 +165,15 @@ export default function MaintenanceLandingPage() {
 
   return (
     <main className="overflow-x-clip bg-white text-[#102b55]">
-      {/* Header */}
-      <header className="sticky top-0 z-40 border-b border-[#e8eef6]/80 bg-white/90 backdrop-blur-md">
-        <div className="mx-auto flex min-h-[60px] max-w-[1180px] items-center justify-between gap-2 px-4 sm:min-h-[68px] sm:px-6 lg:px-8">
-          <Link href="/maintenance" className="inline-flex min-w-0 items-center gap-2" aria-label="Ghar Safar Property Care home">
-            <Image src="/images/ghar-safar-logo.png" unoptimized alt="Ghar Safar logo" width={40} height={39} className="h-8 w-8 shrink-0 object-contain sm:h-9 sm:w-9" />
-            <span className="min-w-0 leading-none">
-              <span className="block truncate text-[17px] font-black tracking-[-0.04em] text-[#102b55] sm:text-xl">Ghar Safar</span>
-              <span className="mt-0.5 block text-[10px] font-bold uppercase tracking-[0.14em] text-[#1768c4]">Property Care</span>
-            </span>
-          </Link>
-          <nav aria-label="Account" className="flex shrink-0 items-center gap-1.5 sm:gap-2">
-            {signedIn ? (
-              <Link href="/property-care" className="inline-flex min-h-10 items-center justify-center rounded-full bg-[#0d57ad] px-4 text-xs font-bold text-white shadow-sm transition hover:bg-[#094787]">
-                My dashboard
-              </Link>
-            ) : (
-              <>
-                <Link href="/property-care/login" className="inline-flex min-h-10 items-center justify-center rounded-full border border-[#c9d9ec] bg-white px-4 text-xs font-bold text-[#0d57ad] transition hover:bg-[#f4f8fd]">
-                  Sign In
-                </Link>
-                <Link href="/property-care/register" className="inline-flex min-h-10 items-center justify-center rounded-full bg-[#0d57ad] px-4 text-xs font-bold text-white shadow-sm transition hover:bg-[#094787]">
-                  <span className="sm:hidden">Sign Up</span>
-                  <span className="hidden sm:inline">Create Customer Account</span>
-                </Link>
-              </>
-            )}
-          </nav>
-        </div>
-      </header>
-
-      {/* Hero */}
-      <section aria-labelledby="maintenance-hero-heading" className="relative isolate overflow-hidden bg-[#071d38]">
-        <Image
-          src="/images/maintance hero section.png"
-          alt=""
-          fill
-          priority
-          sizes="100vw"
-          className="z-[-2] object-cover object-[64%_center] md:object-center"
-        />
-        <div aria-hidden="true" className="absolute inset-0 z-[-1] bg-gradient-to-b from-[#061a34]/70 via-[#082a52]/55 to-[#061a34]/95 md:bg-gradient-to-r md:from-[#061a34]/95 md:via-[#08284e]/75 md:to-[#08284e]/20" />
-        <div className="relative mx-auto max-w-[1180px] px-4 pb-10 pt-10 sm:px-6 sm:pb-14 sm:pt-14 md:pb-20 md:pt-20 lg:px-8">
-          <div className="max-w-[580px]">
-            <p className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.14em] text-[#cfe4ff] backdrop-blur">
-              <Sparkles aria-hidden="true" className="h-3.5 w-3.5" /> Managed home maintenance
-            </p>
-            <h1 id="maintenance-hero-heading" className="mt-4 text-[clamp(2.25rem,9vw,4.1rem)] font-black leading-[0.98] tracking-[-0.05em] text-white">
-              Home repairs, <span className="text-[#9ccaff]">handled properly.</span>
-            </h1>
-            <p className="mt-4 max-w-[460px] text-[15px] leading-6 text-white/85 sm:text-base sm:leading-7">
-              Tell us what needs fixing. Ghar Safar assigns a verified technician, sends an upfront quotation, and tracks the job until you are satisfied.
-            </p>
-
-            <div className="mt-6 flex flex-col gap-2.5 sm:flex-row">
-              <Link href={REQUEST_SERVICE_PATH} className={cn(pc.primaryBtn, "bg-white text-[#0d57ad] shadow-[0_12px_28px_rgba(0,0,0,0.25)] hover:bg-[#eef5ff]")}>
-                Request a service <ArrowRight aria-hidden="true" className="h-4 w-4" />
-              </Link>
-              <a href="#how-it-works" className="inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl border border-white/30 px-5 text-sm font-bold text-white transition hover:bg-white/10">
-                How it works
-              </a>
-            </div>
-
-            <form onSubmit={findService} role="search" className="mt-5 flex w-full items-center gap-2 rounded-2xl border border-white/20 bg-white/10 p-1.5 backdrop-blur-md">
-              <label className="flex min-h-11 min-w-0 flex-1 items-center gap-2.5 px-3">
-                <Search aria-hidden="true" className="h-4 w-4 shrink-0 text-white/70" />
-                <span className="sr-only">Search maintenance services</span>
-                <input
-                  value={serviceSearch}
-                  onChange={(event) => setServiceSearch(event.target.value)}
-                  placeholder="Search e.g. leaking tap, AC service"
-                  className="min-w-0 flex-1 bg-transparent text-sm text-white outline-none placeholder:text-white/60"
-                />
-              </label>
-              <button type="submit" className="inline-flex min-h-11 shrink-0 items-center rounded-xl bg-white/15 px-4 text-xs font-bold text-white transition hover:bg-white/25">
-                Find
-              </button>
-            </form>
-
-            <ul className="mt-6 grid grid-cols-3 gap-2 text-[11px] font-semibold text-white/90 sm:max-w-md sm:text-xs">
-              {[
-                { label: 'Verified technicians', icon: BadgeCheck },
-                { label: 'Upfront quotations', icon: ReceiptText },
-                { label: 'Tracked to completion', icon: ListChecks },
-              ].map(({ label, icon: Icon }) => (
-                <li key={label} className="flex flex-col items-start gap-1.5 rounded-2xl border border-white/15 bg-white/5 p-2.5 sm:flex-row sm:items-center">
-                  <Icon aria-hidden="true" className="h-4 w-4 shrink-0 text-[#9ccaff]" />
-                  {label}
-                </li>
-              ))}
-            </ul>
-
-            <nav aria-label="Choose a Ghar Safar experience" className="mt-6 flex">
-              <div className="flex items-center rounded-full border border-white/25 bg-white p-1 shadow-[0_6px_20px_rgba(0,0,0,0.2)]">
-                <Link href="/" className="inline-flex min-h-9 items-center gap-1.5 rounded-full px-4 text-xs font-bold text-[#17365d] transition hover:bg-[#f1f6fc] sm:text-sm">
-                  <House aria-hidden="true" className="h-4 w-4 text-[#0d65c8]" /> Property
-                </Link>
-                <Link href="/maintenance" aria-current="page" className="inline-flex min-h-9 items-center gap-1.5 rounded-full bg-[#0d57ad] px-4 text-xs font-bold text-white shadow-sm sm:text-sm">
-                  <Wrench aria-hidden="true" className="h-4 w-4" /> Maintenance
-                </Link>
-              </div>
-            </nav>
-          </div>
-        </div>
-      </section>
+      {/* Header (tablet/desktop) and hero — mirrors the Property landing hero at each breakpoint. */}
+      <MaintenanceHeader signedIn={signedIn} />
+      <MaintenanceMobileHero signedIn={signedIn} />
+      <div className="hidden md:block xl:hidden">
+        <MaintenanceHeroSearch />
+      </div>
+      <div className="hidden xl:block">
+        <MaintenanceHeroSearch desktop />
+      </div>
 
       {/* Services */}
       <section id="services" aria-labelledby="services-heading" className="scroll-mt-20 bg-[#f6f9fd] px-4 py-12 sm:px-6 sm:py-16 lg:px-8">
@@ -281,8 +184,23 @@ export default function MaintenanceLandingPage() {
             title="What can we help with?"
             description="Pick a service to see what's covered, or request a visit straight away."
           />
+          <form onSubmit={findService} role="search" className="mx-auto mt-6 flex w-full max-w-xl items-center gap-2 rounded-2xl border border-[#d5e0ee] bg-white p-1.5 shadow-[0_2px_10px_rgba(16,43,85,0.05)]">
+            <label className="flex min-h-11 min-w-0 flex-1 items-center gap-2.5 px-3">
+              <Search aria-hidden="true" className="h-4 w-4 shrink-0 text-[#5b6b82]" />
+              <span className="sr-only">Search maintenance services</span>
+              <input
+                value={serviceSearch}
+                onChange={(event) => setServiceSearch(event.target.value)}
+                placeholder="Search e.g. leaking tap, AC service"
+                className="min-w-0 flex-1 bg-transparent text-sm text-[#102b55] outline-none placeholder:text-[#94a3b8]"
+              />
+            </label>
+            <button type="submit" className="inline-flex min-h-11 shrink-0 items-center rounded-xl bg-[#0d57ad] px-4 text-xs font-bold text-white transition hover:bg-[#0a4890]">
+              Find
+            </button>
+          </form>
           {visibleServices.length ? (
-            <ul className="mt-8 grid grid-cols-1 gap-3 min-[420px]:grid-cols-2 lg:grid-cols-4">
+            <ul className="mt-6 grid grid-cols-1 gap-3 min-[420px]:grid-cols-2 lg:grid-cols-4">
               {visibleServices.map((service) => (
                 <li key={service.key}>
                   <Link

@@ -503,12 +503,22 @@ export async function seedDemoData(
     }
     existingAgents.set(agent.key, existing);
   }
+  // Reference ids are queried as ObjectIds: Property.agentId and
+  // PropertyAdvertisement.propertyId resolve to Mixed paths through the Nest
+  // schema factory, so Mongoose does not cast hex strings for them.
   const existingProperties = new Map<string, PlainRecord | null>();
   for (const property of DEMO_PROPERTIES) {
     const owner = existingAgents.get(property.agentKey);
-    const existing = owner
-      ? await collections.properties.findOne({ agentId: owner._id, title: property.title })
-      : null;
+    const matches = owner
+      ? await collections.properties.findMany({
+          agentId: new mongoose.Types.ObjectId(owner._id),
+          title: property.title,
+        })
+      : [];
+    if (matches.length > 1) {
+      collisions.push(`${matches.length} listings titled "${property.title}" for one demo agent`);
+    }
+    const existing = matches[0] ?? null;
     if (existing && !isOwned('property', existing._id)) {
       collisions.push(`listing "${property.title}"`);
     }
@@ -520,7 +530,9 @@ export async function seedDemoData(
   for (const property of DEMO_PROPERTIES) {
     const listing = existingProperties.get(propertySeedKey(property));
     const existing = listing
-      ? await collections.advertisements.findOne({ propertyId: listing._id })
+      ? await collections.advertisements.findOne({
+          propertyId: new mongoose.Types.ObjectId(listing._id),
+        })
       : null;
     if (existing && !isOwned('advertisement', existing._id)) {
       collisions.push(`advertisement for listing "${property.title}"`);

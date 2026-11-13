@@ -24,10 +24,11 @@ import { fetchPublicProperties } from '@/lib/public-properties';
 import { getApiErrorMessage } from '@/lib/api-client';
 import { formatPKR, formatLandArea } from '@/lib/utils';
 import type { MarketplaceProperty } from '@/types/marketplace';
-import { getFeaturedProjects } from '@/lib/projects';
 import type { DevelopmentProject } from '@/types/development-project';
 import { useBuyerSavedProperties } from '@/components/buyer/BuyerSavedPropertiesProvider';
 import { FeaturedAgencies, FeaturedAgents } from './FeaturedDirectory';
+import { getLandingProjects } from '@/lib/projects';
+import { PagedCarousel } from './PagedCarousel';
 
 /* ─────────────────────── HELPERS ─────────────────────── */
 function HouseIcon({ className }: { className?: string }) {
@@ -598,7 +599,7 @@ export function MobileProjects() {
 
   useEffect(() => {
     let active = true;
-    getFeaturedProjects()
+    getLandingProjects()
       .then((results) => {
         if (active) setProjects(results);
       })
@@ -631,16 +632,24 @@ export function MobileProjects() {
       {error ? (
         <p role="alert" className="rounded-xl border border-red-200 bg-red-50 p-3 text-xs text-red-700">{error}</p>
       ) : loading ? (
-        <p className="rounded-xl border border-[#E2E8F0] bg-slate-50 p-4 text-xs text-[#64748B]">Loading featured projects…</p>
+        <div className="grid gap-3">
+          {[1, 2, 3].map((item) => (
+            <div key={item} className="h-[108px] animate-pulse rounded-2xl border border-[#E2E8F0] bg-slate-50" />
+          ))}
+        </div>
       ) : projects.length === 0 ? (
-        <p className="rounded-xl border border-[#E2E8F0] bg-slate-50 p-4 text-xs text-[#64748B]">No featured projects are available right now.</p>
+        <p className="rounded-xl border border-[#E2E8F0] bg-slate-50 p-4 text-xs text-[#64748B]">No projects are available right now.</p>
       ) : (
-      <div className="grid gap-3">
-        {projects.map((project) => (
+      <PagedCarousel
+        items={projects}
+        pageSize={3}
+        label="Our projects"
+        pageClassName="grid gap-3"
+        getKey={(project) => project.id}
+        renderItem={(project) => (
           <Link
-            key={project.id}
             href={`/projects/${encodeURIComponent(project.slug)}`}
-            className="group flex min-w-0 items-center gap-3 overflow-hidden rounded-2xl border border-[#E2E8F0] bg-white p-2.5 shadow-sm transition-colors hover:border-emerald-300"
+            className="group flex h-[108px] min-w-0 items-center gap-3 overflow-hidden rounded-2xl border border-[#E2E8F0] bg-white p-2.5 shadow-[0_1px_3px_rgba(16,29,50,0.06)] transition-colors hover:border-emerald-300"
           >
             <div className="relative h-[86px] w-[34%] max-w-32 shrink-0 overflow-hidden rounded-xl bg-[#EAF7F2]">
               {project.coverImage ? (
@@ -664,8 +673,8 @@ export function MobileProjects() {
               <ArrowRight className="h-4 w-4" />
             </div>
           </Link>
-        ))}
-      </div>
+        )}
+      />
       )}
     </section>
   );

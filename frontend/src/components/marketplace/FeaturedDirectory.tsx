@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import type { ReactNode } from "react";
 import Link from "next/link";
-import { ArrowRight, Building2, MapPin, UserRound } from "lucide-react";
+import { ArrowRight, Building2, MapPin, UserRound, Users } from "lucide-react";
+import { PagedCarousel } from "./PagedCarousel";
 import { getApiErrorMessage } from "@/lib/api-client";
 import {
   fetchFeaturedAgencies,
@@ -98,7 +99,7 @@ export function FeaturedAgents() {
             {agents.map((agent) => (
               <article
                 key={agent.id}
-                className="relative flex w-[calc((100%_-_24px)_/_4)] min-w-0 shrink-0 snap-start flex-col items-center text-center md:w-[230px] md:max-w-[230px] md:items-start md:rounded-2xl md:border md:border-white/10 md:bg-white/[0.06] md:p-3 md:text-left md:shadow-sm md:backdrop-blur-sm"
+                className="relative flex w-[calc((100%_-_24px)_/_3.3)] min-w-0 shrink-0 snap-start rounded-2xl border border-slate-100 bg-white px-1.5 py-2.5 shadow-[0_1px_3px_rgba(16,29,50,0.06)] flex-col items-center text-center md:w-[230px] md:max-w-[230px] md:items-start md:rounded-2xl md:border md:border-white/10 md:bg-white/[0.06] md:p-3 md:text-left md:shadow-sm md:backdrop-blur-sm md:px-3 md:py-3"
               >
                 <Link
                   href={`/agents/${encodeURIComponent(agent.id)}`}
@@ -112,16 +113,16 @@ export function FeaturedAgents() {
                     <img
                       src={agent.avatarUrl}
                       alt={`${agent.name} profile`}
-                      className="h-16 w-16 rounded-full border-2 border-[#00B889] bg-[#EAF7F2] object-cover md:h-11 md:w-11 md:border md:border-white/15 md:bg-white/10"
+                      className="h-14 w-14 rounded-full border-2 border-[#00B889] bg-[#EAF7F2] object-cover md:h-11 md:w-11 md:border md:border-white/15 md:bg-white/10"
                       loading="lazy"
                     />
                   </Link>
                 ) : (
-                  <Link href={`/agents/${encodeURIComponent(agent.id)}`} aria-label={`View ${agent.name}'s profile`} className="relative z-10 flex h-16 w-16 items-center justify-center rounded-full border-2 border-[#00B889] bg-[#EAF7F2] text-[#008F68] md:h-11 md:w-11 md:border-0 md:bg-emerald-400/15 md:text-emerald-200">
+                  <Link href={`/agents/${encodeURIComponent(agent.id)}`} aria-label={`View ${agent.name}'s profile`} className="relative z-10 flex h-14 w-14 items-center justify-center rounded-full border-2 border-[#00B889] bg-[#EAF7F2] text-[#008F68] md:h-11 md:w-11 md:border-0 md:bg-emerald-400/15 md:text-emerald-200">
                     <UserRound className="h-7 w-7 md:h-5 md:w-5" />
                   </Link>
                 )}
-                <Link href={`/agents/${encodeURIComponent(agent.id)}`} className="relative z-10 mt-1 flex w-full min-w-0 items-center justify-center gap-0.5 truncate text-[10px] font-bold leading-tight text-[#101D32] hover:text-emerald-700 md:mt-2 md:justify-start md:gap-1 md:text-sm md:text-white md:hover:text-emerald-200">
+                <Link href={`/agents/${encodeURIComponent(agent.id)}`} className="relative z-10 mt-1 flex w-full min-w-0 items-center justify-center gap-0.5 truncate text-xs font-bold leading-tight text-[#101D32] hover:text-emerald-700 md:mt-2 md:justify-start md:gap-1 md:text-sm md:text-white md:hover:text-emerald-200">
                   <span className="truncate">{agent.name}</span>
                   {agent.isVerified && (
                     <svg
@@ -149,10 +150,10 @@ export function FeaturedAgents() {
                   )}
                 </Link>
                 {agent.isVerified && (
-                  <p className="text-[9px] font-semibold leading-tight text-[#008F68] md:hidden">Verified Agent</p>
+                  <p className="mt-0.5 text-[10px] font-semibold leading-tight text-[#008F68] md:hidden">Verified Agent</p>
                 )}
                 {agent.agencyName && (
-                  <Link href={`/agencies?name=${encodeURIComponent(agent.agencyName)}`} className="relative z-10 mt-0.5 w-full truncate text-[9px] leading-tight text-[#64748B] hover:text-emerald-700 md:text-xs md:text-slate-300 md:hover:text-emerald-200">{agent.agencyName}</Link>
+                  <Link href={`/agencies?name=${encodeURIComponent(agent.agencyName)}`} className="relative z-10 mt-0.5 w-full truncate text-[10px] leading-tight text-[#64748B] hover:text-emerald-700 md:text-xs md:text-slate-300 md:hover:text-emerald-200">{agent.agencyName}</Link>
                 )}
                 {agent.city && (
                   <p className="mt-1 hidden min-w-0 items-center gap-1 text-xs text-slate-300 md:inline-flex">
@@ -162,7 +163,7 @@ export function FeaturedAgents() {
                 )}
                 <Link
                   href={`/agents/${encodeURIComponent(agent.id)}`}
-                  className="relative z-10 mt-1 inline-flex min-h-6 w-full items-center justify-center gap-0.5 rounded-full border border-[#00B889]/50 bg-[#EAF7F2] px-1 text-[8px] font-bold leading-none text-[#008F68] transition-colors hover:bg-emerald-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300 md:mt-2 md:min-h-8 md:w-fit md:gap-1 md:rounded-lg md:border-emerald-300/20 md:bg-emerald-400/10 md:px-2.5 md:text-xs md:text-emerald-200 md:hover:bg-emerald-400/20"
+                  className="relative z-10 mt-2 inline-flex min-h-7 w-full items-center justify-center gap-0.5 rounded-full border border-[#00B889]/50 bg-[#EAF7F2] px-1 text-[10px] font-bold leading-none text-[#008F68] transition-colors hover:bg-emerald-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300 md:mt-2 md:min-h-8 md:w-fit md:gap-1 md:rounded-lg md:border-emerald-300/20 md:bg-emerald-400/10 md:px-2.5 md:text-xs md:text-emerald-200 md:hover:bg-emerald-400/20"
                 >
                   View Profile <ArrowRight className="h-3 w-3 shrink-0 md:h-3.5 md:w-3.5" />
                 </Link>
@@ -204,22 +205,22 @@ export function FeaturedAgencies() {
   }, []);
 
   return (
-    <section aria-labelledby="featured-agencies-heading" className="bg-white px-4 py-3 md:bg-slate-50 md:px-6 md:py-10 md:dark:bg-slate-900 lg:px-8 lg:py-14">
-      <div className="mx-auto max-w-7xl rounded-3xl bg-[#EAF7F2] p-3.5 md:rounded-none md:bg-transparent md:p-0">
+    <section aria-labelledby="featured-agencies-heading" className="border-y border-slate-100 bg-[#F6F8FB] px-4 py-6 md:border-slate-200 md:px-6 md:py-12 md:dark:border-slate-800 md:dark:bg-slate-900 lg:px-8 lg:py-14">
+      <div className="mx-auto max-w-7xl">
         <SectionHeading
           id="featured-agencies-heading"
           eyebrow="Trusted local firms"
           title="Featured Agencies & Estates"
           action={
-            <Link href="/agencies" aria-label="View all agencies" className="mb-0.5 inline-flex shrink-0 items-center gap-1 text-[9px] font-bold text-[#008F68] md:hidden">
-              All Agencies <ArrowRight className="h-3 w-3" />
+            <Link href="/agencies" className="mb-0.5 inline-flex shrink-0 items-center gap-1 text-xs font-bold text-[#008F68] hover:text-emerald-800 md:text-sm md:dark:text-emerald-400">
+              View All <ArrowRight aria-hidden="true" className="h-3.5 w-3.5" />
             </Link>
           }
         />
         {loading ? (
-          <div className="grid grid-cols-2 gap-2 md:grid-cols-2 md:gap-3 lg:grid-cols-3">
+          <div className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4 lg:gap-5">
             {[1, 2, 3, 4].map((item) => (
-              <div key={item} className="h-[198px] animate-pulse rounded-2xl bg-white md:h-[220px] md:dark:bg-slate-950" />
+              <div key={item} className="h-[212px] animate-pulse rounded-2xl border border-slate-200 bg-white md:h-[264px] md:dark:border-slate-800 md:dark:bg-slate-950" />
             ))}
           </div>
         ) : error ? (
@@ -227,11 +228,14 @@ export function FeaturedAgencies() {
             {error}
           </p>
         ) : agencies.length ? (
-          <div className="grid grid-cols-2 gap-2 md:grid-cols-2 md:gap-3 lg:grid-cols-3">
-            {agencies.map((agency) => (
-              <FeaturedAgencyCard key={agency.name} agency={agency} />
-            ))}
-          </div>
+          <PagedCarousel
+            items={agencies}
+            pageSize={4}
+            label="Featured agencies"
+            pageClassName="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4 lg:gap-5"
+            getKey={(agency) => agency.name}
+            renderItem={(agency) => <FeaturedAgencyCard agency={agency} />}
+          />
         ) : (
           <p className="rounded-xl border border-dashed border-slate-300 p-4 text-center text-xs text-slate-500 md:p-6 md:text-sm md:dark:border-slate-700">
             No agency affiliations are available yet.
@@ -245,13 +249,14 @@ export function FeaturedAgencies() {
 function FeaturedAgencyCard({ agency }: { agency: PublicAgency }) {
   const [logoFailed, setLogoFailed] = useState(false);
   const [coverFailed, setCoverFailed] = useState(false);
+  const city = agency.locations.find((location) => location?.trim());
 
   return (
     <Link
       href={`/agencies?name=${encodeURIComponent(agency.name)}`}
-      className="relative flex min-h-[198px] min-w-0 flex-col overflow-hidden rounded-xl border border-white bg-white shadow-sm hover:border-emerald-300 md:min-h-[220px] md:rounded-2xl md:border-slate-200 md:dark:border-slate-800 md:dark:bg-slate-950"
+      className="group flex h-full min-w-0 flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_1px_3px_rgba(16,29,50,0.06)] transition duration-200 hover:-translate-y-0.5 hover:border-emerald-300 hover:shadow-[0_14px_30px_rgba(16,29,50,0.10)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 md:dark:border-slate-800 md:dark:bg-slate-950"
     >
-      <div className="relative h-[72px] w-full shrink-0 bg-gradient-to-br from-emerald-800 via-teal-700 to-slate-700 md:h-[88px]">
+      <div className="relative h-[76px] w-full shrink-0 overflow-hidden bg-gradient-to-br from-emerald-800 via-teal-700 to-slate-700 md:h-28">
         {agency.coverImageUrl && !coverFailed && (
           <img
             src={agency.coverImageUrl}
@@ -259,12 +264,13 @@ function FeaturedAgencyCard({ agency }: { agency: PublicAgency }) {
             aria-hidden="true"
             loading="lazy"
             onError={() => setCoverFailed(true)}
-            className="absolute inset-0 h-full w-full object-cover object-center"
+            className="absolute inset-0 h-full w-full object-cover object-center transition-transform duration-500 group-hover:scale-105"
           />
         )}
+        <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-[#071B2B]/45 via-transparent to-transparent" />
       </div>
-      <div className="relative flex flex-1 flex-col bg-white px-3 pb-2 pt-2 md:px-4 md:pb-3 md:pt-3">
-        <span className="absolute -top-7 left-3 flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-white bg-[#EAF7F2] text-[#008F68] shadow-sm md:-top-8 md:left-4 md:h-16 md:w-16 md:rounded-2xl md:bg-emerald-50 md:text-emerald-700 md:dark:bg-emerald-950 md:dark:text-emerald-300">
+      <div className="flex flex-1 flex-col items-center px-3 pb-3 text-center md:px-4 md:pb-4">
+        <span className="relative -mt-8 flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl border-[3px] border-white bg-white text-[#008F68] shadow-md md:-mt-10 md:h-[72px] md:w-[72px] md:dark:border-slate-950 md:dark:bg-slate-900 md:dark:text-emerald-300">
           {agency.logoUrl && !logoFailed ? (
             <img
               src={agency.logoUrl}
@@ -277,14 +283,18 @@ function FeaturedAgencyCard({ agency }: { agency: PublicAgency }) {
             <Building2 className="h-6 w-6 md:h-8 md:w-8" aria-hidden="true" />
           )}
         </span>
-        <div className="min-w-0 pl-[4.25rem]">
-          <h3 className="truncate text-[10px] font-bold leading-tight text-[#101D32] md:text-base md:dark:text-white">{agency.name}</h3>
-          <p className="mt-1 text-[10px] leading-tight text-[#64748B] md:text-xs md:dark:text-slate-400">
+        <h3 className="mt-2 line-clamp-2 min-h-[2.5em] w-full text-[13px] font-bold leading-tight text-[#101D32] transition-colors group-hover:text-emerald-700 md:mt-3 md:text-base md:dark:text-white">
+          {agency.name}
+        </h3>
+        <p className="mt-1 flex w-full min-w-0 items-center justify-center gap-1 text-[11px] text-[#64748B] md:text-xs md:dark:text-slate-400">
+          <Users aria-hidden="true" className="h-3.5 w-3.5 shrink-0 text-emerald-600" />
+          <span className="truncate">
             {agency.agentCount} {agency.agentCount === 1 ? "agent" : "agents"}
-          </p>
-        </div>
-        <span className="mt-auto inline-flex min-h-8 items-center gap-1 text-[9px] font-semibold text-[#008F68] hover:text-emerald-800 md:min-h-10 md:text-sm md:text-emerald-700 md:dark:text-emerald-300">
-          View Agency <ArrowRight className="h-3 w-3 md:h-4 md:w-4" />
+            {city ? ` · ${city}` : ""}
+          </span>
+        </p>
+        <span className="mt-auto inline-flex min-h-9 w-full items-center justify-center gap-1 rounded-xl border border-emerald-200 bg-emerald-50 text-[11px] font-bold text-emerald-700 transition-colors group-hover:border-emerald-600 group-hover:bg-emerald-600 group-hover:text-white md:min-h-10 md:text-sm md:dark:border-emerald-800 md:dark:bg-emerald-950/60 md:dark:text-emerald-300">
+          View Agency <ArrowRight aria-hidden="true" className="h-3.5 w-3.5 md:h-4 md:w-4" />
         </span>
       </div>
     </Link>

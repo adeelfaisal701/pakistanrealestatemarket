@@ -17,6 +17,13 @@ export function getPublishedProjects(): Promise<DevelopmentProject[]> {
   return unwrap(apiClient.get<ApiEnvelope<DevelopmentProject[]>>('/projects'));
 }
 
+/** Published projects for the landing-page carousels, featured ones first (stable otherwise). */
+export function getLandingProjects(): Promise<DevelopmentProject[]> {
+  return getPublishedProjects().then((results) =>
+    [...results].sort((a, b) => Number(b.isFeatured) - Number(a.isFeatured)),
+  );
+}
+
 export function getPublishedProject(slug: string): Promise<DevelopmentProject> {
   return unwrap(
     apiClient.get<ApiEnvelope<DevelopmentProject>>(
