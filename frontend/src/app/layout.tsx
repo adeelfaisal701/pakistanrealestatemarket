@@ -1,21 +1,42 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Plus_Jakarta_Sans } from 'next/font/google';
 import 'leaflet/dist/leaflet.css';
 import './globals.css';
 import { BuyerSavedPropertiesProvider } from '@/components/buyer/BuyerSavedPropertiesProvider';
+import { DEFAULT_LOCALE, SITE_NAME, SITE_URL } from '@/lib/seo/site';
 
+const googleSiteVerification = process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION?.trim();
+
+/*
+ * Site-wide defaults. Pages set their own title, description and canonical;
+ * no canonical is set here so it can never leak onto child routes.
+ */
 export const metadata: Metadata = {
-  title: 'Ghar Safar | Pakistan Real Estate Marketplace',
+  metadataBase: new URL(SITE_URL),
+  title: 'Ghar Safar | Property for Sale & Rent in Lahore, Pakistan',
   description:
-    'Ghar Safar — Har Khwab Ki Manzil, Apna Ghar. Find verified houses, plots, and apartments across Pakistan.',
-  keywords: [
-    'Lahore Real Estate',
-    'Pakistan Property',
-    'DHA Lahore Houses',
-    'Bahria Town Lahore Plots',
-    'Johar Town Flats',
-    'Agent CRM Pakistan',
-  ],
+    'Ghar Safar — Har Khwab Ki Manzil, Apna Ghar. Find verified houses, plots, apartments and commercial property for sale and rent in Lahore, connect with trusted agents and book home maintenance.',
+  applicationName: SITE_NAME,
+  referrer: 'strict-origin-when-cross-origin',
+  formatDetection: { telephone: false, email: false, address: false },
+  openGraph: {
+    type: 'website',
+    siteName: SITE_NAME,
+    locale: DEFAULT_LOCALE,
+  },
+  twitter: { card: 'summary_large_image' },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: { index: true, follow: true, 'max-image-preview': 'large', 'max-snippet': -1, 'max-video-preview': -1 },
+  },
+  ...(googleSiteVerification ? { verification: { google: googleSiteVerification } } : {}),
+};
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  themeColor: '#071b2b',
 };
 
 export const dynamic = 'force-dynamic';

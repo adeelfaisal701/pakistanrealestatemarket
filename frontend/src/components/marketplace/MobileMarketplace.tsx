@@ -30,6 +30,7 @@ import { FeaturedAgencies, FeaturedAgents } from './FeaturedDirectory';
 import { getLandingProjects } from '@/lib/projects';
 import { PagedCarousel } from './PagedCarousel';
 import { useMediaQuery } from '@/hooks/use-media-query';
+import { propertyPath } from '@/lib/seo/slug';
 
 /* ─────────────────────── HELPERS ─────────────────────── */
 function HouseIcon({ className }: { className?: string }) {
@@ -60,10 +61,9 @@ function MobileHeader() {
         <Link href="/" className="flex min-h-12 min-w-0 items-center gap-2">
           <Image
             src="/images/ghar-safar-logo.png"
-            unoptimized
             alt="Ghar Safar logo"
-            width={798}
-            height={768}
+            width={72}
+            height={70}
             className="h-[70px] w-[72px] shrink-0 object-contain max-[359px]:h-[62px] max-[359px]:w-16"
           />
           <span className="flex min-w-0 flex-col">
@@ -443,7 +443,7 @@ function MobileFeaturedCard({ property }: { property: MarketplaceProperty }) {
 
         {/* View Details button */}
         <Link
-          href={`/property/${encodeURIComponent(property.id)}`}
+          href={propertyPath(property)}
           className="mt-auto flex items-center justify-center gap-1.5 w-full py-2 rounded-xl border border-emerald-200 text-emerald-700 text-xs font-semibold hover:bg-emerald-50 transition-colors"
         >
           View Details

@@ -12,7 +12,6 @@ export function Navbar() {
         <Link href="/" className="flex items-center gap-2.5 group">
           <Image
             src="/images/ghar-safar-logo.png"
-            unoptimized
             alt="Ghar Safar logo"
             width={44}
             height={42}

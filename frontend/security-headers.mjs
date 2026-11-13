@@ -18,6 +18,17 @@ export function buildContentSecurityPolicy(environment = process.env, nonce) {
     environment.NODE_ENV,
   );
   const isDevelopment = environment.NODE_ENV === "development";
+  // Google Analytics 4 origins are allowed only when a measurement ID is configured.
+  const analyticsEnabled = /^G-[A-Z0-9]{4,20}$/.test(
+    environment.NEXT_PUBLIC_GA_MEASUREMENT_ID?.trim() ?? "",
+  );
+  const analyticsScript = analyticsEnabled ? " https://www.googletagmanager.com" : "";
+  const analyticsConnect = analyticsEnabled
+    ? " https://*.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com"
+    : "";
+  const analyticsImages = analyticsEnabled
+    ? " https://*.google-analytics.com https://*.googletagmanager.com"
+    : "";
 
   return [
     "default-src 'self'",
@@ -25,16 +36,16 @@ export function buildContentSecurityPolicy(environment = process.env, nonce) {
     "object-src 'none'",
     "form-action 'self'",
     "frame-ancestors 'none'",
-    `script-src 'self' 'nonce-${nonce}'${isDevelopment ? " 'unsafe-eval'" : ""}`,
+    `script-src 'self' 'nonce-${nonce}'${isDevelopment ? " 'unsafe-eval'" : ""}${analyticsScript}`,
     "script-src-attr 'none'",
     `style-src 'self' 'nonce-${nonce}'`,
     "style-src-attr 'unsafe-inline'",
     isDevelopment
       ? "style-src-elem 'self' 'unsafe-inline'"
       : `style-src-elem 'self' 'nonce-${nonce}'`,
-    `img-src 'self' data: blob: ${[...new Set([...DEFAULT_IMAGE_ORIGINS, ...imageOrigins])].join(" ")}`,
+    `img-src 'self' data: blob: ${[...new Set([...DEFAULT_IMAGE_ORIGINS, ...imageOrigins])].join(" ")}${analyticsImages}`,
     `font-src 'self' data:`,
-    `connect-src 'self' ${apiOrigin ?? ""}`.trim(),
+    `connect-src 'self' ${apiOrigin ?? ""}${analyticsConnect}`.replace(/\s+/g, " ").trim(),
     "frame-src https://maps.google.com",
     "worker-src 'self' blob:",
     "manifest-src 'self'",

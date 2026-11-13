@@ -119,7 +119,6 @@ export function AgentAccessGuard({ children }: { children: React.ReactNode }) {
         <section className="flex w-full max-w-sm flex-col items-center rounded-3xl border border-[#E2E8F0] bg-white p-8 text-center shadow-sm">
           <Image
             src="/images/ghar-safar-logo.png"
-            unoptimized
             alt="Ghar Safar logo"
             width={50}
             height={48}

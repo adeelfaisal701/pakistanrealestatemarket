@@ -137,7 +137,7 @@ export function TechnicianChrome({
       <header className="sticky top-0 z-30 bg-[#0b2c5f] text-white shadow-[0_6px_20px_rgba(11,37,69,0.25)]">
         <div className="mx-auto flex min-h-16 max-w-5xl items-center gap-3 px-4 sm:px-6">
           <Link href="/technician" className="flex items-center gap-2.5">
-            <Image src="/images/ghar-safar-logo.png" unoptimized alt="Ghar Safar logo" width={36} height={35} className="h-8 w-8 rounded-lg bg-white/95 object-contain p-0.5" />
+            <Image src="/images/ghar-safar-logo.png" alt="Ghar Safar logo" width={36} height={35} className="h-8 w-8 rounded-lg bg-white/95 object-contain p-0.5" />
             <span className="leading-tight">
               <span className="block text-sm font-black">Ghar Safar</span>
               <span className="block text-[10px] font-bold uppercase tracking-[0.14em] text-[#9fc3f5]">Technician</span>

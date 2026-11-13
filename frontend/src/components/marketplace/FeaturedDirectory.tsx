@@ -5,6 +5,7 @@ import type { ReactNode } from "react";
 import Link from "next/link";
 import { ArrowRight, Building2, MapPin, UserRound, Users } from "lucide-react";
 import { PagedCarousel } from "./PagedCarousel";
+import { agencyPath, agentPath } from "@/lib/seo/slug";
 import { getApiErrorMessage } from "@/lib/api-client";
 import {
   fetchFeaturedAgencies,
@@ -102,14 +103,14 @@ export function FeaturedAgents() {
                 className="relative flex w-[calc((100%_-_24px)_/_3.3)] min-w-0 shrink-0 snap-start rounded-2xl border border-slate-100 bg-white px-1.5 py-2.5 shadow-[0_1px_3px_rgba(16,29,50,0.06)] flex-col items-center text-center md:w-[230px] md:max-w-[230px] md:items-start md:rounded-2xl md:border md:border-white/10 md:bg-white/[0.06] md:p-3 md:text-left md:shadow-sm md:backdrop-blur-sm md:px-3 md:py-3"
               >
                 <Link
-                  href={`/agents/${encodeURIComponent(agent.id)}`}
+                  href={agentPath(agent)}
                   aria-label={`View ${agent.name}'s profile`}
                   className="absolute inset-0 z-0 rounded-2xl"
                 >
                   <span className="sr-only">View agent profile</span>
                 </Link>
                 {agent.avatarUrl ? (
-                  <Link href={`/agents/${encodeURIComponent(agent.id)}`} aria-label={`View ${agent.name}'s profile`} className="relative z-10">
+                  <Link href={agentPath(agent)} aria-label={`View ${agent.name}'s profile`} className="relative z-10">
                     <img
                       src={agent.avatarUrl}
                       alt={`${agent.name} profile`}
@@ -118,11 +119,11 @@ export function FeaturedAgents() {
                     />
                   </Link>
                 ) : (
-                  <Link href={`/agents/${encodeURIComponent(agent.id)}`} aria-label={`View ${agent.name}'s profile`} className="relative z-10 flex h-14 w-14 items-center justify-center rounded-full border-2 border-[#00B889] bg-[#EAF7F2] text-[#008F68] md:h-11 md:w-11 md:border-0 md:bg-emerald-400/15 md:text-emerald-200">
+                  <Link href={agentPath(agent)} aria-label={`View ${agent.name}'s profile`} className="relative z-10 flex h-14 w-14 items-center justify-center rounded-full border-2 border-[#00B889] bg-[#EAF7F2] text-[#008F68] md:h-11 md:w-11 md:border-0 md:bg-emerald-400/15 md:text-emerald-200">
                     <UserRound className="h-7 w-7 md:h-5 md:w-5" />
                   </Link>
                 )}
-                <Link href={`/agents/${encodeURIComponent(agent.id)}`} className="relative z-10 mt-1 flex w-full min-w-0 items-center justify-center gap-0.5 truncate text-xs font-bold leading-tight text-[#101D32] hover:text-emerald-700 md:mt-2 md:justify-start md:gap-1 md:text-sm md:text-white md:hover:text-emerald-200">
+                <Link href={agentPath(agent)} className="relative z-10 mt-1 flex w-full min-w-0 items-center justify-center gap-0.5 truncate text-xs font-bold leading-tight text-[#101D32] hover:text-emerald-700 md:mt-2 md:justify-start md:gap-1 md:text-sm md:text-white md:hover:text-emerald-200">
                   <span className="truncate">{agent.name}</span>
                   {agent.isVerified && (
                     <svg
@@ -153,7 +154,7 @@ export function FeaturedAgents() {
                   <p className="mt-0.5 text-[10px] font-semibold leading-tight text-[#008F68] md:hidden">Verified Agent</p>
                 )}
                 {agent.agencyName && (
-                  <Link href={`/agencies?name=${encodeURIComponent(agent.agencyName)}`} className="relative z-10 mt-0.5 w-full truncate text-[10px] leading-tight text-[#64748B] hover:text-emerald-700 md:text-xs md:text-slate-300 md:hover:text-emerald-200">{agent.agencyName}</Link>
+                  <Link href={agencyPath(agent.agencyName)} className="relative z-10 mt-0.5 w-full truncate text-[10px] leading-tight text-[#64748B] hover:text-emerald-700 md:text-xs md:text-slate-300 md:hover:text-emerald-200">{agent.agencyName}</Link>
                 )}
                 {agent.city && (
                   <p className="mt-1 hidden min-w-0 items-center gap-1 text-xs text-slate-300 md:inline-flex">
@@ -162,7 +163,7 @@ export function FeaturedAgents() {
                   </p>
                 )}
                 <Link
-                  href={`/agents/${encodeURIComponent(agent.id)}`}
+                  href={agentPath(agent)}
                   className="relative z-10 mt-2 inline-flex min-h-7 w-full items-center justify-center gap-0.5 rounded-full border border-[#00B889]/50 bg-[#EAF7F2] px-1 text-[10px] font-bold leading-none text-[#008F68] transition-colors hover:bg-emerald-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300 md:mt-2 md:min-h-8 md:w-fit md:gap-1 md:rounded-lg md:border-emerald-300/20 md:bg-emerald-400/10 md:px-2.5 md:text-xs md:text-emerald-200 md:hover:bg-emerald-400/20"
                 >
                   View Profile <ArrowRight className="h-3 w-3 shrink-0 md:h-3.5 md:w-3.5" />
@@ -253,7 +254,7 @@ function FeaturedAgencyCard({ agency }: { agency: PublicAgency }) {
 
   return (
     <Link
-      href={`/agencies?name=${encodeURIComponent(agency.name)}`}
+      href={agencyPath(agency.name)}
       className="group flex h-full min-w-0 flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_1px_3px_rgba(16,29,50,0.06)] transition duration-200 hover:-translate-y-0.5 hover:border-emerald-300 hover:shadow-[0_14px_30px_rgba(16,29,50,0.10)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 md:dark:border-slate-800 md:dark:bg-slate-950"
     >
       <div className="relative h-[76px] w-full shrink-0 overflow-hidden bg-gradient-to-br from-emerald-800 via-teal-700 to-slate-700 md:h-28">

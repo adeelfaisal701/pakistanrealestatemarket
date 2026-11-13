@@ -26,7 +26,7 @@ export function PropertyCareAuthLayout({
         <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-br from-[#081d40]/95 via-[#0b2c5f]/80 to-[#1660d0]/50" />
         <div className="relative flex flex-1 flex-col justify-between p-10 xl:p-14">
           <Link href="/maintenance" className="flex items-center gap-3" aria-label="Ghar Safar Property Care home">
-            <Image src="/images/ghar-safar-logo.png" unoptimized alt="Ghar Safar logo" width={48} height={47} className="h-12 w-12 rounded-xl bg-white p-1 object-contain" />
+            <Image src="/images/ghar-safar-logo.png" alt="Ghar Safar logo" width={48} height={47} className="h-12 w-12 rounded-xl bg-white p-1 object-contain" />
             <span className="leading-tight">
               <span className="block text-xl font-black tracking-[-0.03em]">Ghar Safar</span>
               <span className="block text-[11px] font-extrabold uppercase tracking-[0.18em] text-[#9fc3f5]">Property Care</span>
@@ -57,7 +57,7 @@ export function PropertyCareAuthLayout({
         <header className="bg-gradient-to-br from-[#0b2c5f] to-[#1660d0] px-5 pb-20 pt-5 text-white lg:hidden">
           <div className="flex items-center justify-between">
             <Link href="/maintenance" className="flex items-center gap-2.5" aria-label="Ghar Safar Property Care home">
-              <Image src="/images/ghar-safar-logo.png" unoptimized alt="Ghar Safar logo" width={40} height={39} className="h-10 w-10 rounded-xl bg-white p-0.5 object-contain" />
+              <Image src="/images/ghar-safar-logo.png" alt="Ghar Safar logo" width={40} height={39} className="h-10 w-10 rounded-xl bg-white p-0.5 object-contain" />
               <span className="leading-tight">
                 <span className="block text-base font-black tracking-[-0.03em]">Ghar Safar</span>
                 <span className="block text-[10px] font-extrabold uppercase tracking-[0.18em] text-[#9fc3f5]">Property Care</span>

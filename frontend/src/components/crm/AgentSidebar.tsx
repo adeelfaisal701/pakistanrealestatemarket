@@ -194,7 +194,6 @@ export function AgentSidebar() {
         <div className="flex h-20 flex-shrink-0 items-center gap-3 border-b border-[#16243a] px-6">
           <Image
             src="/images/ghar-safar-logo.png"
-            unoptimized
             alt="Ghar Safar logo"
             width={48}
             height={46}
@@ -276,7 +275,6 @@ export function AgentSidebar() {
         <div className="flex min-w-0 items-center gap-2.5">
           <Image
             src="/images/ghar-safar-logo.png"
-            unoptimized
             alt="Ghar Safar logo"
             width={40}
             height={39}
@@ -538,7 +536,6 @@ export function AgentSidebar() {
         <div className="flex items-center gap-2.5">
           <Image
             src="/images/ghar-safar-logo.png"
-            unoptimized
             alt="Ghar Safar logo"
             width={40}
             height={39}

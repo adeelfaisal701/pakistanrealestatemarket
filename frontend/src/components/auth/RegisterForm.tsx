@@ -273,7 +273,6 @@ export default function RegisterForm() {
         <CardHeader className="text-center space-y-2">
           <Image
             src="/images/ghar-safar-logo.png"
-            unoptimized
             alt="Ghar Safar logo"
             width={50}
             height={48}

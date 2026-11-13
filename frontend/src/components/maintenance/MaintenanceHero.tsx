@@ -72,7 +72,7 @@ export function MaintenanceHeader({ signedIn }: { signedIn: boolean }) {
     <header className="sticky top-0 z-40 hidden border-b border-[#e6ecf5]/80 bg-white/90 backdrop-blur-md md:block">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-2 px-3 sm:h-18 sm:px-5 lg:px-6 xl:h-20 xl:px-8">
         <Link href="/maintenance" className="inline-flex min-w-0 items-center gap-2 sm:gap-2.5 xl:gap-3" aria-label="Ghar Safar Property Care home">
-          <Image src="/images/ghar-safar-logo.png" unoptimized alt="Ghar Safar logo" width={58} height={56} className="h-11 w-11 shrink-0 object-contain sm:h-12 sm:w-12 xl:h-[52px] xl:w-[52px]" />
+          <Image src="/images/ghar-safar-logo.png" alt="Ghar Safar logo" width={58} height={56} className="h-11 w-11 shrink-0 object-contain sm:h-12 sm:w-12 xl:h-[52px] xl:w-[52px]" />
           <span className="min-w-0 leading-none">
             <span className="block truncate text-xl font-black tracking-tight text-[#0f2747] sm:text-2xl xl:text-[26px]">Ghar Safar</span>
             <span className="mt-1 block text-[10px] font-bold uppercase tracking-[0.14em] text-[#1660d0] sm:text-[11px]">Property Care</span>
@@ -100,7 +100,7 @@ export function MaintenanceMobileHero({ signedIn }: { signedIn: boolean }) {
       <header className="absolute inset-x-0 top-0 z-30 border-b border-slate-200/80 bg-white/95 px-3 pb-2 pt-[max(0.75rem,env(safe-area-inset-top))] shadow-sm backdrop-blur-md min-[360px]:px-4">
         <div className="flex items-center justify-between gap-2">
           <Link href="/maintenance" className="flex min-h-12 min-w-0 items-center gap-2" aria-label="Ghar Safar Property Care home">
-            <Image src="/images/ghar-safar-logo.png" unoptimized alt="Ghar Safar logo" width={798} height={768} className="h-[70px] w-[72px] shrink-0 object-contain max-[359px]:h-[62px] max-[359px]:w-16" />
+            <Image src="/images/ghar-safar-logo.png" alt="Ghar Safar logo" width={72} height={70} className="h-[70px] w-[72px] shrink-0 object-contain max-[359px]:h-[62px] max-[359px]:w-16" />
             <span className="flex min-w-0 flex-col">
               <span className="whitespace-nowrap text-[19px] font-extrabold leading-5 text-[#0f2747] max-[359px]:text-[18px]">Ghar Safar</span>
               <span className="whitespace-nowrap text-[8px] font-bold leading-3 tracking-[0.1em] text-[#1660d0] max-[359px]:text-[7px]">PROPERTY CARE</span>

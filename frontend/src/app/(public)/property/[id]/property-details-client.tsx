@@ -36,9 +36,20 @@ import { createAnalyticsId, recordPropertyEvent } from "@/lib/property-analytics
 import { normalizeInternationalPhone } from "@/lib/phone";
 import { formatLandArea } from "@/lib/utils";
 import type { MarketplaceProperty, PropertyFeatureData } from "@/types/marketplace";
+import { agencyPath, agentPath, propertyPath } from "@/lib/seo/slug";
+import { canonicalListingSearch, listingSearchPath } from "@/lib/seo/listing-search";
+import { Breadcrumbs } from "@/lib/seo/structured-data";
 
 interface PropertyDetailsClientProps {
   propertyId: string;
+  /** Listing fetched on the server so the page is fully rendered for search engines. */
+  initialProperty?: MarketplaceProperty;
+}
+
+/** Descriptive alt text: "<title> — House for Sale in DHA Phase 6, Lahore (photo 2)". */
+function propertyImageAlt(property: MarketplaceProperty, index: number) {
+  const place = [property.location.area, property.location.city].filter(Boolean).join(", ");
+  return `${property.title} — ${property.propertyType} for ${property.purpose}${place ? ` in ${place}` : ""} (photo ${index + 1})`;
 }
 
 const ROOM_LABELS: Record<string, string> = {
@@ -270,9 +281,13 @@ function MobilePropertyHeader({
 
 export default function PropertyDetailsClient({
   propertyId,
+  initialProperty,
 }: PropertyDetailsClientProps) {
-  const [property, setProperty] = useState<MarketplaceProperty | null>(null);
-  const [loading, setLoading] = useState(true);
+  // Server-rendered listing (SEO): shown immediately, without a loading state.
+  const usableInitial = initialProperty?.id === propertyId ? initialProperty : null;
+  const [property, setProperty] = useState<MarketplaceProperty | null>(usableInitial);
+  const [loading, setLoading] = useState(!usableInitial);
+  const initialConsumed = useRef(false);
   const [error, setError] = useState("");
   const [activeImage, setActiveImage] = useState(0);
   const [lightboxOpen, setLightboxOpen] = useState(false);
@@ -295,10 +310,15 @@ export default function PropertyDetailsClient({
     }
     const visitId = viewVisit.current.viewId;
     setExpandedFeatureCategory(null);
-    setLoading(true);
     setError("");
 
-    fetchPublicProperty(propertyId)
+    // First run with server-provided data: reuse it (no duplicate request);
+    // the view is still recorded exactly once below.
+    const useInitial = Boolean(usableInitial) && !initialConsumed.current;
+    initialConsumed.current = true;
+    if (!useInitial) setLoading(true);
+
+    (useInitial && usableInitial ? Promise.resolve(usableInitial) : fetchPublicProperty(propertyId))
       .then((result) => {
         if (!active) return;
         setProperty(result);
@@ -583,7 +603,7 @@ export default function PropertyDetailsClient({
 
   const agent = property.agent;
   const agentProfileHref = agent?._id
-    ? `/agents/${encodeURIComponent(agent._id)}`
+    ? agentPath({ id: agent._id, name: agent.name })
     : undefined;
   const phone = normalizeInternationalPhone(agent?.phone ?? "");
   const availability = property.availabilityStatus ?? "available";
@@ -732,7 +752,7 @@ export default function PropertyDetailsClient({
                   >
                     <img
                       src={image}
-                      alt={`${property.title} property photo ${index + 1}`}
+                      alt={propertyImageAlt(property, index)}
                       className="h-full w-full object-cover"
                       onError={() => markImageBroken(image)}
                     />
@@ -760,7 +780,7 @@ export default function PropertyDetailsClient({
                 >
                   <img
                     src={currentImage}
-                    alt={`${property.title} property photo ${activeImage + 1}`}
+                    alt={propertyImageAlt(property, activeImage)}
                     className="h-full w-full object-cover"
                     onError={() => markImageBroken(currentImage)}
                   />
@@ -873,6 +893,17 @@ export default function PropertyDetailsClient({
 
           <Card className="flex min-w-0 flex-col justify-between rounded-2xl border-slate-200 p-5 dark:border-slate-800 sm:p-6 max-md:rounded-none max-md:border-0 max-md:px-4 max-md:py-5 max-md:shadow-none">
             <div className="flex flex-col">
+              <Breadcrumbs
+                className="order-first mb-3"
+                items={[
+                  { name: "Home", path: "/" },
+                  { name: "Properties", path: "/properties" },
+                  ...(property.location.city
+                    ? [{ name: property.location.city, path: listingSearchPath(canonicalListingSearch({ city: property.location.city })) }]
+                    : []),
+                  { name: property.title },
+                ]}
+              />
               <p className="order-1 text-[26px] font-extrabold leading-8 tracking-tight text-[#005c55] dark:text-emerald-300 md:order-4 md:mt-5 md:text-2xl md:text-emerald-800 dark:md:text-emerald-300">
                 {formatPrice(property.price)}
                 {property.purpose === "Rent" && (
@@ -989,7 +1020,7 @@ export default function PropertyDetailsClient({
                     )}
                   </h2>
                   {agent?.agencyName && (
-                    <Link href={`/agencies?name=${encodeURIComponent(agent.agencyName)}`} className="mt-0.5 block truncate text-xs text-slate-600 hover:text-emerald-700 dark:text-slate-300 dark:hover:text-emerald-300">
+                    <Link href={agencyPath(agent.agencyName)} className="mt-0.5 block truncate text-xs text-slate-600 hover:text-emerald-700 dark:text-slate-300 dark:hover:text-emerald-300">
                       {agent.agencyName}
                     </Link>
                   )}
@@ -1461,7 +1492,7 @@ export default function PropertyDetailsClient({
                     {similarProperty.images[0] ? (
                       <img
                         src={similarProperty.images[0]}
-                        alt={similarProperty.title}
+                        alt={propertyImageAlt(similarProperty, 0)}
                         className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
                         loading="lazy"
                       />
@@ -1485,7 +1516,7 @@ export default function PropertyDetailsClient({
                       )}
                     </p>
                     <Link
-                      href={`/property/${encodeURIComponent(similarProperty.id)}`}
+                      href={propertyPath(similarProperty)}
                       className="line-clamp-2 min-h-10 text-sm font-semibold text-slate-900 hover:text-emerald-700 dark:text-white dark:hover:text-emerald-300"
                     >
                       {similarProperty.title}
@@ -1506,7 +1537,7 @@ export default function PropertyDetailsClient({
                       </span>
                     </p>
                     <Link
-                      href={`/property/${encodeURIComponent(similarProperty.id)}`}
+                      href={propertyPath(similarProperty)}
                       className="inline-flex min-h-10 w-full items-center justify-center rounded-lg border border-emerald-200 text-sm font-semibold text-emerald-800 transition-colors hover:bg-emerald-50 dark:border-emerald-900 dark:text-emerald-300 dark:hover:bg-emerald-950/40"
                     >
                       View details
@@ -1554,7 +1585,7 @@ export default function PropertyDetailsClient({
           )}
           <img
             src={currentImage}
-            alt={`${property.title} photo ${activeImage + 1}`}
+            alt={propertyImageAlt(property, activeImage)}
             className="max-h-full max-w-full object-contain"
             onClick={(event) => event.stopPropagation()}
             onError={() => markImageBroken(currentImage)}

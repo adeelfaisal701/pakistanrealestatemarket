@@ -50,7 +50,6 @@ export function HomepageFooter({ showBackToTop = false }: { showBackToTop?: bool
           <Link href="/" className="inline-flex items-center gap-2.5" aria-label="Ghar Safar home">
             <Image
               src="/images/ghar-safar-logo.png"
-              unoptimized
               alt="Ghar Safar logo"
               width={78}
               height={75}

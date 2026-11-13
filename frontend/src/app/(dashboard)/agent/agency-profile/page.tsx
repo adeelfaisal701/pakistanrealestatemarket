@@ -24,6 +24,7 @@ import {
   type ManagedAgencyProfile,
 } from "@/lib/public-directory";
 import { fetchPublicPropertiesPage, type PublicPropertiesPage } from "@/lib/public-properties";
+import { agencyPath, agentPath } from "@/lib/seo/slug";
 
 const IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
 const MAX_IMAGE_SIZE = 10 * 1024 * 1024;
@@ -237,7 +238,7 @@ export default function AgencyProfileEditPage() {
   }
 
   const retainedGallery = profile.galleryUrls.filter((url) => !removedGalleryUrls.includes(url));
-  const profileLink = `/agencies?name=${encodeURIComponent(profile.name)}`;
+  const profileLink = agencyPath(profile.name);
 
   return (
     <div className="mx-auto max-w-6xl space-y-6 max-md:space-y-4 max-md:text-[#101D32]">
@@ -348,7 +349,7 @@ export default function AgencyProfileEditPage() {
               <div key={agent.id} className="flex flex-wrap items-center gap-3 py-3">
                 {agent.avatarUrl ? <img src={agent.avatarUrl} alt="" className="h-11 w-11 rounded-full object-cover" /> : <span className="flex h-11 w-11 items-center justify-center rounded-full bg-slate-800"><Building2 className="h-5 w-5 text-slate-400" /></span>}
                 <div className="min-w-0 flex-1">
-                  <Link href={`/agents/${encodeURIComponent(agent.id)}`} className="inline-flex items-center gap-1 font-semibold text-white hover:text-emerald-300 max-md:text-[#101D32]">
+                  <Link href={agentPath(agent)} className="inline-flex items-center gap-1 font-semibold text-white hover:text-emerald-300 max-md:text-[#101D32]">
                     <span className="truncate">{agent.name}</span>
                     {agent.isVerified && <BadgeCheck aria-label="Verified agent" className="h-4 w-4 text-emerald-400" />}
                   </Link>
@@ -393,7 +394,7 @@ export default function AgencyProfileEditPage() {
         </section>
 
         <div className="flex flex-col-reverse justify-end gap-3 pb-6 sm:flex-row">
-          <Link href={`/agencies?name=${encodeURIComponent(profile.name)}`} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-slate-600 px-5 text-sm font-semibold text-slate-200 hover:border-slate-400 max-md:border-[#E2E8F0] max-md:text-[#0B2538]"><ExternalLink className="h-4 w-4" /> Preview profile</Link>
+          <Link href={agencyPath(profile.name)} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-slate-600 px-5 text-sm font-semibold text-slate-200 hover:border-slate-400 max-md:border-[#E2E8F0] max-md:text-[#0B2538]"><ExternalLink className="h-4 w-4" /> Preview profile</Link>
           <Button type="submit" disabled={saving} className="min-h-11 gap-2 bg-emerald-600 px-6 text-white hover:bg-emerald-700">
             {saving ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <Building2 className="h-4 w-4" />} {saving ? "Saving…" : "Save agency profile"}
           </Button>

@@ -46,7 +46,6 @@ export default function Navbar({ showSearch = false, showPostButton = true }: Na
           <Link href="/" className="flex items-center gap-2 sm:gap-2.5 xl:gap-3 group flex-shrink-0">
             <Image
               src="/images/ghar-safar-logo.png"
-              unoptimized
               alt="Ghar Safar logo"
               width={58}
               height={56}

@@ -82,7 +82,7 @@ export function OpsShell({ children }: { children: ReactNode }) {
     <div className="min-h-screen bg-[#08111f] text-slate-100">
       <aside className="fixed inset-y-0 left-0 z-30 hidden w-[248px] flex-col border-r border-white/5 bg-[#0b1730] lg:flex">
         <Link href="/care-ops" className="flex h-[68px] items-center gap-2.5 px-5">
-          <Image src="/images/ghar-safar-logo.png" unoptimized alt="Ghar Safar logo" width={36} height={35} className="h-9 w-9 rounded-lg bg-white p-0.5 object-contain" />
+          <Image src="/images/ghar-safar-logo.png" alt="Ghar Safar logo" width={36} height={35} className="h-9 w-9 rounded-lg bg-white p-0.5 object-contain" />
           <span className="leading-tight">
             <span className="block text-[15px] font-black">Ghar Safar</span>
             <span className="block text-[10px] font-extrabold uppercase tracking-[0.16em] text-care-300">Care Operations</span>
@@ -120,7 +120,7 @@ export function OpsShell({ children }: { children: ReactNode }) {
       <header className="sticky top-0 z-20 border-b border-white/5 bg-[#08111f]/90 backdrop-blur lg:ml-[248px]">
         <div className="flex h-16 items-center gap-3 px-4 sm:px-6 lg:px-8">
           <Link href="/care-ops" className="flex items-center gap-2 lg:hidden">
-            <Image src="/images/ghar-safar-logo.png" unoptimized alt="Ghar Safar logo" width={32} height={31} className="h-8 w-8 rounded-lg bg-white p-0.5 object-contain" />
+            <Image src="/images/ghar-safar-logo.png" alt="Ghar Safar logo" width={32} height={31} className="h-8 w-8 rounded-lg bg-white p-0.5 object-contain" />
             <span className="leading-tight">
               <span className="block text-sm font-black">Care Ops</span>
               <span className="block text-[10px] text-slate-500">{current?.label ?? "Overview"}</span>

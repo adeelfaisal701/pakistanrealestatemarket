@@ -90,7 +90,7 @@ export function CareShell({ children }: { children: ReactNode }) {
       {/* Desktop sidebar */}
       <aside className="fixed inset-y-0 left-0 z-30 hidden w-[260px] flex-col border-r border-[#e2e9f3] bg-white lg:flex">
         <Link href="/care" className="flex h-[72px] items-center gap-2.5 border-b border-[#edf2f8] px-5">
-          <Image src="/images/ghar-safar-logo.png" unoptimized alt="Ghar Safar logo" width={38} height={37} className="h-9 w-9 object-contain" />
+          <Image src="/images/ghar-safar-logo.png" alt="Ghar Safar logo" width={38} height={37} className="h-9 w-9 object-contain" />
           <span className="leading-tight">
             <span className="block text-[17px] font-black tracking-[-0.03em]">Ghar Safar</span>
             <span className="block text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#1660d0]">Property Care</span>
@@ -129,7 +129,7 @@ export function CareShell({ children }: { children: ReactNode }) {
       <header className="sticky top-0 z-20 border-b border-[#e2e9f3] bg-white/90 backdrop-blur lg:ml-[260px]">
         <div className="mx-auto flex h-16 max-w-6xl items-center gap-3 px-4 sm:px-6 lg:px-8">
           <Link href="/care" className="flex items-center gap-2 lg:hidden">
-            <Image src="/images/ghar-safar-logo.png" unoptimized alt="Ghar Safar logo" width={34} height={33} className="h-8 w-8 object-contain" />
+            <Image src="/images/ghar-safar-logo.png" alt="Ghar Safar logo" width={34} height={33} className="h-8 w-8 object-contain" />
             <span className="leading-tight">
               <span className="block text-[15px] font-black tracking-[-0.03em]">Ghar Safar</span>
               <span className="block text-[9px] font-extrabold uppercase tracking-[0.16em] text-[#1660d0]">Property Care</span>

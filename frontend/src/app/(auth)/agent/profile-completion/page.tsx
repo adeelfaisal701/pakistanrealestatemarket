@@ -192,7 +192,6 @@ export default function AgentProfileCompletionPage() {
       <section className="w-full max-w-xl rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-8">
         <Image
           src="/images/ghar-safar-logo.png"
-          unoptimized
           alt="Ghar Safar logo"
           width={50}
           height={48}

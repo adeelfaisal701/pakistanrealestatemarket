@@ -514,7 +514,7 @@ export default function MaintenanceLandingPage() {
         <div className="mx-auto grid max-w-[1180px] grid-cols-2 gap-x-6 gap-y-9 px-4 py-11 sm:px-6 md:grid-cols-[1.4fr_1fr_1fr_1.3fr] md:gap-8 md:py-12 lg:px-8">
           <div className="col-span-2 md:col-span-1">
             <Link href="/maintenance" className="inline-flex items-center gap-2.5" aria-label="Ghar Safar Maintenance home">
-              <Image src="/images/ghar-safar-logo.png" unoptimized alt="Ghar Safar logo" width={40} height={39} className="h-10 w-10 shrink-0 object-contain" />
+              <Image src="/images/ghar-safar-logo.png" alt="Ghar Safar logo" width={40} height={39} className="h-10 w-10 shrink-0 object-contain" />
               <span className="leading-none">
                 <span className="block text-lg font-extrabold tracking-tight">Ghar Safar</span>
                 <span className="mt-1 block text-[10px] font-bold uppercase tracking-[0.16em] text-care-300">Property Care</span>

@@ -10,6 +10,7 @@ import { TrackedWhatsAppLink } from "./TrackedWhatsAppLink";
 import { TrackedCallLink } from "./TrackedCallLink";
 import { SavePropertyButton } from "@/components/buyer/SavePropertyButton";
 import { normalizeInternationalPhone } from "@/lib/phone";
+import { propertyPath } from "@/lib/seo/slug";
 
 export interface PropertyCardProps {
   property: MarketplaceProperty;
@@ -44,7 +45,7 @@ export function PropertyCard({ property }: PropertyCardProps) {
   return (
     <Card className="relative flex w-full flex-col overflow-hidden group hover:shadow-lg transition-all duration-300 border-slate-200 dark:border-slate-800 max-sm:min-h-[150px] max-sm:flex-row max-sm:rounded-xl max-sm:hover:shadow-md">
       <Link
-        href={`/property/${encodeURIComponent(property.id)}`}
+        href={propertyPath(property)}
         className="absolute inset-0 z-0 rounded-xl"
         aria-label={`View details for ${property.title}`}
       >
@@ -55,7 +56,7 @@ export function PropertyCard({ property }: PropertyCardProps) {
         {property.images?.[0] && !imageUnavailable ? (
           <img
             src={property.images[0]}
-            alt={property.title}
+            alt={`${property.title} — ${property.propertyType} for ${property.purpose} in ${[property.location.area, property.location.city].filter(Boolean).join(", ")}`}
             className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105 max-sm:absolute max-sm:inset-0"
             loading="lazy"
             onError={() => setImageUnavailable(true)}
@@ -179,7 +180,7 @@ export function PropertyCard({ property }: PropertyCardProps) {
             </TrackedCallLink>
           )}
           <Link
-            href={`/property/${encodeURIComponent(property.id)}`}
+            href={propertyPath(property)}
             className={`w-full ${whatsappUrl && callNumber ? "max-sm:hidden" : ""}`}
           >
             <Button variant="outline" size="md" className="w-full text-xs min-h-[42px] font-semibold gap-1.5 max-sm:h-9 max-sm:min-h-0 max-sm:gap-1 max-sm:rounded-lg max-sm:px-1.5 max-sm:text-[11px]">

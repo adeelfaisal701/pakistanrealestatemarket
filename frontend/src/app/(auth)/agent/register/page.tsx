@@ -14,7 +14,6 @@ export default function AgentRegisterPage() {
         <CardHeader className="space-y-3">
           <Image
             src="/images/ghar-safar-logo.png"
-            unoptimized
             alt="Ghar Safar logo"
             width={50}
             height={48}

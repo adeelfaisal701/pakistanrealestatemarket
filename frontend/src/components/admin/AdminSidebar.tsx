@@ -232,7 +232,6 @@ export function AdminSidebar() {
         <Link href="/admin" className="flex h-[66px] shrink-0 items-center gap-3 border-b border-slate-800/90 px-5">
           <Image
             src="/images/ghar-safar-logo.png"
-            unoptimized
             alt="Ghar Safar logo"
             width={40}
             height={39}
@@ -297,7 +296,6 @@ export function AdminSidebar() {
         >
           <Image
             src="/images/ghar-safar-logo.png"
-            unoptimized
             alt="Ghar Safar logo"
             width={40}
             height={39}
@@ -354,7 +352,6 @@ export function AdminSidebar() {
               <Link href="/admin" className="flex items-center gap-2.5" onClick={() => setMenuOpen(false)}>
                 <Image
                   src="/images/ghar-safar-logo.png"
-                  unoptimized
                   alt="Ghar Safar logo"
                   width={36}
                   height={35}

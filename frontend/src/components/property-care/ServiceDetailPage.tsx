@@ -20,6 +20,7 @@ import {
   type PropertyCareService,
 } from "@/lib/property-care-services";
 import { ServiceIcon, pc } from "./PropertyCareUI";
+import { Breadcrumbs } from "@/lib/seo/structured-data";
 
 const processSteps = [
   { icon: ClipboardList, title: "We review your request", text: "Our operations team checks the details and photos you share." },
@@ -42,7 +43,7 @@ export function ServiceDetailPage({ service }: { service: PropertyCareService })
       <header className="sticky top-0 z-40 border-b border-[#e6ecf5] bg-white/90 backdrop-blur-md">
         <div className="mx-auto flex min-h-16 max-w-[1180px] items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
           <Link href="/maintenance" className="inline-flex min-w-0 items-center gap-2.5" aria-label="Ghar Safar Property Care home">
-            <Image src="/images/ghar-safar-logo.png" unoptimized alt="Ghar Safar logo" width={40} height={39} className="h-9 w-9 shrink-0 object-contain" />
+            <Image src="/images/ghar-safar-logo.png" alt="Ghar Safar logo" width={40} height={39} className="h-9 w-9 shrink-0 object-contain" />
             <span className="min-w-0 leading-none">
               <span className="block truncate text-lg font-extrabold tracking-tight">Ghar Safar</span>
               <span className="mt-1 block text-[10px] font-bold uppercase tracking-[0.14em] text-care-600">Property Care</span>
@@ -63,20 +64,21 @@ export function ServiceDetailPage({ service }: { service: PropertyCareService })
         <div aria-hidden="true" className="pointer-events-none absolute -right-24 -top-24 -z-10 h-96 w-96 rounded-full bg-care-500/25 blur-3xl" />
         <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(rgba(255,255,255,0.07)_1px,transparent_1px)] [background-size:22px_22px]" />
         <div className="mx-auto max-w-[1180px]">
-          <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs font-semibold text-white/60">
-            <Link href="/maintenance" className="hover:text-white">Maintenance</Link>
-            <ChevronRight aria-hidden="true" className="h-3.5 w-3.5" />
-            <Link href="/maintenance#services" className="hover:text-white">Services</Link>
-            <ChevronRight aria-hidden="true" className="h-3.5 w-3.5" />
-            <span aria-current="page" className="text-white/90">{service.title}</span>
-          </nav>
+          <Breadcrumbs
+            tone="dark"
+            items={[
+              { name: "Home", path: "/" },
+              { name: "Maintenance", path: "/maintenance" },
+              { name: service.title },
+            ]}
+          />
           <div className="mt-6 flex items-start gap-4 sm:gap-5">
             <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-white/10 text-care-300 ring-1 ring-inset ring-white/15 sm:h-16 sm:w-16">
               <ServiceIcon category={service.key} className="h-7 w-7 sm:h-8 sm:w-8" />
             </span>
             <div className="min-w-0">
               <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-care-300">Property Care service</p>
-              <h1 className="mt-1.5 text-[clamp(2rem,7vw,3.2rem)] font-extrabold leading-[1.04] tracking-[-0.04em]">{service.title}</h1>
+              <h1 className="mt-1.5 text-[clamp(2rem,7vw,3.2rem)] font-extrabold leading-[1.04] tracking-[-0.04em]">{service.title} Services in Lahore</h1>
             </div>
           </div>
           <p className="mt-4 max-w-2xl text-[15px] leading-7 text-white/75">{service.summary}</p>
