@@ -1,132 +1,155 @@
 'use client';
 
-import { useMemo, useState, type FormEvent, type ReactNode } from 'react';
+import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import {
   ArrowRight,
   BadgeCheck,
-  Brush,
-  CalendarDays,
-  Check,
+  Camera,
+  CheckCircle2,
   ChevronDown,
   ChevronRight,
-  ClipboardCheck,
-  Clock3,
-  Droplets,
+  ClipboardList,
   Facebook,
   Headset,
   House,
   Instagram,
+  ListChecks,
   Mail,
   MapPin,
-  Paintbrush,
+  MessageSquareWarning,
   Phone,
+  ReceiptText,
   Search,
   ShieldCheck,
-  Snowflake,
+  Sparkles,
   Star,
+  UserRoundCheck,
   Wrench,
   Youtube,
-  Zap,
 } from 'lucide-react';
-
-const services = [
-  { title: 'Plumbing', search: 'plumbing', icon: Droplets },
-  { title: 'Electrical', search: 'electrical', icon: Zap },
-  { title: 'AC Repair', search: 'ac', icon: Snowflake },
-  { title: 'Painting', search: 'painting', icon: Paintbrush },
-  { title: 'Cleaning', search: 'cleaning', icon: Brush },
-  { title: 'Carpentry', search: 'carpentry', icon: Wrench },
-  { title: 'General Repairs', search: 'general', icon: BadgeCheck },
-  { title: 'Home Renovation', search: 'renovation', icon: House },
-];
-
-const benefits = [
-  { title: 'Verified & Skilled Professionals', icon: ShieldCheck },
-  { title: 'Transparent Pricing', icon: Check },
-  { title: 'On-Time Service', icon: Clock3 },
-  { title: 'Reliable Support', icon: Headset },
-];
+import { PROPERTY_CARE_SERVICES, REQUEST_SERVICE_PATH } from '@/lib/property-care-services';
+import { ServiceIcon, pc } from '@/components/property-care/PropertyCareUI';
+import { cn } from '@/lib/utils';
 
 const steps = [
-  { title: 'Choose a Service', description: 'Tell us what your home needs.', icon: CalendarDays },
-  { title: 'Confirm Your Booking', description: 'We’ll help arrange a convenient time.', icon: ClipboardCheck },
-  { title: 'Get the Work Done', description: 'A professional takes care of the job.', icon: Wrench },
+  {
+    title: 'Submit your request',
+    description: 'Choose a service, describe the problem, add photos and a preferred visit time.',
+    icon: ClipboardList,
+  },
+  {
+    title: 'We review & assign',
+    description: 'Our operations team reviews it and dispatches a verified technician with the right skills.',
+    icon: UserRoundCheck,
+  },
+  {
+    title: 'Approve the quotation',
+    description: 'You see a clear breakdown of inspection, labour and materials before chargeable work starts.',
+    icon: ReceiptText,
+  },
+  {
+    title: 'Track & confirm',
+    description: 'Follow every step, review before/after photos and confirm when you are satisfied.',
+    icon: CheckCircle2,
+  },
 ];
 
-const workGallery = [
-  { title: 'Plumbing & repairs', positionClass: 'object-[7%_55%]' },
-  { title: 'Electrical work', positionClass: 'object-[35%_52%]' },
-  { title: 'AC maintenance', positionClass: 'object-[67%_44%]' },
-  { title: 'Painting & finishing', positionClass: 'object-[83%_56%]' },
+const promises = [
+  {
+    title: 'Admin-vetted technicians',
+    description: 'Every technician is onboarded and managed by Ghar Safar — you never have to search or negotiate.',
+    icon: ShieldCheck,
+  },
+  {
+    title: 'Upfront quotations',
+    description: 'Itemised pricing you approve in the app before chargeable work begins.',
+    icon: ReceiptText,
+  },
+  {
+    title: 'Photo proof of work',
+    description: 'Before and after photos and a completion checklist on every job.',
+    icon: Camera,
+  },
+  {
+    title: 'You confirm completion',
+    description: 'A job closes only when you confirm it — or raise a complaint we follow up on.',
+    icon: ListChecks,
+  },
 ];
 
 const faqs = [
   {
-    question: 'How can I book a service?',
-    answer: 'Choose a service above, then call our team to discuss your request and next steps.',
+    question: 'How do I book a service?',
+    answer:
+      'Choose a service and sign in with your Ghar Safar account to submit a request. You get a reference ID instantly and can track every step online.',
   },
   {
-    question: 'Are professionals verified?',
-    answer: 'Our maintenance provider directory is being prepared. Contact our team to ask about a provider before arranging a visit.',
+    question: 'Do I choose the technician?',
+    answer:
+      'No. Ghar Safar operations review every request and assign a verified technician with the right skills for your area. Their name and phone appear in your request once they confirm the visit.',
+  },
+  {
+    question: 'How is pricing decided?',
+    answer:
+      'Ghar Safar sends a transparent quotation — inspection, labour and materials — for your approval before chargeable work begins.',
   },
   {
     question: 'What if I am not satisfied?',
-    answer: 'Please contact our support team so we can understand the issue and help you with the next steps.',
+    answer:
+      'Before a job is closed you confirm the work. If something is wrong, raise a complaint from your request page and our team will review it with you.',
   },
   {
-    question: 'How do payments work?',
-    answer: 'Please confirm the service scope, estimate and payment terms with the provider before work begins.',
+    question: 'Which areas do you cover?',
+    answer: 'Property Care currently serves Lahore. Submit a request and our team will confirm availability for your area.',
   },
 ];
 
-function SectionTitle({
+function SectionHeading({
   eyebrow,
   title,
   description,
-  centered = false,
   id,
+  align = 'center',
 }: {
   eyebrow?: string;
   title: string;
   description?: string;
-  centered?: boolean;
   id?: string;
+  align?: 'center' | 'left';
 }) {
   return (
-    <div className={centered ? 'mx-auto max-w-2xl text-center' : 'max-w-2xl'}>
+    <div className={align === 'center' ? 'mx-auto max-w-2xl text-center' : 'max-w-2xl'}>
       {eyebrow && (
-        <p className={`mb-2 flex items-center gap-2 text-[10px] font-extrabold uppercase tracking-[0.15em] text-[#1768c4] sm:text-[11px] ${centered ? 'justify-center' : ''}`}>
-          {centered && <span className="h-px w-6 bg-[#1768c4]" />}
-          {eyebrow}
-          <span className="h-px w-6 bg-[#1768c4]" />
-        </p>
+        <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-[#1768c4]">{eyebrow}</p>
       )}
-      <h2 id={id} className="text-[clamp(1.45rem,3.8vw,2.1rem)] font-extrabold leading-tight tracking-[-0.035em] text-[#102b55]">
+      <h2 id={id} className="mt-2 text-[clamp(1.6rem,5.5vw,2.4rem)] font-black leading-[1.08] tracking-[-0.035em] text-[#102b55]">
         {title}
       </h2>
-      {description && <p className="mt-2 text-xs leading-5 text-[#52647c] sm:text-sm sm:leading-6">{description}</p>}
+      {description && <p className="mt-3 text-[15px] leading-6 text-[#52647c]">{description}</p>}
     </div>
-  );
-}
-
-function ContactLink({ children, className }: { children: ReactNode; className: string }) {
-  return (
-    <a href="tel:+923001234567" className={className}>
-      {children}
-    </a>
   );
 }
 
 export default function MaintenanceLandingPage() {
   const [serviceSearch, setServiceSearch] = useState('');
-  const [location, setLocation] = useState('');
+  const [showStickyCta, setShowStickyCta] = useState(false);
   const normalizedSearch = serviceSearch.trim().toLowerCase();
   const visibleServices = useMemo(
-    () => services.filter((service) => `${service.title} ${service.search}`.toLowerCase().includes(normalizedSearch)),
+    () =>
+      PROPERTY_CARE_SERVICES.filter((service) =>
+        `${service.title} ${service.tagline} ${service.commonJobs.join(' ')}`.toLowerCase().includes(normalizedSearch),
+      ),
     [normalizedSearch],
   );
+
+  useEffect(() => {
+    const onScroll = () => setShowStickyCta(window.scrollY > 560);
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
 
   function findService(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -134,76 +157,99 @@ export default function MaintenanceLandingPage() {
   }
 
   return (
-    <main className="overflow-hidden bg-white text-[#102b55]">
-      <header className="bg-white">
-        <div className="mx-auto flex min-h-[62px] max-w-[1180px] items-center justify-between gap-2 px-4 sm:min-h-[72px] sm:px-6 lg:px-8">
-          <Link href="/maintenance" className="inline-flex min-w-0 items-center gap-2" aria-label="Ghar Safar home">
-            <Image
-              src="/images/ghar-safar-logo.png"
-              unoptimized
-              alt="Ghar Safar logo"
-              width={40}
-              height={39}
-              className="h-8 w-8 shrink-0 object-contain sm:h-9 sm:w-9"
-            />
-            <span className="truncate text-[17px] font-black tracking-[-0.04em] text-[#102b55] sm:text-xl">Ghar Safar</span>
+    <main className="overflow-x-clip bg-white text-[#102b55]">
+      {/* Header */}
+      <header className="sticky top-0 z-40 border-b border-[#e8eef6]/80 bg-white/90 backdrop-blur-md">
+        <div className="mx-auto flex min-h-[60px] max-w-[1180px] items-center justify-between gap-2 px-4 sm:min-h-[68px] sm:px-6 lg:px-8">
+          <Link href="/maintenance" className="inline-flex min-w-0 items-center gap-2" aria-label="Ghar Safar Property Care home">
+            <Image src="/images/ghar-safar-logo.png" unoptimized alt="Ghar Safar logo" width={40} height={39} className="h-8 w-8 shrink-0 object-contain sm:h-9 sm:w-9" />
+            <span className="min-w-0 leading-none">
+              <span className="block truncate text-[17px] font-black tracking-[-0.04em] text-[#102b55] sm:text-xl">Ghar Safar</span>
+              <span className="mt-0.5 block text-[10px] font-bold uppercase tracking-[0.14em] text-[#1768c4]">Property Care</span>
+            </span>
           </Link>
-          <nav aria-label="Account" className="flex shrink-0 items-center gap-2">
-            <Link href="/login" className="inline-flex min-h-9 items-center justify-center rounded-full border border-[#b8cce4] bg-white px-3 text-[11px] font-bold text-[#0d57ad] transition hover:bg-[#f4f8fd] sm:min-h-10 sm:px-5 sm:text-xs">
+          <nav aria-label="Account" className="flex shrink-0 items-center gap-1.5 sm:gap-2">
+            <Link href="/buyer/maintenance" className="hidden min-h-10 items-center rounded-full px-3 text-xs font-bold text-[#36506f] transition hover:text-[#0d57ad] sm:inline-flex">
+              Track a request
+            </Link>
+            <Link href="/login" className="inline-flex min-h-10 items-center justify-center rounded-full border border-[#c9d9ec] bg-white px-4 text-xs font-bold text-[#0d57ad] transition hover:bg-[#f4f8fd]">
               Sign In
             </Link>
-            <Link href="/register" className="inline-flex min-h-9 items-center justify-center rounded-full bg-[#0d57ad] px-3.5 text-[11px] font-bold text-white shadow-sm transition hover:bg-[#094787] sm:min-h-10 sm:px-5 sm:text-xs">
+            <Link href="/register" className="inline-flex min-h-10 items-center justify-center rounded-full bg-[#0d57ad] px-4 text-xs font-bold text-white shadow-sm transition hover:bg-[#094787]">
               Sign Up
             </Link>
           </nav>
         </div>
       </header>
 
-      <section aria-labelledby="maintenance-hero-heading" className="relative isolate min-h-[620px] overflow-hidden bg-[#08284e] sm:min-h-[640px] md:min-h-[560px]">
+      {/* Hero */}
+      <section aria-labelledby="maintenance-hero-heading" className="relative isolate overflow-hidden bg-[#071d38]">
         <Image
           src="/images/maintance hero section.png"
           alt=""
           fill
           priority
           sizes="100vw"
-          className="z-[-2] object-cover object-[62%_center] md:object-center"
+          className="z-[-2] object-cover object-[64%_center] md:object-center"
         />
-        <div aria-hidden="true" className="absolute inset-0 z-[-1] bg-[#071d38]/40" />
-        <div aria-hidden="true" className="absolute inset-0 z-[-1] bg-gradient-to-r from-[#061a34]/90 via-[#08284e]/75 to-[#08284e]/25 md:from-[#061a34]/90 md:via-[#08284e]/65 md:to-[#08284e]/15" />
-        <div className="relative mx-auto flex min-h-[620px] max-w-[1180px] items-center px-4 py-9 sm:min-h-[640px] sm:px-6 sm:py-12 md:min-h-[560px] lg:px-8">
-          <div className="w-full max-w-[540px]">
-            <p className="mb-3 text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#b8d7ff] sm:text-xs">GHAR SAFAR HOME SERVICES</p>
-            <h1 id="maintenance-hero-heading" className="max-w-[520px] text-[clamp(2.15rem,7vw,4rem)] font-black leading-[0.99] tracking-[-0.05em] text-white">
-              Expert Home Maintenance, <span className="text-[#9ccaff]">Made Simple</span>
-            </h1>
-            <p className="mt-4 max-w-[420px] text-[13px] leading-5 text-white/90 sm:text-[15px] sm:leading-6">
-              Professional services for a well-maintained, comfortable and happy home.
+        <div aria-hidden="true" className="absolute inset-0 z-[-1] bg-gradient-to-b from-[#061a34]/70 via-[#082a52]/55 to-[#061a34]/95 md:bg-gradient-to-r md:from-[#061a34]/95 md:via-[#08284e]/75 md:to-[#08284e]/20" />
+        <div className="relative mx-auto max-w-[1180px] px-4 pb-10 pt-10 sm:px-6 sm:pb-14 sm:pt-14 md:pb-20 md:pt-20 lg:px-8">
+          <div className="max-w-[580px]">
+            <p className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.14em] text-[#cfe4ff] backdrop-blur">
+              <Sparkles aria-hidden="true" className="h-3.5 w-3.5" /> Managed home maintenance
             </p>
-            <form onSubmit={findService} role="search" className="mt-6 flex w-full max-w-[500px] flex-col gap-2 rounded-2xl border border-white/35 bg-white p-2 shadow-[0_14px_36px_rgba(0,0,0,0.24)] sm:mt-7 sm:flex-row sm:items-center sm:rounded-full sm:p-1.5">
-              <label className="flex min-h-11 min-w-0 flex-1 items-center gap-2.5 rounded-xl px-2.5 sm:pl-4">
-                <Search aria-hidden="true" className="h-4 w-4 shrink-0 text-[#0d65c8]" />
+            <h1 id="maintenance-hero-heading" className="mt-4 text-[clamp(2.25rem,9vw,4.1rem)] font-black leading-[0.98] tracking-[-0.05em] text-white">
+              Home repairs, <span className="text-[#9ccaff]">handled properly.</span>
+            </h1>
+            <p className="mt-4 max-w-[460px] text-[15px] leading-6 text-white/85 sm:text-base sm:leading-7">
+              Tell us what needs fixing. Ghar Safar assigns a verified technician, sends an upfront quotation, and tracks the job until you are satisfied.
+            </p>
+
+            <div className="mt-6 flex flex-col gap-2.5 sm:flex-row">
+              <Link href={REQUEST_SERVICE_PATH} className={cn(pc.primaryBtn, "bg-white text-[#0d57ad] shadow-[0_12px_28px_rgba(0,0,0,0.25)] hover:bg-[#eef5ff]")}>
+                Request a service <ArrowRight aria-hidden="true" className="h-4 w-4" />
+              </Link>
+              <a href="#how-it-works" className="inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl border border-white/30 px-5 text-sm font-bold text-white transition hover:bg-white/10">
+                How it works
+              </a>
+            </div>
+
+            <form onSubmit={findService} role="search" className="mt-5 flex w-full items-center gap-2 rounded-2xl border border-white/20 bg-white/10 p-1.5 backdrop-blur-md">
+              <label className="flex min-h-11 min-w-0 flex-1 items-center gap-2.5 px-3">
+                <Search aria-hidden="true" className="h-4 w-4 shrink-0 text-white/70" />
                 <span className="sr-only">Search maintenance services</span>
                 <input
                   value={serviceSearch}
                   onChange={(event) => setServiceSearch(event.target.value)}
-                  placeholder="Search a service..."
-                  className="min-w-0 flex-1 bg-transparent text-sm text-[#17365d] outline-none placeholder:text-[#8391a4]"
+                  placeholder="Search e.g. leaking tap, AC service"
+                  className="min-w-0 flex-1 bg-transparent text-sm text-white outline-none placeholder:text-white/60"
                 />
               </label>
-              <button type="submit" className="inline-flex min-h-11 shrink-0 items-center justify-center gap-1.5 rounded-xl bg-[#0d57ad] px-4 text-xs font-bold text-white transition hover:bg-[#094787] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0d57ad] focus-visible:ring-offset-2 sm:rounded-full sm:px-5 sm:text-sm">
-                Find a Service <ArrowRight aria-hidden="true" className="h-4 w-4" />
+              <button type="submit" className="inline-flex min-h-11 shrink-0 items-center rounded-xl bg-white/15 px-4 text-xs font-bold text-white transition hover:bg-white/25">
+                Find
               </button>
             </form>
 
-            <nav aria-label="Choose a Ghar Safar experience" className="mt-4 flex">
-              <div className="flex items-center rounded-full border border-white/40 bg-white p-1 shadow-[0_6px_20px_rgba(0,0,0,0.2)]">
-                <Link href="/" className="inline-flex min-h-9 items-center gap-1.5 rounded-full px-3 text-[11px] font-bold text-[#17365d] transition hover:bg-[#f1f6fc] sm:min-h-10 sm:gap-2 sm:px-5 sm:text-sm">
-                  <House aria-hidden="true" className="h-4 w-4 text-[#0d65c8]" />
-                  Property
+            <ul className="mt-6 grid grid-cols-3 gap-2 text-[11px] font-semibold text-white/90 sm:max-w-md sm:text-xs">
+              {[
+                { label: 'Verified technicians', icon: BadgeCheck },
+                { label: 'Upfront quotations', icon: ReceiptText },
+                { label: 'Tracked to completion', icon: ListChecks },
+              ].map(({ label, icon: Icon }) => (
+                <li key={label} className="flex flex-col items-start gap-1.5 rounded-2xl border border-white/15 bg-white/5 p-2.5 sm:flex-row sm:items-center">
+                  <Icon aria-hidden="true" className="h-4 w-4 shrink-0 text-[#9ccaff]" />
+                  {label}
+                </li>
+              ))}
+            </ul>
+
+            <nav aria-label="Choose a Ghar Safar experience" className="mt-6 flex">
+              <div className="flex items-center rounded-full border border-white/25 bg-white p-1 shadow-[0_6px_20px_rgba(0,0,0,0.2)]">
+                <Link href="/" className="inline-flex min-h-9 items-center gap-1.5 rounded-full px-4 text-xs font-bold text-[#17365d] transition hover:bg-[#f1f6fc] sm:text-sm">
+                  <House aria-hidden="true" className="h-4 w-4 text-[#0d65c8]" /> Property
                 </Link>
-                <Link href="/maintenance" aria-current="page" className="inline-flex min-h-9 items-center gap-1.5 rounded-full bg-[#0d57ad] px-3 text-[11px] font-bold text-white shadow-sm sm:min-h-10 sm:gap-2 sm:px-5 sm:text-sm">
-                  <Wrench aria-hidden="true" className="h-4 w-4" />
-                  Maintenance
+                <Link href="/maintenance" aria-current="page" className="inline-flex min-h-9 items-center gap-1.5 rounded-full bg-[#0d57ad] px-4 text-xs font-bold text-white shadow-sm sm:text-sm">
+                  <Wrench aria-hidden="true" className="h-4 w-4" /> Maintenance
                 </Link>
               </div>
             </nav>
@@ -211,199 +257,169 @@ export default function MaintenanceLandingPage() {
         </div>
       </section>
 
-      <section aria-label="Ghar Safar service commitments" className="border-y border-[#e1ebf8] bg-[#edf5ff]">
-        <div className="mx-auto grid max-w-[1180px] grid-cols-3 divide-x divide-[#d4e2f4] px-2 py-3 sm:px-6 sm:py-4 lg:px-8">
-          {[
-            { label: 'Trusted Professionals', icon: ShieldCheck },
-            { label: 'Quick Service', icon: Zap },
-            { label: 'Dedicated Support', icon: Headset },
-          ].map(({ label, icon: Icon }) => (
-            <div key={label} className="flex min-h-9 items-center justify-center gap-1.5 px-1 text-center text-[9px] font-bold leading-tight text-[#183b66] sm:gap-2.5 sm:text-xs">
-              <Icon aria-hidden="true" className="h-4 w-4 shrink-0 text-[#0d65c8] sm:h-[18px] sm:w-[18px]" />
-              {label}
-            </div>
-          ))}
-        </div>
-      </section>
-
-      <section aria-labelledby="intro-heading" className="bg-white">
-        <div className="mx-auto grid max-w-[1180px] items-center gap-5 px-4 py-6 sm:px-6 sm:py-8 md:grid-cols-2 md:gap-8 md:py-9 lg:px-8">
-          <div className="relative aspect-[1.7] overflow-hidden rounded-xl bg-[#e6edf5] sm:rounded-2xl">
-            <Image
-              src="/images/mobile hero section.png"
-              alt="A thoughtfully maintained modern home"
-              fill
-              sizes="(max-width: 767px) 100vw, 50vw"
-              className="object-cover object-center"
-            />
-          </div>
-          <div className="max-w-lg py-1 md:px-2">
-            <h2 id="intro-heading" className="text-[clamp(1.45rem,4vw,2rem)] font-black leading-[1.08] tracking-[-0.04em] text-[#102b55]">
-              Complete Care for Every Corner of Your Home
-            </h2>
-            <p className="mt-3 text-[13px] leading-5 text-[#405875] sm:text-sm sm:leading-6">
-              From small repairs to major renovations, Ghar Safar is your one-stop solution for all your home maintenance needs.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      <section id="services" aria-labelledby="services-heading" className="scroll-mt-4 px-4 pb-8 pt-1 sm:px-6 sm:pb-10 lg:px-8">
+      {/* Services */}
+      <section id="services" aria-labelledby="services-heading" className="scroll-mt-20 bg-[#f6f9fd] px-4 py-12 sm:px-6 sm:py-16 lg:px-8">
         <div className="mx-auto max-w-[1100px]">
-          <SectionTitle
+          <SectionHeading
             id="services-heading"
-            eyebrow="OUR SERVICES"
-            title="Our Maintenance Services"
-            description="Professional services, all under one roof."
-            centered
+            eyebrow="Our services"
+            title="What can we help with?"
+            description="Pick a service to see what's covered, or request a visit straight away."
           />
           {visibleServices.length ? (
-            <div className="mt-4 grid grid-cols-2 gap-2.5 sm:mt-5 sm:grid-cols-4 sm:gap-3">
-              {visibleServices.map(({ title, icon: Icon }) => (
-                <a key={title} href="tel:+923001234567" className="group flex min-h-[82px] flex-col items-center justify-center gap-1 rounded-xl border border-[#e4ebf3] bg-white px-2 py-3 text-center shadow-[0_2px_8px_rgba(16,43,85,0.06)] transition hover:-translate-y-0.5 hover:border-[#c5d9f1] hover:shadow-md sm:min-h-[96px] sm:gap-1.5 sm:rounded-2xl">
-                  <Icon aria-hidden="true" className="h-6 w-6 text-[#0d65c8] transition-transform group-hover:scale-110 sm:h-7 sm:w-7" strokeWidth={2.4} />
-                  <span className="text-[11px] font-bold leading-tight text-[#163861] sm:text-xs">{title}</span>
-                </a>
+            <ul className="mt-8 grid grid-cols-1 gap-3 min-[420px]:grid-cols-2 lg:grid-cols-4">
+              {visibleServices.map((service) => (
+                <li key={service.key}>
+                  <Link
+                    href={`/maintenance/services/${service.slug}`}
+                    className="group flex h-full items-center gap-3 rounded-3xl border border-[#e3ebf5] bg-white p-4 shadow-[0_2px_10px_rgba(16,43,85,0.05)] transition hover:-translate-y-0.5 hover:border-[#bcd3ef] hover:shadow-[0_12px_28px_rgba(16,43,85,0.10)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0d57ad] min-[420px]:flex-col min-[420px]:items-start"
+                  >
+                    <span className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl ${service.accent}`}>
+                      <ServiceIcon category={service.key} className="h-6 w-6" />
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block text-[15px] font-extrabold leading-tight text-[#102b55]">{service.title}</span>
+                      <span className="mt-1 block text-[13px] leading-5 text-[#5b6b82]">{service.tagline}</span>
+                    </span>
+                    <ChevronRight aria-hidden="true" className="h-5 w-5 shrink-0 text-[#9fb3cc] transition group-hover:translate-x-0.5 group-hover:text-[#0d57ad] min-[420px]:hidden" />
+                  </Link>
+                </li>
               ))}
-            </div>
+              {!normalizedSearch && (
+                <li>
+                  <Link
+                    href={REQUEST_SERVICE_PATH}
+                    className="group flex h-full items-center gap-3 rounded-3xl border border-dashed border-[#9ebfe6] bg-[#edf5ff] p-4 transition hover:bg-[#e3efff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0d57ad] min-[420px]:flex-col min-[420px]:items-start"
+                  >
+                    <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#0d57ad] text-white">
+                      <Sparkles aria-hidden="true" className="h-6 w-6" />
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block text-[15px] font-extrabold leading-tight text-[#0d4f9e]">Not sure what you need?</span>
+                      <span className="mt-1 block text-[13px] leading-5 text-[#36577f]">Describe the problem and we will route it.</span>
+                    </span>
+                    <ArrowRight aria-hidden="true" className="h-5 w-5 shrink-0 text-[#0d57ad] min-[420px]:hidden" />
+                  </Link>
+                </li>
+              )}
+            </ul>
           ) : (
-            <div className="mt-4 rounded-xl border border-dashed border-[#d4e1f0] bg-[#f8fbff] px-4 py-6 text-center">
-              <p className="text-xs text-[#53677f]">No services match “{serviceSearch}”.</p>
-              <button type="button" onClick={() => setServiceSearch('')} className="mt-1 text-xs font-bold text-[#0d57ad] hover:underline">Clear search</button>
+            <div className="mt-8 rounded-3xl border border-dashed border-[#cfdcee] bg-white px-4 py-8 text-center">
+              <p className="text-sm text-[#53677f]">No services match “{serviceSearch}”.</p>
+              <div className="mt-3 flex flex-col justify-center gap-2 sm:flex-row">
+                <button type="button" onClick={() => setServiceSearch('')} className={pc.secondaryBtn}>Clear search</button>
+                <Link href={REQUEST_SERVICE_PATH} className={pc.primaryBtn}>Describe your problem</Link>
+              </div>
             </div>
           )}
         </div>
       </section>
 
-      <section id="why-us" aria-labelledby="why-heading" className="bg-[#f6f9fd]">
-        <div className="mx-auto grid max-w-[1180px] items-center gap-5 px-4 py-7 sm:px-6 sm:py-9 md:grid-cols-[0.8fr_1.2fr] md:gap-8 lg:px-8">
-          <div>
-            <h2 id="why-heading" className="text-[clamp(1.45rem,4vw,2rem)] font-black leading-tight tracking-[-0.04em] text-[#102b55]">Why Choose Ghar Safar</h2>
-            <ul className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-1">
-              {benefits.map(({ title, icon: Icon }) => (
-                <li key={title} className="flex items-center gap-2.5 text-xs font-semibold text-[#244368] sm:text-sm">
-                  <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#0d65c8] text-white">
-                    <Icon aria-hidden="true" className="h-3 w-3" strokeWidth={2.7} />
-                  </span>
-                  {title}
-                </li>
-              ))}
-            </ul>
-          </div>
-          <div className="relative aspect-[2.1] min-h-[145px] overflow-hidden rounded-xl bg-[#dce7f3] sm:rounded-2xl">
-            <Image
-              src="/images/buyer-dashboard-house.png"
-              alt="A modern home with welcoming lights"
-              fill
-              sizes="(max-width: 767px) 100vw, 65vw"
-              className="object-cover object-center"
-            />
-          </div>
-        </div>
-      </section>
-
-      <section aria-labelledby="how-heading" className="px-4 py-7 sm:px-6 sm:py-9 lg:px-8">
+      {/* How it works */}
+      <section id="how-it-works" aria-labelledby="how-heading" className="scroll-mt-20 px-4 py-12 sm:px-6 sm:py-16 lg:px-8">
         <div className="mx-auto max-w-[1100px]">
-          <SectionTitle id="how-heading" title="How It Works" description="Get your service in just 3 simple steps." centered />
-          <div className="mt-5 grid grid-cols-3 gap-2 sm:mt-7 sm:gap-5">
+          <SectionHeading id="how-heading" eyebrow="How it works" title="One request. We handle the rest." description="Ghar Safar is a managed service, not a directory — our team coordinates every job for you." />
+          <ol className="relative mt-10 grid gap-4 md:grid-cols-4 md:gap-5">
+            <span aria-hidden="true" className="absolute left-6 top-6 h-[calc(100%-3rem)] w-px bg-gradient-to-b from-[#0d57ad]/40 to-transparent md:hidden" />
             {steps.map(({ title, description, icon: Icon }, index) => (
-              <div key={title} className="relative flex flex-col items-center px-1 text-center">
-                {index > 0 && <ChevronRight aria-hidden="true" className="absolute -left-2 top-4 h-4 w-4 text-[#0d65c8] sm:-left-4 sm:top-6 sm:h-5 sm:w-5" />}
-                <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[#e9f2ff] text-[#0d65c8] sm:h-12 sm:w-12">
-                  <Icon aria-hidden="true" className="h-5 w-5 sm:h-6 sm:w-6" />
+              <li key={title} className="relative flex gap-4 md:flex-col md:rounded-3xl md:border md:border-[#e3ebf5] md:bg-white md:p-5 md:shadow-[0_2px_10px_rgba(16,43,85,0.05)]">
+                <span className="relative z-10 flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#0d57ad] text-white shadow-[0_8px_18px_rgba(13,87,173,0.3)]">
+                  <Icon aria-hidden="true" className="h-5 w-5" />
                 </span>
-                <h3 className="mt-2 text-[10px] font-bold leading-tight text-[#17365d] sm:mt-3 sm:text-sm">{index + 1}. {title}</h3>
-                <p className="mt-1 hidden max-w-[180px] text-xs leading-5 text-[#718096] sm:block">{description}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section aria-labelledby="providers-heading" className="border-y border-[#eef2f7] bg-white px-4 py-7 sm:px-6 sm:py-9 lg:px-8">
-        <div className="mx-auto max-w-[1100px]">
-          <SectionTitle id="providers-heading" title="Featured Service Professionals" centered />
-          <div className="mt-4 rounded-2xl border border-[#e3ebf5] bg-[#f7faff] px-4 py-5 text-center sm:mt-5 sm:px-8 sm:py-7">
-            <span className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-[#e6f0ff] text-[#0d65c8]">
-              <Wrench aria-hidden="true" className="h-5 w-5" />
-            </span>
-            <h3 className="mt-2 text-sm font-bold text-[#17365d] sm:text-base">The maintenance directory is growing</h3>
-            <p className="mx-auto mt-1 max-w-lg text-xs leading-5 text-[#64748b] sm:text-sm">
-              Provider profiles and ratings will appear here when maintenance professionals join Ghar Safar. Call us and we’ll help with your service request.
-            </p>
-            <ContactLink className="mt-3 inline-flex min-h-9 items-center justify-center gap-2 rounded-full border border-[#c8d9ed] bg-white px-4 text-xs font-bold text-[#0d57ad] transition hover:bg-[#edf5ff]">
-              <Phone aria-hidden="true" className="h-3.5 w-3.5" /> Request a Service
-            </ContactLink>
-          </div>
-        </div>
-      </section>
-
-      <section aria-labelledby="work-heading" className="px-4 py-7 sm:px-6 sm:py-9 lg:px-8">
-        <div className="mx-auto max-w-[1100px]">
-          <SectionTitle id="work-heading" title="Recent Maintenance Work" centered />
-          <div className="mt-4 grid grid-cols-2 gap-2.5 sm:mt-5 sm:grid-cols-4 sm:gap-3">
-            {workGallery.map(({ title, positionClass }) => (
-              <figure key={title} className="overflow-hidden rounded-xl border border-[#e6ebf2] bg-white shadow-sm">
-                <div className="relative aspect-[1.35] bg-[#e7edf4]">
-                  <Image
-                    src="/images/maintance hero section.png"
-                    alt={`${title} service`}
-                    fill
-                    sizes="(max-width: 639px) 45vw, 25vw"
-                    className={`object-cover ${positionClass}`}
-                  />
+                <div className="pb-2 pt-1 md:pt-0">
+                  <p className="text-[11px] font-extrabold uppercase tracking-[0.14em] text-[#1768c4]">Step {index + 1}</p>
+                  <h3 className="mt-1 text-base font-extrabold text-[#102b55]">{title}</h3>
+                  <p className="mt-1 text-sm leading-6 text-[#5b6b82]">{description}</p>
                 </div>
-                <figcaption className="px-2.5 py-2 text-[10px] font-bold text-[#19375d] sm:px-3 sm:text-xs">{title}</figcaption>
-              </figure>
+              </li>
             ))}
-          </div>
+          </ol>
         </div>
       </section>
 
-      <section aria-labelledby="feedback-heading" className="bg-[#f6f9fd] px-4 py-7 sm:px-6 sm:py-9 lg:px-8">
+      {/* Why Ghar Safar */}
+      <section id="why-us" aria-labelledby="why-heading" className="bg-[#0b2545] px-4 py-12 text-white sm:px-6 sm:py-16 lg:px-8">
+        <div className="mx-auto grid max-w-[1100px] items-center gap-8 lg:grid-cols-[1fr_1.1fr] lg:gap-12">
+          <div>
+            <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-[#9ccaff]">Why Ghar Safar</p>
+            <h2 id="why-heading" className="mt-2 text-[clamp(1.6rem,5.5vw,2.4rem)] font-black leading-[1.08] tracking-[-0.035em]">
+              Accountable from request to sign-off
+            </h2>
+            <p className="mt-3 text-[15px] leading-6 text-white/75">
+              We stay responsible for quality, pricing and follow-up — so you get one point of contact instead of chasing a contractor.
+            </p>
+            <div className="relative mt-6 aspect-[16/10] overflow-hidden rounded-3xl border border-white/10">
+              <Image src="/images/buyer-dashboard-house.png" alt="A well-maintained modern home" fill sizes="(max-width: 1023px) 100vw, 45vw" className="object-cover" />
+            </div>
+          </div>
+          <ul className="grid gap-3 sm:grid-cols-2">
+            {promises.map(({ title, description, icon: Icon }) => (
+              <li key={title} className="rounded-3xl border border-white/10 bg-white/[0.06] p-5 backdrop-blur">
+                <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#9ccaff]/15 text-[#9ccaff]">
+                  <Icon aria-hidden="true" className="h-5 w-5" />
+                </span>
+                <h3 className="mt-3 text-base font-extrabold">{title}</h3>
+                <p className="mt-1 text-sm leading-6 text-white/70">{description}</p>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+
+      {/* Quality & feedback */}
+      <section aria-labelledby="quality-heading" className="px-4 py-12 sm:px-6 sm:py-16 lg:px-8">
         <div className="mx-auto max-w-[1100px]">
-          <SectionTitle id="feedback-heading" title="Customer Feedback" centered />
-          <div className="mt-4 flex items-center gap-3 rounded-xl border border-[#e4ebf3] bg-white p-4 shadow-sm sm:mt-5 sm:px-6">
-            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#e9f2ff] text-[#0d65c8]">
-              <Star aria-hidden="true" className="h-5 w-5" />
-            </span>
+          <SectionHeading id="quality-heading" eyebrow="Service quality" title="Quality you can verify" description="Every job leaves a record you can review." />
+          <div className="mt-8 grid gap-3 md:grid-cols-3">
+            <article className={`${pc.card} p-5`}>
+              <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-amber-50 text-amber-600"><Star aria-hidden="true" className="h-5 w-5" /></span>
+              <h3 className="mt-3 text-base font-extrabold">Rated by customers</h3>
+              <p className="mt-1 text-sm leading-6 text-[#5b6b82]">After every completed job you rate the service. Ratings feed into how our team assigns future work.</p>
+            </article>
+            <article className={`${pc.card} p-5`}>
+              <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-sky-50 text-sky-700"><Camera aria-hidden="true" className="h-5 w-5" /></span>
+              <h3 className="mt-3 text-base font-extrabold">Before & after evidence</h3>
+              <p className="mt-1 text-sm leading-6 text-[#5b6b82]">Technicians upload photos and complete a checklist before asking you to confirm.</p>
+            </article>
+            <article className={`${pc.card} p-5`}>
+              <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-rose-50 text-rose-600"><MessageSquareWarning aria-hidden="true" className="h-5 w-5" /></span>
+              <h3 className="mt-3 text-base font-extrabold">Complaints followed up</h3>
+              <p className="mt-1 text-sm leading-6 text-[#5b6b82]">Raise a concern from your request page and our team reviews it until it is resolved.</p>
+            </article>
+          </div>
+          <div className="mt-4 flex flex-col items-start gap-3 rounded-3xl border border-[#e3ebf5] bg-[#f6f9fd] p-5 sm:flex-row sm:items-center">
+            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white text-[#0d57ad] shadow-sm"><Star aria-hidden="true" className="h-5 w-5" /></span>
             <div>
-              <h3 className="text-xs font-bold text-[#17365d] sm:text-sm">Reviews will be shared here</h3>
-              <p className="mt-1 text-[11px] leading-4 text-[#718096] sm:text-xs sm:leading-5">
-                There are no maintenance customer reviews yet. We’ll show feedback here when it’s available.
-              </p>
+              <h3 className="text-sm font-extrabold">Customer reviews</h3>
+              <p className="mt-0.5 text-sm text-[#5b6b82]">Verified reviews from completed Property Care jobs will be published here as they come in.</p>
             </div>
           </div>
         </div>
       </section>
 
-      <section aria-label="Service areas and frequently asked questions" className="px-4 py-7 sm:px-6 sm:py-9 lg:px-8">
-        <div className="mx-auto grid max-w-[1100px] gap-6 md:grid-cols-2 md:gap-8">
+      {/* Areas + FAQ */}
+      <section aria-label="Service areas and frequently asked questions" className="bg-[#f6f9fd] px-4 py-12 sm:px-6 sm:py-16 lg:px-8">
+        <div className="mx-auto grid max-w-[1100px] gap-8 lg:grid-cols-[0.8fr_1.2fr] lg:gap-12">
           <div>
-            <h2 className="flex items-center gap-2 text-base font-extrabold text-[#15385f]">
-              <MapPin aria-hidden="true" className="h-5 w-5 fill-[#0d65c8] text-[#0d65c8]" />
-              Service Areas
-            </h2>
-            <p className="mt-2 text-xs leading-5 text-[#405875] sm:text-sm sm:leading-6">
-              Contact our team to check maintenance availability in your area.
-            </p>
-            <span className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-[#e9f3ff] px-3 py-1.5 text-[11px] font-bold text-[#155ba4]">
-              <MapPin aria-hidden="true" className="h-3.5 w-3.5" /> Lahore, Pakistan
-            </span>
+            <SectionHeading align="left" eyebrow="Service areas" title="Serving Lahore" description="Property Care is live in Lahore. Submit a request and our team confirms availability for your exact area." />
+            <div className={`${pc.card} mt-6 flex items-center gap-3 p-4`}>
+              <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#edf5ff] text-[#0d57ad]"><MapPin aria-hidden="true" className="h-5 w-5" /></span>
+              <div>
+                <p className="text-sm font-extrabold">Lahore, Pakistan</p>
+                <p className="text-xs text-[#5b6b82]">More cities coming soon</p>
+              </div>
+            </div>
           </div>
           <div>
-            <h2 id="faq-heading" className="flex items-center gap-2 text-base font-extrabold text-[#15385f]">
-              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[#0d65c8] text-[11px] font-black text-white">?</span>
-              FAQs
-            </h2>
-            <div className="mt-2 space-y-1.5">
+            <h2 id="faq-heading" className="text-[clamp(1.4rem,5vw,1.9rem)] font-black tracking-[-0.03em]">Frequently asked questions</h2>
+            <div className="mt-5 space-y-2.5">
               {faqs.map(({ question, answer }) => (
-                <details key={question} className="group rounded-lg border border-[#e4ebf3] bg-white px-3 py-2">
-                  <summary className="flex min-h-5 cursor-pointer list-none items-center justify-between gap-2 text-[11px] font-semibold text-[#263f60] marker:hidden sm:text-xs">
+                <details key={question} className="group rounded-2xl border border-[#e3ebf5] bg-white px-4 open:shadow-[0_4px_14px_rgba(16,43,85,0.06)]">
+                  <summary className="flex min-h-14 cursor-pointer list-none items-center justify-between gap-3 text-[15px] font-bold text-[#17365d] marker:hidden">
                     {question}
-                    <ChevronDown aria-hidden="true" className="h-3.5 w-3.5 shrink-0 text-[#56779d] transition group-open:rotate-180" />
+                    <ChevronDown aria-hidden="true" className="h-5 w-5 shrink-0 text-[#56779d] transition group-open:rotate-180" />
                   </summary>
-                  <p className="pb-1 pt-2 text-[11px] leading-5 text-[#66778d] sm:text-xs">{answer}</p>
+                  <p className="pb-4 text-sm leading-6 text-[#5b6b82]">{answer}</p>
                 </details>
               ))}
             </div>
@@ -411,43 +427,36 @@ export default function MaintenanceLandingPage() {
         </div>
       </section>
 
-      <section aria-labelledby="urgent-heading" className="px-4 pb-6 sm:px-6 sm:pb-8 lg:px-8">
-        <div className="relative mx-auto flex max-w-[1100px] flex-col gap-4 overflow-hidden rounded-xl bg-gradient-to-r from-[#0757b7] to-[#082f65] px-4 py-4 text-white sm:flex-row sm:items-center sm:justify-between sm:px-7 sm:py-5">
-          <div aria-hidden="true" className="pointer-events-none absolute -right-4 -top-8 opacity-[0.12]">
-            <House className="h-32 w-32 fill-white text-white" />
+      {/* Final CTA */}
+      <section aria-labelledby="cta-heading" className="px-4 py-12 sm:px-6 sm:py-16 lg:px-8">
+        <div className="relative mx-auto flex max-w-[1100px] flex-col gap-5 overflow-hidden rounded-[32px] bg-gradient-to-br from-[#0d57ad] via-[#0a4890] to-[#0b2545] px-6 py-8 text-white sm:flex-row sm:items-center sm:justify-between sm:px-10 sm:py-10">
+          <div aria-hidden="true" className="pointer-events-none absolute -right-6 -top-10 opacity-10"><House className="h-44 w-44" /></div>
+          <div className="relative max-w-lg">
+            <h2 id="cta-heading" className="text-2xl font-black tracking-[-0.03em] sm:text-3xl">Something need fixing?</h2>
+            <p className="mt-2 text-sm leading-6 text-blue-100">Submit a request in two minutes. We will review it and get back to you with a verified technician.</p>
           </div>
-          <div className="relative">
-            <h2 id="urgent-heading" className="text-base font-extrabold sm:text-lg">Need Urgent Maintenance?</h2>
-            <p className="mt-1 text-[11px] text-blue-100 sm:text-xs">Book now and get fast, reliable service.</p>
-          </div>
-          <a href="#services" className="relative inline-flex min-h-10 shrink-0 items-center justify-center gap-2 rounded-full bg-white px-4 text-xs font-bold text-[#0d4f9e] transition hover:bg-[#edf5ff] sm:px-5">
-            Book a Service <ArrowRight aria-hidden="true" className="h-4 w-4" />
-          </a>
+          <Link href={REQUEST_SERVICE_PATH} className="relative inline-flex min-h-12 shrink-0 items-center justify-center gap-2 rounded-2xl bg-white px-6 text-sm font-bold text-[#0d4f9e] transition hover:bg-[#edf5ff]">
+            Request a service <ArrowRight aria-hidden="true" className="h-4 w-4" />
+          </Link>
         </div>
       </section>
 
-      <footer className="bg-[#062650] text-white">
-        <div className="mx-auto grid max-w-[1180px] grid-cols-2 gap-x-5 gap-y-7 px-4 py-7 sm:px-6 sm:py-9 md:grid-cols-4 md:gap-8 lg:px-8">
+      {/* Footer */}
+      <footer className="bg-[#062650] pb-24 text-white sm:pb-0">
+        <div className="mx-auto grid max-w-[1180px] grid-cols-2 gap-x-6 gap-y-8 px-4 py-10 sm:px-6 md:grid-cols-4 md:gap-8 lg:px-8">
           <div className="col-span-2 md:col-span-1">
             <Link href="/maintenance" className="inline-flex items-center gap-2" aria-label="Ghar Safar Maintenance home">
-              <Image
-                src="/images/ghar-safar-logo.png"
-                unoptimized
-                alt="Ghar Safar logo"
-                width={40}
-                height={39}
-                className="h-8 w-8 shrink-0 object-contain"
-              />
+              <Image src="/images/ghar-safar-logo.png" unoptimized alt="Ghar Safar logo" width={40} height={39} className="h-9 w-9 shrink-0 object-contain" />
               <span className="text-lg font-extrabold tracking-tight">Ghar Safar</span>
             </Link>
-            <p className="mt-1 text-[10px] text-blue-100 sm:text-xs">Har Khwab Ki Manzil, Apna Ghar.</p>
-            <div className="mt-3 flex items-center gap-2" aria-label="Social networks">
+            <p className="mt-2 text-sm text-blue-100">Har Khwab Ki Manzil, Apna Ghar.</p>
+            <div className="mt-4 flex items-center gap-2" aria-label="Social networks">
               {[
                 { name: 'Facebook', Icon: Facebook },
                 { name: 'Instagram', Icon: Instagram },
                 { name: 'YouTube', Icon: Youtube },
               ].map(({ name, Icon }) => (
-                <span key={name} role="img" aria-label={name} className="flex h-8 w-8 items-center justify-center rounded-full border border-white/25 text-blue-100">
+                <span key={name} role="img" aria-label={name} className="flex h-9 w-9 items-center justify-center rounded-full border border-white/25 text-blue-100">
                   <Icon aria-hidden="true" className="h-4 w-4" />
                 </span>
               ))}
@@ -455,41 +464,52 @@ export default function MaintenanceLandingPage() {
           </div>
 
           <nav aria-label="Quick Links">
-            <h2 className="mb-2 text-[11px] font-extrabold sm:text-xs">Quick Links</h2>
-            <ul className="space-y-1.5 text-[10px] text-blue-100 sm:text-xs">
+            <h2 className="mb-3 text-sm font-extrabold">Quick Links</h2>
+            <ul className="space-y-2.5 text-sm text-blue-100">
               <li><Link href="/" className="hover:text-white">Home</Link></li>
               <li><a href="#services" className="hover:text-white">Services</a></li>
-              <li><a href="#providers-heading" className="hover:text-white">Service Providers</a></li>
-              <li><a href="#faq-heading" className="hover:text-white">FAQs</a></li>
+              <li><a href="#how-it-works" className="hover:text-white">How it works</a></li>
+              <li><Link href="/buyer/maintenance" className="hover:text-white">Track My Requests</Link></li>
             </ul>
           </nav>
 
           <nav aria-label="Support">
-            <h2 className="mb-2 text-[11px] font-extrabold sm:text-xs">Support</h2>
-            <ul className="space-y-1.5 text-[10px] text-blue-100 sm:text-xs">
+            <h2 className="mb-3 text-sm font-extrabold">Support</h2>
+            <ul className="space-y-2.5 text-sm text-blue-100">
               <li><a href="tel:+923001234567" className="hover:text-white">Help Center</a></li>
               <li><a href="tel:+923001234567" className="hover:text-white">Contact Us</a></li>
-              <li><a href="#faq-heading" className="hover:text-white">Terms &amp; Conditions</a></li>
-              <li><a href="#faq-heading" className="hover:text-white">Privacy Policy</a></li>
+              <li><a href="#faq-heading" className="hover:text-white">FAQs</a></li>
+              <li><a href="#faq-heading" className="hover:text-white">Terms &amp; Privacy</a></li>
             </ul>
           </nav>
 
           <div className="col-span-2 md:col-span-1">
-            <h2 className="mb-2 text-[11px] font-extrabold sm:text-xs">Contact Us</h2>
-            <ul className="space-y-2 text-[10px] text-blue-100 sm:text-xs">
-              <li className="flex items-center gap-2"><MapPin aria-hidden="true" className="h-3.5 w-3.5 shrink-0" />Lahore, Pakistan</li>
-              <li className="flex items-center gap-2"><Phone aria-hidden="true" className="h-3.5 w-3.5 shrink-0" /><a href="tel:+923001234567" className="hover:text-white">+92 300 1234567</a></li>
-              <li className="flex min-w-0 items-center gap-2"><Mail aria-hidden="true" className="h-3.5 w-3.5 shrink-0" /><a href="mailto:info@estatepro.pk" className="break-all hover:text-white">Ghar Safar Support</a></li>
+            <h2 className="mb-3 text-sm font-extrabold">Contact Us</h2>
+            <ul className="space-y-2.5 text-sm text-blue-100">
+              <li className="flex items-center gap-2"><MapPin aria-hidden="true" className="h-4 w-4 shrink-0" />Lahore, Pakistan</li>
+              <li className="flex items-center gap-2"><Phone aria-hidden="true" className="h-4 w-4 shrink-0" /><a href="tel:+923001234567" className="hover:text-white">+92 300 1234567</a></li>
+              <li className="flex min-w-0 items-center gap-2"><Mail aria-hidden="true" className="h-4 w-4 shrink-0" /><a href="mailto:info@estatepro.pk" className="break-all hover:text-white">Ghar Safar Support</a></li>
+              <li className="flex items-center gap-2"><Headset aria-hidden="true" className="h-4 w-4 shrink-0" />Support via your request page</li>
             </ul>
           </div>
         </div>
-        <div className="border-t border-white/20">
-          <div className="mx-auto flex max-w-[1180px] flex-col gap-1 px-4 py-3 text-[9px] text-blue-100 sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:text-[10px] lg:px-8">
+        <div className="border-t border-white/15">
+          <div className="mx-auto flex max-w-[1180px] flex-col gap-1 px-4 py-4 text-xs text-blue-100 sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
             <p>© {new Date().getFullYear()} Ghar Safar. All rights reserved.</p>
             <p>Har Khwab Ki Manzil, Apna Ghar.</p>
           </div>
         </div>
       </footer>
+
+      {/* Mobile sticky CTA */}
+      <div
+        className={`fixed inset-x-0 bottom-0 z-50 border-t border-[#e3ebf5] bg-white/95 px-4 pb-[calc(0.75rem+env(safe-area-inset-bottom))] pt-3 shadow-[0_-10px_30px_rgba(16,43,85,0.12)] backdrop-blur transition-transform duration-300 sm:hidden ${showStickyCta ? 'visible translate-y-0' : 'invisible translate-y-full'}`}
+        aria-hidden={!showStickyCta}
+      >
+        <Link href={REQUEST_SERVICE_PATH} tabIndex={showStickyCta ? 0 : -1} className={`${pc.primaryBtn} w-full`}>
+          Request a service <ArrowRight aria-hidden="true" className="h-4 w-4" />
+        </Link>
+      </div>
     </main>
   );
 }

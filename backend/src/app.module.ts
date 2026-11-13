@@ -15,6 +15,8 @@ import { RequirementsModule } from './modules/requirements/requirements.module';
 import { HealthModule } from './modules/health/health.module';
 import { AgenciesModule } from './modules/agencies/agencies.module';
 import { ProjectsModule } from './modules/projects/projects.module';
+import { NotificationsModule } from './modules/notifications/notifications.module';
+import { MaintenanceModule } from './modules/maintenance/maintenance.module';
 
 const developmentAnalyticsMode =
   process.env.NODE_ENV === 'development' &&
@@ -45,6 +47,8 @@ const developmentAnalyticsMode =
           BuyerModule,
           RequirementsModule,
           AdminModule,
+          NotificationsModule,
+          MaintenanceModule,
         ]),
   ],
 })

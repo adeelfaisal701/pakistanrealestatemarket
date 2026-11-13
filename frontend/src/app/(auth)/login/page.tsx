@@ -37,7 +37,7 @@ function getSafeReturnPath(returnTo: string | null): string | null {
 
 export default function LoginPage() {
   const router = useRouter();
-  const [role, setRole] = useState<"agent" | "buyer">("agent");
+  const [role, setRole] = useState<"agent" | "buyer" | "technician">("agent");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -63,7 +63,9 @@ export default function LoginPage() {
       const returnPath = getSafeReturnPath(
         new URLSearchParams(window.location.search).get("returnTo"),
       );
-      const destination = returnPath || (user.role === "agent" ? "/agent" : "/buyer");
+      const destination =
+        returnPath ||
+        (user.role === "agent" ? "/agent" : user.role === "technician" ? "/technician" : "/buyer");
       if (user.role === "agent" && user.profileComplete !== true) {
         router.replace(
           `/agent/profile-completion?returnTo=${encodeURIComponent(
@@ -100,7 +102,7 @@ export default function LoginPage() {
 
         <CardContent className="space-y-6">
           {/* Role Switcher */}
-          <div className="grid grid-cols-2 p-1 bg-slate-100 dark:bg-slate-800 rounded-xl">
+          <div className="grid grid-cols-3 p-1 bg-slate-100 dark:bg-slate-800 rounded-xl">
             <button
               type="button"
               onClick={() => setRole("agent")}
@@ -122,6 +124,17 @@ export default function LoginPage() {
               }`}
             >
               Buyer / Investor
+            </button>
+            <button
+              type="button"
+              onClick={() => setRole("technician")}
+              className={`py-2 text-xs font-semibold rounded-lg transition-all ${
+                role === "technician"
+                  ? "bg-white dark:bg-slate-900 shadow-sm text-emerald-600"
+                  : "text-slate-500 hover:text-slate-900 dark:hover:text-slate-100"
+              }`}
+            >
+              Technician
             </button>
           </div>
 
@@ -166,7 +179,7 @@ export default function LoginPage() {
               <span>
                 {submitting
                   ? "Signing In..."
-                  : `Sign In as ${role === "agent" ? "Agent" : "Buyer"}`}
+                  : `Sign In as ${role === "agent" ? "Agent" : role === "technician" ? "Technician" : "Buyer"}`}
               </span>
               <ArrowRight className="h-4 w-4" />
             </Button>

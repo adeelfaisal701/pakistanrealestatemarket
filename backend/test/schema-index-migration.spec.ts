@@ -177,7 +177,13 @@ test('migration history versions are independently tracked', async () => {
 });
 
 test('migration allowlist covers audited indexed schemas and declared TTL definitions', () => {
-  assert.equal(APPROVED_INDEX_SCHEMAS.length, 20);
+  assert.equal(APPROVED_INDEX_SCHEMAS.length, 23);
+  for (const modelName of ['MaintenanceRequest', 'TechnicianProfile', 'UserNotification']) {
+    assert.ok(
+      APPROVED_INDEX_SCHEMAS.some((entry) => entry.modelName === modelName),
+      `${modelName} indexes must be in the explicit migration allowlist`,
+    );
+  }
   for (const entry of APPROVED_INDEX_SCHEMAS) {
     assert.ok(entry.purpose.length > 0, `${entry.modelName} needs an index purpose`);
     assert.ok(entry.schema.indexes().length > 0, `${entry.modelName} needs declared indexes`);

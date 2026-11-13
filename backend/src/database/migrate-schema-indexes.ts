@@ -29,6 +29,18 @@ import {
   DevelopmentProject,
   DevelopmentProjectSchema,
 } from '../modules/projects/schemas/development-project.schema';
+import {
+  MaintenanceRequest,
+  MaintenanceRequestSchema,
+} from '../modules/maintenance/schemas/maintenance-request.schema';
+import {
+  TechnicianProfile,
+  TechnicianProfileSchema,
+} from '../modules/maintenance/schemas/technician-profile.schema';
+import {
+  UserNotification,
+  UserNotificationSchema,
+} from '../modules/notifications/schemas/user-notification.schema';
 
 export const APPROVED_INDEX_SCHEMAS = [
   { modelName: AdminActivity.name, schema: AdminActivitySchema, purpose: 'admin activity filtering by actor/action/entity and reverse-chronological audit listing' },
@@ -51,6 +63,9 @@ export const APPROVED_INDEX_SCHEMAS = [
   { modelName: User.name, schema: UserSchema, purpose: 'unique normalized email authentication and agent/account-status filtering' },
   { modelName: Agency.name, schema: AgencySchema, purpose: 'unique normalized agency profile lookup' },
   { modelName: DevelopmentProject.name, schema: DevelopmentProjectSchema, purpose: 'unique project slug lookup and ordered published/featured project queries' },
+  { modelName: MaintenanceRequest.name, schema: MaintenanceRequestSchema, purpose: 'unique maintenance reference, customer/technician job lists, and admin status/complaint filtering' },
+  { modelName: TechnicianProfile.name, schema: TechnicianProfileSchema, purpose: 'one technician profile per user and active/available/category dispatch lookup' },
+  { modelName: UserNotification.name, schema: UserNotificationSchema, purpose: 'per-user notification inbox ordering and event deduplication' },
 ];
 
 function readArguments(args: string[]) {

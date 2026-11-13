@@ -7,6 +7,11 @@ export enum UserRole {
   BUYER = 'buyer',
   AGENT = 'agent',
   ADMIN = 'admin',
+  /**
+   * Maintenance field technician. Accounts are created only by admins via the
+   * maintenance technician-management API; there is no self-registration path.
+   */
+  TECHNICIAN = 'technician',
 }
 
 export enum UserAccountStatus {

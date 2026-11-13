@@ -19,6 +19,7 @@ import {
   X,
   ChevronRight,
   UserRound,
+  Wrench,
 } from "lucide-react";
 import apiClient, { type ApiEnvelope } from "@/lib/api-client";
 import { cn } from "@/lib/utils";
@@ -32,6 +33,7 @@ const sections = [
   { href: "/buyer/saved-properties", label: "Saved Properties", icon: Heart },
   { href: "/buyer/saved-searches", label: "Saved Searches", icon: Search },
   { href: "/buyer/requirements", label: "My Requirements", icon: ClipboardList },
+  { href: "/buyer/maintenance", label: "Property Care", icon: Wrench },
   { href: "/buyer/inquiries", label: "Agent Inquiries", icon: MessageCircle },
   { href: "/buyer/notifications", label: "Notifications", icon: Bell },
   { href: "/buyer/profile", label: "Profile & Preferences", icon: Settings },

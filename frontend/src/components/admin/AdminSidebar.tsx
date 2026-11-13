@@ -21,6 +21,7 @@ import {
   Shield,
   ShieldCheck,
   Users,
+  Wrench,
   X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -64,6 +65,12 @@ const navigation = [
     href: "/admin/requirements",
     icon: ClipboardList,
     description: "Review buyer requests and offers",
+  },
+  {
+    name: "Property Care",
+    href: "/admin/maintenance",
+    icon: Wrench,
+    description: "Maintenance dispatch & technicians",
   },
   {
     name: "Agency Directory",

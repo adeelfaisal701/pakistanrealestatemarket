@@ -2,7 +2,7 @@
  * Pakistan Real Estate Marketplace & Agent CRM - Core TypeScript Types
  */
 
-export type UserRole = "buyer" | "agent" | "admin";
+export type UserRole = "buyer" | "agent" | "admin" | "technician";
 
 export interface User {
   id: string;
