@@ -129,7 +129,7 @@ export function TechnicianJobDetail({ id }: { id: string }) {
   if (loadError && !job) {
     return (
       <div className="space-y-4">
-        <PcBackLink href="/technician" label="My jobs" />
+        <PcBackLink href="/technician/jobs" label="My jobs" />
         <ErrorBanner message={loadError} onRetry={() => void load()} />
       </div>
     );
@@ -182,7 +182,7 @@ export function TechnicianJobDetail({ id }: { id: string }) {
 
   return (
     <div className={cn("space-y-4", primary && "pb-24 sm:pb-0")}>
-      <PcBackLink href="/technician" label="My jobs" />
+      <PcBackLink href="/technician/jobs" label="My jobs" />
 
       <section className="overflow-hidden rounded-3xl bg-gradient-to-br from-[#0d57ad] to-[#0b2545] text-white shadow-[0_14px_30px_rgba(13,87,173,0.25)]">
         <div className="p-5">
@@ -235,7 +235,7 @@ export function TechnicianJobDetail({ id }: { id: string }) {
         </div>
       )}
 
-      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_340px]">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_340px]">
         <div className="min-w-0 space-y-4">
           <PcCard title="Job details" icon={<FileText className="h-4 w-4" />}>
             <p className="whitespace-pre-line text-sm leading-6 text-[#36506f]">{job.description}</p>
@@ -250,7 +250,7 @@ export function TechnicianJobDetail({ id }: { id: string }) {
 
           {actions.canUploadPhotos && (
             <PcCard title="Work photos" icon={<Camera className="h-4 w-4" />}>
-              <div className="grid gap-3 sm:grid-cols-2">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <FileUploadField id="tech-before-photos" label={busy ? "Uploading…" : `Before-work photos (${beforeCount})`} remaining={MAX_PHOTOS_PER_KIND - beforeCount} onSelect={(files) => void uploadPhotos("before", files)} disabled={busy} />
                 <FileUploadField id="tech-after-photos" label={busy ? "Uploading…" : `After-work photos (${afterCount})`} remaining={MAX_PHOTOS_PER_KIND - afterCount} onSelect={(files) => void uploadPhotos("after", files)} disabled={busy} />
               </div>

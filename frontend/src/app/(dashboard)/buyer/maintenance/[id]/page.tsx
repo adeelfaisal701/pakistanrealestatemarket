@@ -1,15 +1,7 @@
-import { CustomerMaintenanceDetail } from "@/components/maintenance/customer/CustomerMaintenanceDetail";
+import { LegacyRouteRedirect } from "@/components/property-care/LegacyRouteRedirect";
 
-export const metadata = {
-  title: "Maintenance Request | Ghar Safar",
-  description: "Track the status of your maintenance request.",
-};
-
-export default async function BuyerMaintenanceDetailPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
+/** Kept so existing notification links keep working. */
+export default async function BuyerMaintenanceDetailRedirect({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  return <CustomerMaintenanceDetail id={id} />;
+  return <LegacyRouteRedirect to={`/care/requests/${encodeURIComponent(id)}`} dark />;
 }

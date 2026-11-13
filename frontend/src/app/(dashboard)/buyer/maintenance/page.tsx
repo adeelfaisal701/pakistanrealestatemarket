@@ -1,10 +1,6 @@
-import { CustomerMaintenanceList } from "@/components/maintenance/customer/CustomerMaintenanceList";
+import { LegacyRouteRedirect } from "@/components/property-care/LegacyRouteRedirect";
 
-export const metadata = {
-  title: "Property Care | Ghar Safar",
-  description: "Track your managed home maintenance requests.",
-};
-
-export default function BuyerMaintenancePage() {
-  return <CustomerMaintenanceList />;
+/** Property Care moved to its own customer workspace at /care. */
+export default function BuyerMaintenanceRedirect() {
+  return <LegacyRouteRedirect to="/care" dark />;
 }

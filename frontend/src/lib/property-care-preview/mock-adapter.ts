@@ -7,7 +7,6 @@ import { AxiosError, type AxiosAdapter, type AxiosResponse, type InternalAxiosRe
 import {
   ADMIN_LIST,
   ADMIN_OVERVIEW,
-  ADMIN_REQUEST,
   CUSTOMER_LIST,
   CUSTOMER_REQUESTS,
   NOTIFICATIONS,
@@ -16,6 +15,8 @@ import {
   TECHNICIAN_BUCKETS,
   TECHNICIAN_DETAIL,
   TECHNICIAN_JOBS,
+  TECHNICIAN_PROFILE,
+  adminDetailFor,
 } from "./sample-data";
 
 function ok(config: InternalAxiosRequestConfig, data: unknown): AxiosResponse {
@@ -71,22 +72,34 @@ export const previewAdapter: AxiosAdapter = async (config) => {
   if (customerDetail) return ok(config, CUSTOMER_REQUESTS[customerDetail[1]] ?? CUSTOMER_REQUESTS["sample-quote"]);
 
   // Technician
-  if (url === "/maintenance/technician/profile") return ok(config, { id: "tech-1", name: "Imran Ali (sample)", availability: "available", categories: ["plumbing"] });
+  if (url === "/maintenance/technician/profile") return ok(config, TECHNICIAN_PROFILE);
   if (url === "/maintenance/technician/jobs") {
     const bucket = params.bucket ?? "new";
     const counts = Object.fromEntries(Object.entries(TECHNICIAN_BUCKETS).map(([key, value]) => [key, value.length]));
-    return ok(config, { ...page(TECHNICIAN_BUCKETS[bucket] ?? []), counts });
+    const items = bucket === "all" ? Object.values(TECHNICIAN_BUCKETS).flat() : TECHNICIAN_BUCKETS[bucket] ?? [];
+    return ok(config, { ...page(items), counts });
   }
   const job = url.match(/^\/maintenance\/technician\/jobs\/([\w-]+)$/);
   if (job) return ok(config, TECHNICIAN_JOBS[job[1]] ?? TECHNICIAN_JOBS["sample-new"]);
 
   // Admin
   if (url === "/admin/maintenance/overview") return ok(config, ADMIN_OVERVIEW);
-  if (url === "/admin/maintenance/requests") return ok(config, page(ADMIN_LIST));
+  if (url === "/admin/maintenance/requests") {
+    const search = (params.search ?? "").toLowerCase();
+    const items = ADMIN_LIST
+      .filter((item) => !params.status || params.status === "all" || item.status === params.status)
+      .filter((item) => !params.category || params.category === "all" || item.category === params.category)
+      .filter((item) => String(params.openComplaints) !== "true" || item.hasOpenComplaint)
+      .filter((item) => !search || `${item.title} ${item.reference} ${item.customerName}`.toLowerCase().includes(search));
+    const limit = Number(params.limit) || 20;
+    const current = Number(params.page) || 1;
+    return ok(config, { items: items.slice((current - 1) * limit, current * limit), total: items.length, page: current, limit, totalPages: Math.max(1, Math.ceil(items.length / limit)) });
+  }
   if (/^\/admin\/maintenance\/requests\/[\w-]+\/eligible-technicians$/.test(url)) {
     return ok(config, SAMPLE_TECHNICIANS.filter((tech) => tech.isActive && tech.availability === "available" && tech.categories.includes("plumbing")));
   }
-  if (/^\/admin\/maintenance\/requests\/[\w-]+$/.test(url)) return ok(config, ADMIN_REQUEST);
+  const adminDetail = url.match(/^\/admin\/maintenance\/requests\/([\w-]+)$/);
+  if (adminDetail) return ok(config, adminDetailFor(adminDetail[1]));
   if (url === "/admin/maintenance/technicians") return ok(config, page(SAMPLE_TECHNICIANS));
   if (/^\/admin\/maintenance\/technicians\/[\w-]+$/.test(url)) return ok(config, TECHNICIAN_DETAIL);
 

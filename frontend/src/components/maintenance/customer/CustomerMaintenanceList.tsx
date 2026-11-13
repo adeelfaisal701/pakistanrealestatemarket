@@ -96,7 +96,7 @@ export function CustomerMaintenanceList() {
           </Link>
         </section>
 
-        <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
+        <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
           <div className="min-w-0 space-y-4">
             <div role="tablist" aria-label="Filter requests" className="grid grid-cols-4 gap-1 rounded-2xl bg-[#e6eef8] p-1">
               {SCOPES.map((item) => (

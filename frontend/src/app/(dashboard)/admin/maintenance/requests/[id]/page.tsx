@@ -1,10 +1,7 @@
-import { AdminMaintenanceRequestDetail } from "@/components/admin/maintenance/AdminMaintenanceRequestDetail";
+import { LegacyRouteRedirect } from "@/components/property-care/LegacyRouteRedirect";
 
-export default async function AdminMaintenanceRequestPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
+/** Kept so existing notification links keep working. */
+export default async function AdminMaintenanceRequestRedirect({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  return <AdminMaintenanceRequestDetail id={id} />;
+  return <LegacyRouteRedirect to={`/care-ops/requests/${encodeURIComponent(id)}`} dark />;
 }

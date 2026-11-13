@@ -57,15 +57,11 @@ export function ServiceIcon({ category, className }: { category: string; classNa
 }
 
 /**
- * Light canvas for customer Property Care screens inside the (dark) buyer
- * shell. Full-bleed on phones, a rounded panel on larger screens.
+ * Content wrapper for customer Property Care screens. The dedicated CareShell
+ * provides the light canvas, navigation and spacing.
  */
 export function PropertyCareSurface({ children }: { children: ReactNode }) {
-  return (
-    <div className="-mx-4 -mt-4 min-h-[calc(100dvh-4rem)] bg-[#f4f8fd] px-4 pb-10 pt-5 text-[#102b55] sm:mx-0 sm:mt-0 sm:rounded-[28px] sm:px-6 sm:pt-6 lg:px-8 lg:pt-8">
-      {children}
-    </div>
-  );
+  return <div className="text-[#102b55]">{children}</div>;
 }
 
 export function PcBackLink({ href, label }: { href: string; label: string }) {

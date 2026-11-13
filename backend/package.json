@@ -16,6 +16,8 @@
     "start:prod": "node dist/main.js",
     "db:migrate:indexes": "node -r ts-node/register src/database/migrate-schema-indexes.ts",
     "admin:provision": "node scripts/provision-admin.js",
+    "seed:demo": "node -r ts-node/register src/database/demo-seed/demo-seed.ts",
+    "seed:demo:cleanup": "node -r ts-node/register src/database/demo-seed/demo-cleanup.ts",
     "test": "node --test -r ts-node/register test/*.spec.ts test/*.spec.js",
     "test:registration": "node --test -r ts-node/register test/auth-registration.spec.ts",
     "test:admin-auth": "node --test -r ts-node/register test/admin-auth.spec.ts",
@@ -28,6 +30,7 @@
     "test:property-images": "node --test -r ts-node/register test/property-images-and-features.spec.ts",
     "test:database-index-migration": "node --test -r ts-node/register test/schema-index-migration.spec.ts test/database-config.spec.ts",
     "test:cors": "node --test -r ts-node/register test/cors-config.spec.ts",
+    "test:demo-seed": "node --test -r ts-node/register test/demo-seed.spec.ts test/demo-cleanup.spec.ts",
     "test:property-advertisements": "node --test -r ts-node/register test/property-advertisement-analytics.spec.ts",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix"
   },

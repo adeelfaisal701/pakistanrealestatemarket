@@ -135,6 +135,15 @@ function SectionHeading({
 export default function MaintenanceLandingPage() {
   const [serviceSearch, setServiceSearch] = useState('');
   const [showStickyCta, setShowStickyCta] = useState(false);
+  // Display-only hint; dashboards verify the account role with the backend.
+  const [signedIn, setSignedIn] = useState(false);
+  useEffect(() => {
+    try {
+      setSignedIn(Boolean(localStorage.getItem('auth_token')));
+    } catch {
+      setSignedIn(false);
+    }
+  }, []);
   const normalizedSearch = serviceSearch.trim().toLowerCase();
   const visibleServices = useMemo(
     () =>
@@ -169,15 +178,21 @@ export default function MaintenanceLandingPage() {
             </span>
           </Link>
           <nav aria-label="Account" className="flex shrink-0 items-center gap-1.5 sm:gap-2">
-            <Link href="/buyer/maintenance" className="hidden min-h-10 items-center rounded-full px-3 text-xs font-bold text-[#36506f] transition hover:text-[#0d57ad] sm:inline-flex">
-              Track a request
-            </Link>
-            <Link href="/login" className="inline-flex min-h-10 items-center justify-center rounded-full border border-[#c9d9ec] bg-white px-4 text-xs font-bold text-[#0d57ad] transition hover:bg-[#f4f8fd]">
-              Sign In
-            </Link>
-            <Link href="/register" className="inline-flex min-h-10 items-center justify-center rounded-full bg-[#0d57ad] px-4 text-xs font-bold text-white shadow-sm transition hover:bg-[#094787]">
-              Sign Up
-            </Link>
+            {signedIn ? (
+              <Link href="/property-care" className="inline-flex min-h-10 items-center justify-center rounded-full bg-[#0d57ad] px-4 text-xs font-bold text-white shadow-sm transition hover:bg-[#094787]">
+                My dashboard
+              </Link>
+            ) : (
+              <>
+                <Link href="/property-care/login" className="inline-flex min-h-10 items-center justify-center rounded-full border border-[#c9d9ec] bg-white px-4 text-xs font-bold text-[#0d57ad] transition hover:bg-[#f4f8fd]">
+                  Sign In
+                </Link>
+                <Link href="/property-care/register" className="inline-flex min-h-10 items-center justify-center rounded-full bg-[#0d57ad] px-4 text-xs font-bold text-white shadow-sm transition hover:bg-[#094787]">
+                  <span className="sm:hidden">Sign Up</span>
+                  <span className="hidden sm:inline">Create Customer Account</span>
+                </Link>
+              </>
+            )}
           </nav>
         </div>
       </header>
@@ -469,7 +484,7 @@ export default function MaintenanceLandingPage() {
               <li><Link href="/" className="hover:text-white">Home</Link></li>
               <li><a href="#services" className="hover:text-white">Services</a></li>
               <li><a href="#how-it-works" className="hover:text-white">How it works</a></li>
-              <li><Link href="/buyer/maintenance" className="hover:text-white">Track My Requests</Link></li>
+              <li><Link href="/care" className="hover:text-white">Track My Requests</Link></li>
             </ul>
           </nav>
 

@@ -142,7 +142,7 @@ export function CustomerMaintenanceDetail({ id }: { id: string }) {
     return (
       <PropertyCareSurface>
         <div className="space-y-4">
-          <PcBackLink href="/buyer/maintenance" label="My requests" />
+          <PcBackLink href="/care/requests" label="My requests" />
           <ErrorBanner message={loadError} onRetry={() => void load()} />
         </div>
       </PropertyCareSurface>
@@ -161,7 +161,7 @@ export function CustomerMaintenanceDetail({ id }: { id: string }) {
   return (
     <PropertyCareSurface>
       <div className={cn("mx-auto max-w-6xl space-y-5", stickyAction && "pb-24 sm:pb-0")}>
-        <PcBackLink href="/buyer/maintenance" label="My requests" />
+        <PcBackLink href="/care/requests" label="My requests" />
 
         {/* Header */}
         <section className={cn(pc.card, "overflow-hidden")}>
@@ -237,7 +237,7 @@ export function CustomerMaintenanceDetail({ id }: { id: string }) {
           </section>
         )}
 
-        <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_360px]">
+        <div className="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1fr)_360px]">
           <div className="min-w-0 space-y-5">
             {/* Technician (mobile first position) */}
             <TechnicianCard request={request} className="lg:hidden" />
@@ -381,7 +381,7 @@ export function CustomerMaintenanceDetail({ id }: { id: string }) {
       </div>
 
       {stickyAction && (
-        <div className="fixed inset-x-0 bottom-[calc(var(--buyer-mobile-nav-height,0px)+env(safe-area-inset-bottom))] z-30 border-t border-[#e3ebf5] bg-white/95 px-4 py-3 shadow-[0_-10px_30px_rgba(16,43,85,0.1)] backdrop-blur sm:hidden">
+        <div className="fixed inset-x-0 bottom-[calc(4rem+env(safe-area-inset-bottom))] z-30 border-t border-[#e3ebf5] bg-white/95 px-4 py-3 shadow-[0_-10px_30px_rgba(16,43,85,0.1)] backdrop-blur sm:hidden">
           <div className="flex gap-2.5">
             {quoteAction ? (
               <>

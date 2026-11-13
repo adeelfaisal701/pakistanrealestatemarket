@@ -52,10 +52,10 @@ export function ServiceDetailPage({ service }: { service: PropertyCareService })
         </div>
       </section>
 
-      <div className="mx-auto -mt-8 grid max-w-[1100px] gap-4 px-4 sm:px-6 lg:grid-cols-[1.4fr_1fr]">
+      <div className="mx-auto -mt-8 grid grid-cols-1 max-w-[1100px] gap-4 px-4 sm:px-6 lg:grid-cols-[1.4fr_1fr]">
         <section aria-labelledby="jobs-heading" className={`${pc.card} p-5 sm:p-6`}>
           <h2 id="jobs-heading" className="text-lg font-black tracking-[-0.02em]">Common jobs we handle</h2>
-          <ul className="mt-4 grid gap-2.5 sm:grid-cols-2">
+          <ul className="mt-4 grid grid-cols-1 gap-2.5 sm:grid-cols-2">
             {service.commonJobs.map((job) => (
               <li key={job} className="flex items-start gap-2.5 rounded-2xl bg-[#f6f9fd] p-3 text-sm font-semibold text-[#20385c]">
                 <CheckCircle2 aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
@@ -82,7 +82,7 @@ export function ServiceDetailPage({ service }: { service: PropertyCareService })
 
         <section aria-labelledby="process-heading" className={`${pc.card} p-5 sm:p-6 lg:col-span-2`}>
           <h2 id="process-heading" className="text-lg font-black tracking-[-0.02em]">What happens after you request</h2>
-          <ol className="mt-4 grid gap-3 md:grid-cols-3">
+          <ol className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-3">
             {[
               { icon: ClipboardList, title: "We review your request", text: "Our operations team checks the details and photos you share." },
               { icon: UserRoundCheck, title: "A verified technician is assigned", text: "You see their name and phone once they confirm the visit." },

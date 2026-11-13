@@ -1,5 +1,6 @@
-import { AdminMaintenanceDashboard } from "@/components/admin/maintenance/AdminMaintenanceDashboard";
+import { LegacyRouteRedirect } from "@/components/property-care/LegacyRouteRedirect";
 
-export default function AdminMaintenancePage() {
-  return <AdminMaintenanceDashboard />;
+/** Property Care operations moved to its own workspace at /care-ops. */
+export default function AdminMaintenanceRedirect() {
+  return <LegacyRouteRedirect to="/care-ops" dark />;
 }

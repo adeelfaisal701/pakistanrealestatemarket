@@ -138,7 +138,7 @@ export function AdminMaintenanceDashboard() {
           <span>Search &amp; filters{Object.entries(filters).some(([key, value]) => value && value !== EMPTY_FILTERS[key as keyof Filters]) ? " (active)" : ""}</span>
           <span aria-hidden="true">{filtersOpen ? "−" : "+"}</span>
         </button>
-        <div id="maintenance-filters" className={cn("grid gap-2 sm:grid-cols-2 lg:grid-cols-6", !filtersOpen && "hidden sm:grid")}>
+        <div id="maintenance-filters" className={cn("grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-6", !filtersOpen && "hidden sm:grid")}>
           <label className="relative sm:col-span-2">
             <span className="sr-only">Search requests</span>
             <Search className="absolute left-3 top-3 h-4 w-4 text-slate-400" />

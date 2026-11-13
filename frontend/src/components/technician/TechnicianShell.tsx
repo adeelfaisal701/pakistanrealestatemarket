@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import axios from "axios";
-import { Bell, BriefcaseBusiness, History, LogOut, ShieldAlert } from "lucide-react";
+import { Bell, BriefcaseBusiness, History, House, LogOut, ShieldAlert, UserRound } from "lucide-react";
 import apiClient, { getApiErrorMessage, type ApiEnvelope } from "@/lib/api-client";
 import { cn } from "@/lib/utils";
 
@@ -23,9 +23,10 @@ type AccessState =
   | { status: "error"; message: string };
 
 const NAV = [
-  { href: "/technician", label: "Jobs", icon: BriefcaseBusiness, match: (path: string) => path === "/technician" || path.startsWith("/technician/jobs") },
+  { href: "/technician", label: "Home", icon: House, match: (path: string) => path === "/technician" },
+  { href: "/technician/jobs", label: "Jobs", icon: BriefcaseBusiness, match: (path: string) => path.startsWith("/technician/jobs") },
   { href: "/technician/history", label: "History", icon: History, match: (path: string) => path.startsWith("/technician/history") },
-  { href: "/technician/updates", label: "Updates", icon: Bell, match: (path: string) => path.startsWith("/technician/updates") },
+  { href: "/technician/profile", label: "Profile", icon: UserRound, match: (path: string) => path.startsWith("/technician/profile") },
 ];
 
 const AVAILABILITY_STYLES: Record<string, string> = {
@@ -49,7 +50,7 @@ export function TechnicianShell({ children }: { children: ReactNode }) {
   const check = useCallback(async () => {
     const token = localStorage.getItem("auth_token");
     if (!token) {
-      router.replace(`/login?returnTo=${encodeURIComponent(pathname)}`);
+      router.replace(`/property-care/login?returnTo=${encodeURIComponent(pathname)}`);
       return;
     }
     setAccess({ status: "checking" });
@@ -65,7 +66,7 @@ export function TechnicianShell({ children }: { children: ReactNode }) {
       if (axios.isAxiosError(requestError) && requestError.response?.status === 401) {
         localStorage.removeItem("auth_token");
         localStorage.removeItem("auth_user");
-        router.replace(`/login?returnTo=${encodeURIComponent(pathname)}`);
+        router.replace(`/property-care/login?returnTo=${encodeURIComponent(pathname)}`);
         return;
       }
       if (axios.isAxiosError(requestError) && requestError.response?.status === 403) {
@@ -84,7 +85,7 @@ export function TechnicianShell({ children }: { children: ReactNode }) {
     localStorage.removeItem("auth_token");
     localStorage.removeItem("auth_user");
     window.dispatchEvent(new Event("estatepro:auth-changed"));
-    window.location.assign("/login");
+    window.location.assign("/property-care/login");
   };
 
   if (access.status === "checking") {
@@ -153,7 +154,10 @@ export function TechnicianChrome({
             <span className={cn("hidden rounded-full px-2.5 py-1 text-[11px] font-bold capitalize ring-1 ring-inset min-[380px]:inline-flex", AVAILABILITY_STYLES[profile.availability] ?? AVAILABILITY_STYLES.unavailable)}>
               {profile.availability.replace("_", " ")}
             </span>
-            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-white/15 text-xs font-black" title={profile.name}>{initials}</span>
+            <Link href="/technician/updates" aria-label="Notifications" className={cn("flex h-9 w-9 items-center justify-center rounded-full hover:bg-white/10", pathname.startsWith("/technician/updates") ? "bg-white/15 text-white" : "text-white/80")}>
+              <Bell className="h-4 w-4" />
+            </Link>
+            <Link href="/technician/profile" className="flex h-9 w-9 items-center justify-center rounded-full bg-white/15 text-xs font-black" title={profile.name}>{initials}</Link>
             <button type="button" onClick={onSignOut} aria-label="Sign out" className="flex h-9 w-9 items-center justify-center rounded-full text-white/80 hover:bg-white/10 hover:text-white">
               <LogOut className="h-4 w-4" />
             </button>
@@ -164,7 +168,7 @@ export function TechnicianChrome({
       <main className="mx-auto max-w-5xl px-4 pb-32 pt-5 sm:px-6 sm:pb-10 sm:pt-7">{children}</main>
 
       <nav aria-label="Technician navigation" className="fixed inset-x-0 bottom-0 z-40 border-t border-[#e3ebf5] bg-white/95 pb-[env(safe-area-inset-bottom)] shadow-[0_-8px_24px_rgba(16,43,85,0.08)] backdrop-blur sm:hidden">
-        <div className="grid h-16 grid-cols-3">
+        <div className="grid h-16 grid-cols-4">
           {NAV.map(({ href, label, icon: Icon, match }) => {
             const active = match(pathname);
             return (

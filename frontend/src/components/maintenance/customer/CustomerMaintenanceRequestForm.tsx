@@ -40,6 +40,8 @@ interface FormState {
   preferredTimeSlot: string;
   contactName: string;
   contactPhone: string;
+  /** UI-only: appended to the description on submit (no API field exists). */
+  instructions: string;
 }
 
 type Errors = Partial<Record<keyof FormState, string>>;
@@ -54,7 +56,7 @@ const STEPS = [
 const STEP_FIELDS: Array<Array<keyof FormState>> = [
   ["category"],
   ["title", "description"],
-  ["propertyType", "line", "area", "city", "preferredVisitDate", "contactName", "contactPhone"],
+  ["propertyType", "line", "area", "city", "preferredVisitDate", "contactName", "contactPhone", "instructions"],
   [],
 ];
 
@@ -62,6 +64,14 @@ function todayInput() {
   const now = new Date();
   now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
   return now.toISOString().slice(0, 10);
+}
+
+/** The API has no instructions field, so they are appended to the description. */
+function composeDescription(form: FormState) {
+  const instructions = form.instructions.trim();
+  return instructions
+    ? `${form.description.trim()}\n\nAdditional instructions: ${instructions}`
+    : form.description.trim();
 }
 
 function validate(form: FormState): Errors {
@@ -77,6 +87,9 @@ function validate(form: FormState): Errors {
     errors.preferredVisitDate = "Choose today or a future date.";
   }
   if (!form.contactName.trim()) errors.contactName = "Enter a contact name.";
+  if (composeDescription(form).length > 3000) {
+    errors.instructions = "Description and instructions together must be 3,000 characters or fewer.";
+  }
   if (!/^\+?[0-9]{10,15}$/.test(form.contactPhone.replace(/[\s-]/g, ""))) {
     errors.contactPhone = "Enter a valid phone number (10–15 digits).";
   }
@@ -100,6 +113,7 @@ export function CustomerMaintenanceRequestForm() {
     preferredTimeSlot: "anytime",
     contactName: "",
     contactPhone: "",
+    instructions: "",
   });
   const [errors, setErrors] = useState<Errors>({});
   const [files, setFiles] = useState<File[]>([]);
@@ -188,7 +202,7 @@ export function CustomerMaintenanceRequestForm() {
     try {
       const { data } = await apiClient.post<ApiEnvelope<CustomerMaintenanceRequest>>("/maintenance/requests", {
         title: form.title.trim(),
-        description: form.description.trim(),
+        description: composeDescription(form),
         category: form.category,
         propertyType: form.propertyType,
         address: { line: form.line.trim(), area: form.area.trim(), city: form.city.trim() },
@@ -248,8 +262,8 @@ export function CustomerMaintenanceRequestForm() {
           </div>
           {created.imageWarning && <div className="mt-4 text-left"><ErrorBanner message={created.imageWarning} /></div>}
           <div className="mt-6 flex flex-col gap-2.5">
-            <Link href={`/buyer/maintenance/${created.request.id}`} className={pc.primaryBtn}>Track this request</Link>
-            <Link href="/buyer/maintenance" className={pc.secondaryBtn}>View all requests</Link>
+            <Link href={`/care/requests/${created.request.id}`} className={pc.primaryBtn}>Track this request</Link>
+            <Link href="/care/requests" className={pc.secondaryBtn}>View all requests</Link>
           </div>
         </section>
       </PropertyCareSurface>
@@ -268,7 +282,7 @@ export function CustomerMaintenanceRequestForm() {
   return (
     <PropertyCareSurface>
       <div ref={topRef} className="mx-auto max-w-3xl scroll-mt-20">
-        <PcBackLink href="/buyer/maintenance" label="My requests" />
+        <PcBackLink href="/care/requests" label="My requests" />
         <h1 className="mt-2 text-[26px] font-black tracking-[-0.03em] text-[#102b55] sm:text-3xl">Request a service</h1>
         <p className="mt-1 text-sm text-[#5b6b82]">Takes about two minutes. You never have to search for a technician.</p>
 
@@ -407,7 +421,7 @@ export function CustomerMaintenanceRequestForm() {
                   <input id="mr-line" value={form.line} maxLength={300} onChange={(event) => update("line", event.target.value)} placeholder="House 12, Street 4" className={pc.input} autoComplete="street-address" {...invalid("line")} />
                   {errorText("line")}
                 </label>
-                <div className="grid gap-4 sm:grid-cols-2">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <label className={pc.label}>
                     Area / society
                     <input id="mr-area" value={form.area} maxLength={100} onChange={(event) => update("area", event.target.value)} placeholder="Bahria Town, Sector C" className={pc.input} {...invalid("area")} />
@@ -447,7 +461,7 @@ export function CustomerMaintenanceRequestForm() {
 
               <div className={cn(pc.card, "space-y-4 p-4 sm:p-5")}>
                 <p className="flex items-center gap-2 text-[15px] font-extrabold text-[#102b55]"><UserRound className="h-4 w-4 text-[#0d57ad]" /> Contact for the visit</p>
-                <div className="grid gap-4 sm:grid-cols-2">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <label className={pc.label}>
                     Name
                     <input id="mr-contactName" value={form.contactName} maxLength={100} onChange={(event) => update("contactName", event.target.value)} className={pc.input} autoComplete="name" {...invalid("contactName")} />
@@ -459,6 +473,11 @@ export function CustomerMaintenanceRequestForm() {
                     {errorText("contactPhone")}
                   </label>
                 </div>
+                <label className={pc.label}>
+                  Additional instructions <span className="font-normal text-[#94a3b8]">(optional)</span>
+                  <textarea id="mr-instructions" value={form.instructions} maxLength={500} rows={2} onChange={(event) => update("instructions", event.target.value)} placeholder="Parking, gate access, pets, best way to reach you…" className={cn(pc.input, "py-3")} {...invalid("instructions")} />
+                  {errorText("instructions")}
+                </label>
               </div>
             </div>
           )}
@@ -472,6 +491,7 @@ export function CustomerMaintenanceRequestForm() {
                 { title: "Location", stepIndex: 2, content: <>{propertyLabel} · {form.line}, {form.area}, {form.city}</> },
                 { title: "Visit", stepIndex: 2, content: <>{form.preferredVisitDate || "Flexible date"} · {slotLabel}</> },
                 { title: "Contact", stepIndex: 2, content: <span className="flex items-center gap-2"><Phone className="h-3.5 w-3.5 text-[#0d57ad]" />{form.contactName} · {form.contactPhone}</span> },
+                ...(form.instructions.trim() ? [{ title: "Instructions", stepIndex: 2, content: <span className="whitespace-pre-line text-[#5b6b82]">{form.instructions}</span> }] : []),
               ].map((row) => (
                 <div key={row.title} className={cn(pc.card, "flex items-start justify-between gap-3 p-4")}>
                   <div className="min-w-0 text-sm text-[#102b55]">
@@ -487,14 +507,14 @@ export function CustomerMaintenanceRequestForm() {
             </div>
           )}
 
-          <div className="fixed inset-x-0 bottom-[calc(var(--buyer-mobile-nav-height,0px)+env(safe-area-inset-bottom))] z-30 border-t border-[#e3ebf5] bg-white/95 px-4 py-3 backdrop-blur sm:static sm:border-0 sm:bg-transparent sm:p-0 lg:bottom-0">
+          <div className="fixed inset-x-0 bottom-[calc(4rem+env(safe-area-inset-bottom))] z-30 border-t border-[#e3ebf5] bg-white/95 px-4 py-3 backdrop-blur sm:static sm:border-0 sm:bg-transparent sm:p-0">
             <div className="mx-auto flex max-w-3xl gap-2.5 sm:justify-end">
               {step > 0 ? (
                 <button type="button" onClick={() => goTo(step - 1)} className={cn(pc.secondaryBtn, "flex-1 sm:flex-none")}>
                   <ArrowLeft className="h-4 w-4" /> Back
                 </button>
               ) : (
-                <Link href="/buyer/maintenance" className={cn(pc.secondaryBtn, "flex-1 sm:flex-none")}>Cancel</Link>
+                <Link href="/care/requests" className={cn(pc.secondaryBtn, "flex-1 sm:flex-none")}>Cancel</Link>
               )}
               <button type="submit" disabled={submitting} className={cn(pc.primaryBtn, "flex-[2] sm:flex-none")}>
                 {submitting && <Loader2 className="h-4 w-4 animate-spin" />}

@@ -220,7 +220,7 @@ export function findServiceByKey(key: string) {
   return PROPERTY_CARE_SERVICES.find((service) => service.key === key);
 }
 
-export const REQUEST_SERVICE_PATH = "/buyer/maintenance/new";
+export const REQUEST_SERVICE_PATH = "/care/new";
 
 export function requestServiceHref(key?: string) {
   return key ? `${REQUEST_SERVICE_PATH}?category=${encodeURIComponent(key)}` : REQUEST_SERVICE_PATH;

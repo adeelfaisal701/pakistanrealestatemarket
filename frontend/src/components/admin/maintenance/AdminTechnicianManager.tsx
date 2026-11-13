@@ -8,7 +8,6 @@ import { MAINTENANCE_CATEGORIES } from "@/lib/maintenance";
 import { cn } from "@/lib/utils";
 import type { Paginated, TechnicianSummary } from "@/types/maintenance";
 import { EmptyState, ErrorBanner, LoadingState, Modal, SuccessBanner } from "@/components/maintenance/MaintenanceShared";
-import { AdminMaintenanceTabs } from "./AdminMaintenanceTabs";
 
 const input = "min-h-10 w-full rounded-lg border border-slate-700 bg-slate-800 px-3 text-sm text-white outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30";
 export const AVAILABILITY_LABELS: Record<string, string> = {
@@ -69,7 +68,7 @@ export function AdminTechnicianManager() {
     setLoading(true);
     setError(null);
     try {
-      const { data: response } = await apiClient.get<ApiEnvelope<Paginated<TechnicianSummary>>>("/admin/maintenance/technicians", {
+      const { data: response } = await apiClient.get<ApiEnvelope<Paginated<TechnicianSummary>>>("/care-ops/technicians", {
         params: {
           page,
           limit: 25,
@@ -108,7 +107,7 @@ export function AdminTechnicianManager() {
     setSaving(true);
     setFormError(null);
     try {
-      const { data: response } = await apiClient.post<ApiEnvelope<TechnicianSummary>>("/admin/maintenance/technicians", {
+      const { data: response } = await apiClient.post<ApiEnvelope<TechnicianSummary>>("/care-ops/technicians", {
         name: form.name.trim(),
         email: form.email.trim(),
         phone: form.phone.replace(/[\s-]/g, ""),
@@ -145,7 +144,6 @@ export function AdminTechnicianManager() {
         </div>
       </header>
 
-      <AdminMaintenanceTabs />
 
       {created && (
         <div className="space-y-2">
@@ -153,16 +151,16 @@ export function AdminTechnicianManager() {
           <div className="rounded-xl border border-slate-700 bg-slate-900 p-3 font-mono text-sm text-slate-200">
             <p>Email: {created.email}</p>
             <p>Temporary password: {created.password}</p>
-            <p className="mt-1 font-sans text-xs text-slate-400">Sign in at /login using the “Technician” account type.</p>
+            <p className="mt-1 font-sans text-xs text-slate-400">Technicians sign in at /property-care/login and are taken to their job console automatically.</p>
           </div>
           <div className="flex gap-2">
-            <Link href={`/admin/maintenance/technicians/${created.id}`} className="text-sm font-semibold text-blue-300 hover:underline">Open profile</Link>
+            <Link href={`/care-ops/technicians/${created.id}`} className="text-sm font-semibold text-blue-300 hover:underline">Open profile</Link>
             <button type="button" onClick={() => setCreated(null)} className="text-sm text-slate-400 hover:text-white">Dismiss</button>
           </div>
         </div>
       )}
 
-      <section className="grid gap-2 rounded-2xl border border-slate-800 bg-slate-900 p-4 sm:grid-cols-2 lg:grid-cols-4">
+      <section className="grid grid-cols-1 gap-2 rounded-2xl border border-slate-800 bg-slate-900 p-4 sm:grid-cols-2 lg:grid-cols-4">
         <label className="relative sm:col-span-2 lg:col-span-1">
           <span className="sr-only">Search technicians</span>
           <Search className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
@@ -193,10 +191,10 @@ export function AdminTechnicianManager() {
       ) : !data?.items.length ? (
         <EmptyState dark icon={<HardHat className="h-5 w-5" />} title="No technicians found" description="Add your first technician to start dispatching jobs." />
       ) : (
-        <ul className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+        <ul className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
           {data.items.map((technician) => (
             <li key={technician.id}>
-              <Link href={`/admin/maintenance/technicians/${technician.id}`} className="block h-full rounded-2xl border border-slate-800 bg-slate-900 p-4 transition hover:border-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500">
+              <Link href={`/care-ops/technicians/${technician.id}`} className="block h-full rounded-2xl border border-slate-800 bg-slate-900 p-4 transition hover:border-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500">
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0">
                     <p className="truncate font-semibold text-white">{technician.name}</p>
@@ -226,7 +224,7 @@ export function AdminTechnicianManager() {
       {creating && (
         <Modal title="Add technician" onClose={() => !saving && setCreating(false)} dark wide>
           <form onSubmit={submit} className="space-y-4">
-            <div className="grid gap-3 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <label className="text-xs font-semibold text-slate-400">Full name<input required maxLength={100} value={form.name} onChange={(event) => setForm((current) => ({ ...current, name: event.target.value }))} className={cn(input, "mt-1")} /></label>
               <label className="text-xs font-semibold text-slate-400">Email (sign-in)<input required type="email" maxLength={254} value={form.email} onChange={(event) => setForm((current) => ({ ...current, email: event.target.value }))} className={cn(input, "mt-1")} /></label>
               <label className="text-xs font-semibold text-slate-400">Phone<input required type="tel" maxLength={20} value={form.phone} onChange={(event) => setForm((current) => ({ ...current, phone: event.target.value }))} className={cn(input, "mt-1")} /></label>

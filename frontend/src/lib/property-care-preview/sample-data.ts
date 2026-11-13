@@ -349,3 +349,119 @@ export const TECHNICIAN_DETAIL: TechnicianDetail = {
     { requestId: "adm-8", reference: "GS-MR-261028-Z7MX", title: "Geyser not heating", categoryLabel: "Plumbing", area: "Johar Town", requestStatus: "accepted", requestStatusLabel: "Accepted", isCurrent: false, assignmentStatus: "rejected", assignedAt: at(-15 * DAY), respondedAt: at(-15 * DAY), rejectionReason: "Outside my service area", withdrawnReason: null, rating: null },
   ],
 };
+
+// ───────────── Extended SAMPLE DATA for the separate dashboards (preview only) ─────────────
+
+CUSTOMER_REQUESTS["sample-completed"] = {
+  ...CUSTOMER_REQUESTS["sample-completed"],
+  payments: [{ id: "pay-1", amount: 7800, method: "bank_transfer", recordedAt: at(-5 * DAY) }],
+};
+
+CUSTOMER_REQUESTS["sample-old"] = customerRequest("sample-old", "completed", {
+  title: "Repaint kids' bedroom",
+  category: "painting",
+  categoryLabel: "Painting",
+  technician: { name: "Hamza Riaz (sample)", phone: "03000000099" },
+  scheduledVisitAt: at(-40 * DAY),
+  createdAt: at(-45 * DAY),
+  updatedAt: at(-38 * DAY),
+  completedAt: at(-38 * DAY),
+  quotation: { ...QUOTE("approved"), total: 18500, laborCharge: 9000, materialCharge: 9000, inspectionCharge: 500, additionalCharges: [] },
+  paymentStatus: "paid",
+  payments: [
+    { id: "pay-2", amount: 10000, method: "cash", recordedAt: at(-41 * DAY) },
+    { id: "pay-3", amount: 8500, method: "mobile_wallet", recordedAt: at(-38 * DAY) },
+  ],
+  images: [PHOTO("b2", "before"), PHOTO("a3", "after")],
+  completionReport: {
+    checklist: [{ label: "Problem resolved and tested", done: true }, { label: "Work area cleaned", done: true }],
+    summary: "Two coats of washable emulsion, minor wall putty repairs near the window.",
+    submittedAt: at(-38 * DAY),
+  },
+  feedback: { rating: 4, comment: "Neat work, finished a day late.", createdAt: at(-37 * DAY) },
+  complaints: [{
+    id: "cmp-1",
+    subject: "Paint drops on floor tiles",
+    description: "Some paint drops were left on the floor near the cupboard after the job.",
+    status: "resolved",
+    resolutionNote: "Technician revisited and cleaned the tiles on 12 Oct.",
+    createdAt: at(-37 * DAY),
+    resolvedAt: at(-35 * DAY),
+  }],
+  actions: { ...ACTIONS_NONE },
+});
+
+CUSTOMER_LIST.push(CUSTOMER_REQUESTS["sample-old"]);
+
+const GEN_CATEGORIES = ["plumbing", "electrical", "ac_repair", "general_handyman", "painting", "carpentry", "water_tank_cleaning"];
+const GEN_STATUSES: MaintenanceStatus[] = ["completed", "completed", "in_progress", "accepted", "pending", "under_review", "completed", "awaiting_customer_confirmation", "cancelled", "on_the_way"];
+const GEN_AREAS = ["Bahria Town", "DHA Phase 6", "Johar Town", "Gulberg III", "Model Town", "Wapda Town"];
+const GEN_TITLES: Record<string, string> = {
+  plumbing: "Bathroom tap leaking", electrical: "Sockets not working", ac_repair: "AC general service",
+  general_handyman: "TV wall mounting", painting: "Touch-up lounge walls", carpentry: "Wardrobe door alignment",
+  water_tank_cleaning: "Overhead tank cleaning",
+};
+
+for (let index = 0; index < 26; index += 1) {
+  const category = GEN_CATEGORIES[(index * 3) % GEN_CATEGORIES.length];
+  const status = GEN_STATUSES[index % GEN_STATUSES.length];
+  const tech = SAMPLE_TECHNICIANS[index % 3];
+  ADMIN_LIST.push({
+    ...base(`gen-${String(index).padStart(4, "0")}`, status, {
+      title: GEN_TITLES[category],
+      category,
+      categoryLabel: categoryLabel(category),
+      area: GEN_AREAS[index % GEN_AREAS.length],
+      createdAt: at(-((index % 14) * DAY + index * HOUR)),
+      scheduledVisitAt: ["accepted", "on_the_way", "in_progress"].includes(status) ? at((index % 4) * DAY + 3 * HOUR) : null,
+      quotationStatus: status === "completed" ? "approved" : index % 5 === 0 ? "sent" : index % 7 === 0 ? "draft" : null,
+      customerName: ["Sara Malik (sample)", "Omar Sheikh (sample)", "Fatima Noor (sample)", "Ali Raza (sample)"][index % 4],
+    }),
+    technician: ["pending", "under_review"].includes(status) ? null : { id: tech.id, name: tech.name, phone: null },
+  });
+}
+
+/** Admin detail for any sample list item (status-specific extras). */
+export function adminDetailFor(id: string): AdminMaintenanceRequest {
+  const item = ADMIN_LIST.find((entry) => entry.id === id);
+  if (!item || id === "sample-admin") return ADMIN_REQUEST;
+  const index = ADMIN_LIST.indexOf(item);
+  const approved = item.quotationStatus === "approved";
+  const total = 3500 + (index % 6) * 1250;
+  return {
+    ...ADMIN_REQUEST,
+    ...item,
+    technician: item.technician ? { id: item.technician.id ?? "tech-1", name: item.technician.name, phone: "03000000099" } : null,
+    assignments: [],
+    status: item.status,
+    quotation: item.quotationStatus ? { ...QUOTE(approved ? "approved" : "sent"), status: item.quotationStatus, total, laborCharge: total - 1500, materialCharge: 1000, inspectionCharge: 500, additionalCharges: [] } : null,
+    paymentStatus: approved && item.status === "completed" ? "paid" : "unpaid",
+    payments: approved && item.status === "completed"
+      ? [{ id: `pay-${id}`, amount: total, method: ["cash", "bank_transfer", "mobile_wallet"][index % 3], reference: index % 2 ? `TXN-${4100 + index}` : null, note: null, recordedAt: item.createdAt }]
+      : [],
+    complaints: item.hasOpenComplaint
+      ? [{ id: `cmp-${id}`, subject: "AC still dripping after service", description: "Water started dripping again the next morning from the indoor unit.", status: "open", resolutionNote: null, createdAt: at(-1 * DAY), resolvedAt: null }]
+      : index === 8
+        ? [{ id: `cmp-${id}`, subject: "Technician arrived late", description: "Visit was 2 hours later than scheduled.", status: "resolved", resolutionNote: "Apologised to the customer and applied a visit-fee waiver.", createdAt: at(-6 * DAY), resolvedAt: at(-5 * DAY) }]
+        : [],
+    allowedStatusTargets: [],
+    canAssign: ["under_review", "rejected", "rescheduling"].includes(item.status),
+  };
+}
+
+TECHNICIAN_BUCKETS.in_progress.push(technicianJob("sample-otw", "on_the_way", { title: "Ceiling fan wobbling", category: "electrical", categoryLabel: "Electrical", scheduledVisitAt: at(1 * HOUR) }));
+TECHNICIAN_BUCKETS.completed.unshift(technicianJob("sample-await", "awaiting_customer_confirmation", { title: "Replace bathroom mixer tap", scheduledVisitAt: at(-1 * DAY) }));
+TECHNICIAN_JOBS["sample-otw"] = TECHNICIAN_BUCKETS.in_progress[1];
+
+export const TECHNICIAN_PROFILE = {
+  id: "tech-1",
+  name: "Imran Ali (sample)",
+  email: "tech-1@sample.invalid",
+  phone: "03000000099",
+  categories: ["plumbing", "general_handyman"],
+  skills: ["Geyser repair", "PPR fitting", "Bathroom fixtures"],
+  serviceAreas: ["bahria town", "dha phase 6"],
+  city: "Lahore",
+  availability: "available",
+  isActive: true,
+};

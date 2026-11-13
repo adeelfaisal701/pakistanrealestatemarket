@@ -22,7 +22,7 @@ export function AdminTechnicianProfile({ id }: { id: string }) {
   const [notice, setNotice] = useState<string | null>(null);
   const [toggling, setToggling] = useState(false);
 
-  const endpoint = `/admin/maintenance/technicians/${encodeURIComponent(id)}`;
+  const endpoint = `/care-ops/technicians/${encodeURIComponent(id)}`;
 
   const hydrate = (data: TechnicianDetail) => {
     setTechnician(data);
@@ -114,7 +114,7 @@ export function AdminTechnicianProfile({ id }: { id: string }) {
   return (
     <div className="space-y-5">
       <header className="space-y-3">
-        <Link href="/admin/maintenance/technicians" className="inline-flex items-center gap-1 text-xs font-semibold text-slate-400 hover:text-white"><ArrowLeft className="h-3.5 w-3.5" />Technicians</Link>
+        <Link href="/care-ops/technicians" className="inline-flex items-center gap-1 text-xs font-semibold text-slate-400 hover:text-white"><ArrowLeft className="h-3.5 w-3.5" />Technicians</Link>
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
             <h1 className="text-2xl font-bold text-white">{technician.name}</h1>
@@ -142,7 +142,7 @@ export function AdminTechnicianProfile({ id }: { id: string }) {
         ))}
       </section>
 
-      <div className="grid gap-5 xl:grid-cols-[420px_minmax(0,1fr)]">
+      <div className="grid grid-cols-1 gap-5 xl:grid-cols-[420px_minmax(0,1fr)]">
         <SectionCard title="Profile" icon={<UserRound className="h-4 w-4 text-blue-300" />} dark>
           <form onSubmit={save} className="space-y-3">
             <label className="block text-xs font-semibold text-slate-400">Name<input required maxLength={100} value={form.name} onChange={(event) => setForm((current) => ({ ...current, name: event.target.value }))} className={cn(input, "mt-1")} /></label>
@@ -185,7 +185,7 @@ export function AdminTechnicianProfile({ id }: { id: string }) {
                   {technician.history.map((item) => (
                     <tr key={`${item.requestId}-${item.assignedAt}`}>
                       <td className="py-2 pr-3">
-                        <Link href={`/admin/maintenance/requests/${item.requestId}`} className="font-semibold text-white hover:underline">{item.title}</Link>
+                        <Link href={`/care-ops/requests/${item.requestId}`} className="font-semibold text-white hover:underline">{item.title}</Link>
                         <p className="font-mono text-xs text-slate-500">{item.reference} · {item.categoryLabel} · {item.area}</p>
                       </td>
                       <td className="py-2 pr-3 text-xs text-slate-300">{formatDate(item.assignedAt, true)}</td>

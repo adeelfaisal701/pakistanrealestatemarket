@@ -70,7 +70,7 @@ export function AdminMaintenanceRequestDetail({ id }: { id: string }) {
   const [adminNote, setAdminNote] = useState("");
   const [complaintEdits, setComplaintEdits] = useState<Record<string, { status: string; resolutionNote: string }>>({});
 
-  const endpoint = `/admin/maintenance/requests/${encodeURIComponent(id)}`;
+  const endpoint = `/care-ops/requests/${encodeURIComponent(id)}`;
 
   const hydrate = useCallback((data: AdminMaintenanceRequest) => {
     setRequest(data);
@@ -165,7 +165,7 @@ export function AdminMaintenanceRequestDetail({ id }: { id: string }) {
   if (loadError && !request) {
     return (
       <div className="space-y-4">
-        <Link href="/admin/maintenance" className="inline-flex items-center gap-1 text-xs font-semibold text-slate-400 hover:text-white"><ArrowLeft className="h-3.5 w-3.5" /> Property Care</Link>
+        <Link href="/care-ops/requests" className="inline-flex items-center gap-1 text-xs font-semibold text-slate-400 hover:text-white"><ArrowLeft className="h-3.5 w-3.5" /> Requests</Link>
         <ErrorBanner message={loadError} onRetry={() => void load()} dark />
       </div>
     );
@@ -223,8 +223,8 @@ export function AdminMaintenanceRequestDetail({ id }: { id: string }) {
   return (
     <div className="space-y-5">
       <header className="space-y-3">
-        <Link href="/admin/maintenance" className="inline-flex items-center gap-1 text-xs font-semibold text-slate-400 hover:text-white">
-          <ArrowLeft className="h-3.5 w-3.5" /> Property Care
+        <Link href="/care-ops/requests" className="inline-flex items-center gap-1 text-xs font-semibold text-slate-400 hover:text-white">
+          <ArrowLeft className="h-3.5 w-3.5" /> Requests
         </Link>
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="min-w-0">
@@ -242,7 +242,7 @@ export function AdminMaintenanceRequestDetail({ id }: { id: string }) {
       {notice && <SuccessBanner message={notice} dark />}
       {actionError && !pending && <ErrorBanner message={actionError} dark />}
 
-      <nav aria-label="Jump to section" className="sticky top-16 z-20 -mx-4 overflow-x-auto border-y border-slate-800 bg-[#0a1222]/95 px-4 py-2 backdrop-blur [scrollbar-width:none] sm:-mx-6 sm:px-6 xl:hidden">
+      <nav aria-label="Jump to section" className="sticky top-16 z-20 -mx-4 overflow-x-auto border-y border-slate-800 bg-[#08111f]/95 px-4 py-2 backdrop-blur [scrollbar-width:none] sm:-mx-6 sm:px-6 xl:hidden">
         <ul className="flex gap-2">
           {jumpLinks.map((link) => (
             <li key={link.id} className="shrink-0">
@@ -254,11 +254,11 @@ export function AdminMaintenanceRequestDetail({ id }: { id: string }) {
 
       <div className="xl:hidden">{statusControl("mobile")}</div>
 
-      <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_360px]">
+      <div className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1fr)_360px]">
         <div className="min-w-0 space-y-5">
           <SectionCard id="mr-request" title="Request" icon={<FileText className="h-4 w-4 text-blue-300" />} dark>
             <p className="whitespace-pre-line text-sm text-slate-300">{request.description}</p>
-            <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-2">
+            <dl className="mt-4 grid grid-cols-1 gap-3 text-sm sm:grid-cols-2">
               <div><dt className={label}>Customer</dt><dd className="text-slate-200">{request.customer?.name ?? request.contact.name}<span className="block text-xs text-slate-400">{request.customer?.email}</span></dd></div>
               <div><dt className={label}>Contact for visit</dt><dd className="text-slate-200">{request.contact.name} · {request.contact.phone}</dd></div>
               <div className="sm:col-span-2"><dt className={label}>Address</dt><dd className="text-slate-200">{request.address.line}, {request.address.area}, {request.address.city}</dd></div>
@@ -273,7 +273,7 @@ export function AdminMaintenanceRequestDetail({ id }: { id: string }) {
 
           {request.canAssign && (
             <SectionCard id="mr-assign" title={replacing ? "Reassign technician" : "Assign technician"} icon={<UserCog className="h-4 w-4 text-blue-300" />} dark actions={
-              <Link href="/admin/maintenance/technicians" className="text-xs font-semibold text-blue-300 hover:underline">Manage technicians</Link>
+              <Link href="/care-ops/technicians" className="text-xs font-semibold text-blue-300 hover:underline">Manage technicians</Link>
             }>
               {request.status === "pending" ? (
                 <p className="text-sm text-slate-400">Move the request to <strong>Under Review</strong> before assigning a technician.</p>
@@ -309,7 +309,7 @@ export function AdminMaintenanceRequestDetail({ id }: { id: string }) {
                       </ul>
                     )}
                   </fieldset>
-                  <div className="grid gap-3 sm:grid-cols-2">
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                     <label className={label}>
                       Scheduled visit
                       <input type="datetime-local" required value={assignForm.scheduledVisitAt} min={toLocalInput(new Date())} onChange={(event) => setAssignForm((current) => ({ ...current, scheduledVisitAt: event.target.value }))} className={cn(input, "mt-1")} />
@@ -335,7 +335,7 @@ export function AdminMaintenanceRequestDetail({ id }: { id: string }) {
                   <tbody className="divide-y divide-slate-800">
                     {[...request.assignments].reverse().map((assignment) => (
                       <tr key={assignment.id}>
-                        <td className="py-2 pr-3"><Link href={`/admin/maintenance/technicians/${assignment.technician.id}`} className="font-semibold text-white hover:underline">{assignment.technician.name}</Link>{assignment.notes && <p className="text-xs text-slate-500">Note: {assignment.notes}</p>}</td>
+                        <td className="py-2 pr-3"><Link href={`/care-ops/technicians/${assignment.technician.id}`} className="font-semibold text-white hover:underline">{assignment.technician.name}</Link>{assignment.notes && <p className="text-xs text-slate-500">Note: {assignment.notes}</p>}</td>
                         <td className="py-2 pr-3 text-xs text-slate-300">{formatDate(assignment.assignedAt, true)}</td>
                         <td className="py-2 pr-3 text-xs text-slate-300">{formatDate(assignment.scheduledVisitAt, true)}</td>
                         <td className="py-2 pr-3 text-xs">
@@ -358,7 +358,7 @@ export function AdminMaintenanceRequestDetail({ id }: { id: string }) {
             {request.quotation?.customerNote && <p className="mb-3 rounded-lg bg-slate-800 p-2 text-sm text-slate-300">Customer note: {request.quotation.customerNote}</p>}
             {request.canEditQuotation ? (
               <form onSubmit={(event) => { event.preventDefault(); setActionError(null); setPending({ kind: "save-quotation", send: false }); }} className="space-y-3">
-                <div className="grid gap-3 sm:grid-cols-3">
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
                   {([["inspectionCharge", "Inspection"], ["laborCharge", "Labour"], ["materialCharge", "Materials"]] as const).map(([key, text]) => (
                     <label key={key} className={label}>
                       {text} (PKR)
@@ -427,7 +427,7 @@ export function AdminMaintenanceRequestDetail({ id }: { id: string }) {
                     note: payment.note.trim() || undefined,
                   }), "Payment recorded.").then((ok) => ok && setPayment({ amount: "", method: "cash", reference: "", note: "" }));
                 }}
-                className="grid gap-2 sm:grid-cols-4"
+                className="grid grid-cols-1 gap-2 sm:grid-cols-4"
               >
                 <label className={label}>Amount<input type="number" min="1" max={(request.quotation?.total ?? 0) - paid} required value={payment.amount} onChange={(event) => setPayment((current) => ({ ...current, amount: event.target.value }))} className={cn(input, "mt-1")} /></label>
                 <label className={label}>Method
@@ -476,7 +476,7 @@ export function AdminMaintenanceRequestDetail({ id }: { id: string }) {
                               resolutionNote: edit.resolutionNote.trim() || undefined,
                             }), "Complaint updated.");
                           }}
-                          className="mt-3 grid gap-2 sm:grid-cols-[160px_minmax(0,1fr)_auto]"
+                          className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-[160px_minmax(0,1fr)_auto]"
                         >
                           <label className="sr-only" htmlFor={`complaint-status-${item.id}`}>Complaint status</label>
                           <select id={`complaint-status-${item.id}`} value={edit.status} onChange={(event) => setComplaintEdits((current) => ({ ...current, [item.id]: { ...edit, status: event.target.value } }))} className={input}>
@@ -505,7 +505,7 @@ export function AdminMaintenanceRequestDetail({ id }: { id: string }) {
           <SectionCard title="Current technician" icon={<CalendarClock className="h-4 w-4 text-blue-300" />} dark>
             {request.technician ? (
               <div className="text-sm">
-                <Link href={`/admin/maintenance/technicians/${request.technician.id}`} className="font-semibold text-white hover:underline">{request.technician.name}</Link>
+                <Link href={`/care-ops/technicians/${request.technician.id}`} className="font-semibold text-white hover:underline">{request.technician.name}</Link>
                 <p className="text-xs text-slate-400">{request.technician.phone}</p>
                 <p className="mt-2 text-xs text-slate-400">Visit: {formatDate(request.scheduledVisitAt, true)}</p>
               </div>

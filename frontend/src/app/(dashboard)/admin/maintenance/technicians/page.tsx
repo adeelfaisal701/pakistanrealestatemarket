@@ -1,5 +1,5 @@
-import { AdminTechnicianManager } from "@/components/admin/maintenance/AdminTechnicianManager";
+import { LegacyRouteRedirect } from "@/components/property-care/LegacyRouteRedirect";
 
-export default function AdminTechniciansPage() {
-  return <AdminTechnicianManager />;
+export default function AdminTechniciansRedirect() {
+  return <LegacyRouteRedirect to="/care-ops/technicians" dark />;
 }
