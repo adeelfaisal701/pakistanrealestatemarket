@@ -18,8 +18,28 @@ test('agent identity uses the authenticated profile fields', () => {
       email: 'agent-a@example.test',
       role: 'agent',
       avatarUrl: 'https://images.example.test/agent-a.png',
+      agencyName: null,
+      isVerified: false,
     },
   );
+  assert.deepEqual(
+    mapAgentIdentity({
+      name: 'Agent B',
+      role: 'agent',
+      agencyName: '  Example Realty  ',
+      isVerified: true,
+    }),
+    {
+      name: 'Agent B',
+      email: null,
+      role: 'agent',
+      avatarUrl: null,
+      agencyName: 'Example Realty',
+      isVerified: true,
+    },
+  );
+  // Only a literal boolean true marks the agent as verified.
+  assert.equal(mapAgentIdentity({ isVerified: 'true' }).isVerified, false);
 });
 
 test('missing profile data uses a neutral identity rather than a fabricated agent name', () => {

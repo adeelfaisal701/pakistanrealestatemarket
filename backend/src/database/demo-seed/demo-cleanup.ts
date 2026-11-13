@@ -5,7 +5,7 @@
  * by the demo seeder. Before deleting anything it re-checks each record's
  * identity and looks for genuine user activity that references the demo
  * records (leads, conversations, messages, favourites, offers, reports, ads,
- * location shares, agency profiles, extra listings). If any is found it
+ * location shares, agency profiles not created by the seeder, extra listings). If any is found it
  * reports the dependencies and stops without deleting anything.
  *
  * `--dry-run` reports what would be removed. Actual deletion requires
@@ -56,7 +56,7 @@ import {
   UserNotificationSchema,
 } from '../../modules/notifications/schemas/user-notification.schema';
 import { Agency, AgencySchema } from '../../modules/agencies/schemas/agency.schema';
-import { DEMO_AGENTS, DEMO_PROJECT_SLUG_PREFIX } from './demo-seed-data';
+import { DEMO_AGENCIES, DEMO_AGENTS, DEMO_PROJECT_SLUG_PREFIX } from './demo-seed-data';
 import {
   DemoSeedError,
   assertDemoEnvironment,
@@ -79,6 +79,8 @@ interface DependencyIds {
   propertyIds: mongoose.Types.ObjectId[];
   /** Advertisements registered in the manifest; these are demo records, not dependencies. */
   advertisementIds: mongoose.Types.ObjectId[];
+  /** Agency profiles registered in the manifest; demo records, not dependencies. */
+  agencyIds: mongoose.Types.ObjectId[];
   allIdStrings: string[];
   agencyNames: string[];
 }
@@ -126,8 +128,11 @@ export const DEMO_DEPENDENCY_SPECS: DependencySpec[] = [
     filter: ({ userIds }) => anyOf('offeredAgentIds', userIds) },
   { label: 'user reports about demo records', modelName: UserReport.name, schema: UserReportSchema, blocking: true,
     filter: ({ allIdStrings }) => anyOf('targetId', allIdStrings) },
-  { label: 'agency profiles created under demo agency names', modelName: Agency.name, schema: AgencySchema, blocking: true,
-    filter: ({ agencyNames }) => anyOf('normalizedName', agencyNames) },
+  { label: 'agency profiles under demo agency names not created by the demo seeder', modelName: Agency.name, schema: AgencySchema, blocking: true,
+    filter: ({ agencyNames, agencyIds }) => ({
+      ...anyOf('normalizedName', agencyNames),
+      _id: { $nin: agencyIds },
+    }) },
   { label: 'listing analytics events (left in place)', modelName: PropertyAnalyticsEvent.name, schema: PropertyAnalyticsEventSchema, blocking: false,
     filter: ({ propertyIds }) => anyOf('propertyId', propertyIds) },
   { label: 'notifications to demo accounts (left in place)', modelName: UserNotification.name, schema: UserNotificationSchema, blocking: false,
@@ -145,6 +150,7 @@ export interface DemoCleanupPlan {
   properties: PlainRecord[];
   projects: PlainRecord[];
   advertisements: PlainRecord[];
+  agencies: PlainRecord[];
   /** Manifest entries whose record no longer exists; removed from the manifest. */
   staleEntries: DemoManifestEntry[];
   blockers: { label: string; count: number }[];
@@ -162,6 +168,7 @@ export async function planDemoCleanup(store: DemoCleanupStore): Promise<DemoClea
   const propertyIdList = idsOf('property');
   const projectIdList = idsOf('project');
   const advertisementIdList = idsOf('advertisement');
+  const agencyIdList = idsOf('agency');
   const toIds = (ids: string[]) => ids.map((id) => new mongoose.Types.ObjectId(id));
 
   const users = userIdList.length ? await store.users.findMany({ _id: { $in: toIds(userIdList) } }) : [];
@@ -174,9 +181,12 @@ export async function planDemoCleanup(store: DemoCleanupStore): Promise<DemoClea
   const advertisements = advertisementIdList.length
     ? await store.advertisements.findMany({ _id: { $in: toIds(advertisementIdList) } })
     : [];
+  const agencies = agencyIdList.length
+    ? await store.agencies.findMany({ _id: { $in: toIds(agencyIdList) } })
+    : [];
 
   const found = new Set(
-    [...users, ...properties, ...projects, ...advertisements].map((record) => String(record._id)),
+    [...users, ...properties, ...projects, ...advertisements, ...agencies].map((record) => String(record._id)),
   );
   const staleEntries = entries.filter((entry) => !found.has(entry.recordId));
   const blockers: DemoCleanupPlan['blockers'] = [];
@@ -198,6 +208,12 @@ export async function planDemoCleanup(store: DemoCleanupStore): Promise<DemoClea
   );
   if (badAdvertisements.length) blockers.push({ label: 'manifest advertisements no longer attached to a demo listing and agent', count: badAdvertisements.length });
 
+  const demoAgencyNames = new Set(DEMO_AGENCIES.map((agency) => normalizeAgencyName(agency.name)));
+  const badAgencies = agencies.filter(
+    (agency) => !demoAgencyNames.has(normalizeAgencyName(String(agency.normalizedName ?? ''))),
+  );
+  if (badAgencies.length) blockers.push({ label: 'manifest agency profiles renamed away from a demo agency name', count: badAgencies.length });
+
   const liveUserIds = toIds(users.map((user) => String(user._id)));
   const livePropertyIds = toIds(properties.map((property) => String(property._id)));
   if (liveUserIds.length) {
@@ -212,8 +228,14 @@ export async function planDemoCleanup(store: DemoCleanupStore): Promise<DemoClea
     userIds: liveUserIds,
     propertyIds: livePropertyIds,
     advertisementIds: toIds(advertisementIdList),
-    allIdStrings: [...users, ...properties, ...projects].map((record) => String(record._id)),
-    agencyNames: users.map((user) => normalizeAgencyName(String(user.agencyName ?? ''))).filter(Boolean),
+    agencyIds: toIds(agencyIdList),
+    allIdStrings: [...users, ...properties, ...projects, ...agencies].map((record) => String(record._id)),
+    agencyNames: [
+      ...new Set([
+        ...users.map((user) => normalizeAgencyName(String(user.agencyName ?? ''))),
+        ...demoAgencyNames,
+      ]),
+    ].filter(Boolean),
   };
   const retained: DemoCleanupPlan['retained'] = [];
   if (ids.allIdStrings.length) {
@@ -223,7 +245,7 @@ export async function planDemoCleanup(store: DemoCleanupStore): Promise<DemoClea
     }
   }
 
-  return { users, properties, projects, advertisements, staleEntries, blockers, retained, entries };
+  return { users, properties, projects, advertisements, agencies, staleEntries, blockers, retained, entries };
 }
 
 export interface DemoCleanupResult {
@@ -231,6 +253,7 @@ export interface DemoCleanupResult {
   plan: DemoCleanupPlan;
   deleted: {
     advertisements: number;
+    agencies: number;
     users: number;
     properties: number;
     projects: number;
@@ -243,7 +266,7 @@ export async function cleanupDemoData(
   options: { dryRun: boolean },
 ): Promise<DemoCleanupResult> {
   const plan = await planDemoCleanup(store);
-  const deleted = { advertisements: 0, users: 0, properties: 0, projects: 0, manifestEntries: 0 };
+  const deleted = { advertisements: 0, agencies: 0, users: 0, properties: 0, projects: 0, manifestEntries: 0 };
   if (plan.blockers.length > 0) {
     throw new DemoSeedError(
       'Cleanup stopped; nothing was deleted. Demo records have dependencies that may be genuine user data: ' +
@@ -253,11 +276,13 @@ export async function cleanupDemoData(
   }
   if (options.dryRun) return { dryRun: true, plan, deleted };
 
-  // Advertisements first (they reference listings), then listings, projects,
-  // and finally the agent accounts that own the listings.
+  // Advertisements (reference listings) and agency profiles (resolved through
+  // agent agencyName) first, then listings, projects, and finally the agent
+  // accounts that own them.
   deleted.advertisements = await store.advertisements.deleteByIds(
     plan.advertisements.map((record) => String(record._id)),
   );
+  deleted.agencies = await store.agencies.deleteByIds(plan.agencies.map((record) => String(record._id)));
   deleted.properties = await store.properties.deleteByIds(plan.properties.map((record) => String(record._id)));
   deleted.projects = await store.projects.deleteByIds(plan.projects.map((record) => String(record._id)));
   deleted.users = await store.users.deleteByIds(plan.users.map((record) => String(record._id)));
@@ -280,12 +305,14 @@ export function formatCleanupReport(result: DemoCleanupResult, databaseName: str
     `  Properties (${plan.properties.length}): ${plan.properties.map((p) => `"${p.title}"`).join(', ') || 'none'}`,
     `  Projects (${plan.projects.length}): ${plan.projects.map((p) => p.slug).join(', ') || 'none'}`,
     `  Advertisements (${plan.advertisements.length}) for the demo listings above`,
+    `  Agency profiles (${plan.agencies.length}): ${plan.agencies.map((a) => `"${a.name}"`).join(', ') || 'none'}`,
     `  Manifest entries: ${plan.entries.length} (${plan.staleEntries.length} already without a record)`,
   ];
   for (const item of plan.retained) lines.push(`  Left in place: ${item.count} ${item.label}`);
   if (!result.dryRun) {
     lines.push(
-      `  Deleted: ${result.deleted.advertisements} advertisements, ${result.deleted.users} agents, ` +
+      `  Deleted: ${result.deleted.advertisements} advertisements, ${result.deleted.agencies} agency profiles, ` +
+        `${result.deleted.users} agents, ` +
         `${result.deleted.properties} properties, ${result.deleted.projects} projects, ` +
         `${result.deleted.manifestEntries} manifest entries.`,
     );
@@ -299,13 +326,17 @@ export async function executeDemoCleanup(env: NodeJS.ProcessEnv, args: string[])
   try {
     const models = registerDemoSeedModels(connection);
     const advertisements = createMongooseCollection(models.advertisement);
+    const agencies = createMongooseCollection(models.agency);
+    const shared = new Map([
+      [models.advertisement.modelName, advertisements],
+      [models.agency.modelName, agencies],
+    ]);
     const dependencyModels = new Map(
       DEMO_DEPENDENCY_SPECS.map((spec) => [
         spec.modelName,
-        // PropertyAdvertisement is already registered as a seeded record kind.
-        spec.modelName === models.advertisement.modelName
-          ? advertisements
-          : createMongooseCollection(connection.model(spec.modelName, spec.schema)),
+        // PropertyAdvertisement and Agency are already registered as seeded record kinds.
+        shared.get(spec.modelName) ??
+          createMongooseCollection(connection.model(spec.modelName, spec.schema)),
       ]),
     );
     const store: DemoCleanupStore = {
@@ -313,6 +344,7 @@ export async function executeDemoCleanup(env: NodeJS.ProcessEnv, args: string[])
       properties: createMongooseCollection(models.property),
       projects: createMongooseCollection(models.project),
       advertisements,
+      agencies,
       manifest: createMongoManifest(connection),
       dependency: (name) => dependencyModels.get(name)!,
     };

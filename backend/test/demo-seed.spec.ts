@@ -3,6 +3,7 @@ import { strict as assert } from 'node:assert';
 import { test } from 'node:test';
 import * as bcrypt from 'bcrypt';
 import {
+  DEMO_AGENCIES,
   DEMO_AGENTS,
   DEMO_PROJECTS,
   DEMO_PROPERTIES,
@@ -12,6 +13,7 @@ import {
   assertDemoDataConsistency,
   demoAgentEmail,
   dryRunDemoSeed,
+  normalizeDemoAgencyName,
   resolveDemoSeedOptions,
   seedDemoData,
   type PlainRecord,
@@ -47,7 +49,7 @@ test('demo data set is internally consistent and sized as specified', () => {
 
 test('dry run validates every record against the application schemas without connecting', async () => {
   const counts = await dryRunDemoSeed();
-  assert.deepEqual(counts, { agents: 10, properties: 25, projects: 5 });
+  assert.deepEqual(counts, { agents: 10, agencies: 4, properties: 25, projects: 5 });
 });
 
 test('first run creates agents, owned properties and projects and registers every id in the manifest', async () => {
@@ -83,7 +85,7 @@ test('first run creates agents, owned properties and projects and registers ever
     assert.ok(harness.projects.records.every((project) => project.isPublished === true));
 
     const manifestIds = new Set([...harness.manifest.entries.values()].map((entry) => `${entry.kind}:${entry.recordId}`));
-    assert.equal(manifestIds.size, 65);
+    assert.equal(manifestIds.size, 69);
     for (const user of harness.users.records) assert.ok(manifestIds.has(`user:${user._id}`));
     for (const property of harness.properties.records) assert.ok(manifestIds.has(`property:${property._id}`));
     for (const project of harness.projects.records) assert.ok(manifestIds.has(`project:${project._id}`));
@@ -123,7 +125,7 @@ test('re-running is idempotent and preserves admin changes and unrelated data', 
     assert.equal(harness.properties.records.length, 25);
     assert.equal(harness.projects.records.length, 5);
     assert.equal(harness.advertisements.records.length, 25, 'no duplicate advertisements');
-    assert.equal(harness.manifest.entries.size, 65, 'manifest not duplicated');
+    assert.equal(harness.manifest.entries.size, 69, 'manifest not duplicated');
     assert.equal(property.status, 'rejected');
     assert.equal(property.viewsCount, 42);
     assert.equal(agent.accountStatus, 'suspended');
@@ -214,7 +216,7 @@ test('re-running over listings seeded before advertisements existed adds only th
     assert.deepEqual(summary.properties, { created: 0, updated: 0, unchanged: 25 });
     assert.deepEqual(summary.projects, { created: 0, updated: 0, unchanged: 5 });
     assert.deepEqual(summary.advertisements, { created: 25, updated: 0, unchanged: 0 });
-    assert.equal(harness.manifest.entries.size, 65);
+    assert.equal(harness.manifest.entries.size, 69);
   } finally {
     await harness.connection.close();
   }
@@ -265,6 +267,148 @@ test('stops before any write when a demo project slug already exists outside the
     await assert.rejects(seedDemoData(harness.collections, PASSWORD), /project demo-canal-gate-business-square/);
     assert.equal(harness.totalWrites(), 0);
     assert.deepEqual(harness.projects.records, [project]);
+  } finally {
+    await harness.connection.close();
+  }
+});
+
+test('demo agents are grouped into 4 agencies of 2-3 agents with matching names and hosted logos', () => {
+  assert.equal(DEMO_AGENCIES.length, 4);
+  // Must match AgenciesService/UsersService normalization exactly.
+  assert.equal(normalizeDemoAgencyName('  Raza   Estates (Demo) '), 'raza estates (demo)');
+  assert.deepEqual(
+    DEMO_AGENCIES.map((agency) => normalizeDemoAgencyName(agency.name)),
+    [
+      'raza estates (demo)',
+      'malik property advisors (demo)',
+      'crescent realty consultants (demo)',
+      'lakeview property network (demo)',
+    ],
+  );
+  for (const agency of DEMO_AGENCIES) {
+    const members = DEMO_AGENTS.filter((agent) => agent.agencyKey === agency.key);
+    assert.ok(members.length >= 2 && members.length <= 3, `${agency.key} has ${members.length} agents`);
+    for (const agent of members) {
+      assert.equal(normalizeDemoAgencyName(agent.agencyName), normalizeDemoAgencyName(agency.name));
+    }
+    for (const url of [agency.logoUrl, agency.coverImageUrl]) {
+      const parsed = new URL(url);
+      assert.equal(parsed.origin, 'https://images.unsplash.com', 'allowed default frontend image origin');
+      assert.match(parsed.pathname, /^\/photo-\d+-[0-9a-f]+$/);
+    }
+  }
+  assert.equal(new Set(DEMO_AGENTS.map((agent) => normalizeDemoAgencyName(agent.agencyName))).size, 4);
+});
+
+test('first run creates 4 active agency profiles with logos, tracked in the manifest', async () => {
+  const harness = createHarness();
+  try {
+    const summary = await seedDemoData(harness.collections, PASSWORD);
+    assert.deepEqual(summary.agencies, { created: 4, updated: 0, unchanged: 0 });
+    const agencies = harness.agencies.records;
+    assert.equal(agencies.length, 4);
+    const manifestIds = new Set([...harness.manifest.entries.values()].map((e) => `${e.kind}:${e.recordId}`));
+    for (const agency of agencies) {
+      assert.ok(manifestIds.has(`agency:${agency._id}`), 'agency tracked in manifest');
+      assert.equal(agency.status, 'active');
+      assert.equal(agency.city, 'Lahore');
+      assert.ok(String(agency.logoUrl).startsWith('https://images.unsplash.com/'));
+      assert.ok(String(agency.coverImageUrl).startsWith('https://images.unsplash.com/'));
+      assert.equal(agency.normalizedName, normalizeDemoAgencyName(agency.name));
+      // Public agency endpoints match agents by trimmed, case-insensitive agencyName.
+      const members = harness.users.records.filter(
+        (user) => normalizeDemoAgencyName(user.agencyName) === agency.normalizedName,
+      );
+      assert.ok(members.length >= 2 && members.length <= 3, `${agency.name} has ${members.length} agents`);
+    }
+    const covered = harness.users.records.filter((user) =>
+      agencies.some((agency) => agency.normalizedName === normalizeDemoAgencyName(user.agencyName)),
+    );
+    assert.equal(covered.length, 10, 'every demo agent belongs to a seeded agency profile');
+  } finally {
+    await harness.connection.close();
+  }
+});
+
+test('agency re-runs are idempotent and keep agent/admin edits to agency profiles', async () => {
+  const harness = createHarness();
+  try {
+    await seedDemoData(harness.collections, PASSWORD);
+    const agency = harness.agencies.records[0];
+    agency.status = 'suspended';
+    agency.logoUrl = '/api/v1/properties/images/uploaded-by-agent.webp';
+    agency.description = 'Edited by the agency manager';
+    const writes = harness.totalWrites();
+    const second = await seedDemoData(harness.collections, PASSWORD);
+    assert.deepEqual(second.agencies, { created: 0, updated: 0, unchanged: 4 });
+    assert.equal(harness.totalWrites(), writes, 'no writes on re-run');
+    assert.equal(harness.agencies.records.length, 4, 'no duplicate agencies');
+    assert.equal(agency.status, 'suspended');
+    assert.equal(agency.logoUrl, '/api/v1/properties/images/uploaded-by-agent.webp');
+    assert.equal(agency.description, 'Edited by the agency manager');
+  } finally {
+    await harness.connection.close();
+  }
+});
+
+test('re-running over agents seeded with the earlier per-agent agency names regroups them', async () => {
+  const harness = createHarness();
+  try {
+    await seedDemoData(harness.collections, PASSWORD);
+    // Recreate the earlier seeder state: per-agent agency names, no Agency docs.
+    const agent = harness.users.records.find((user) => user.email === demoAgentEmail(DEMO_AGENTS[6]))!;
+    agent.agencyName = 'Haider Estate Consultants (Demo)';
+    harness.agencies.records.length = 0;
+    for (const [id, entry] of [...harness.manifest.entries]) {
+      if (entry.kind === 'agency') harness.manifest.entries.delete(id);
+    }
+    const summary = await seedDemoData(harness.collections, PASSWORD);
+    assert.deepEqual(summary.agents, { created: 0, updated: 1, unchanged: 9 });
+    assert.deepEqual(summary.agencies, { created: 4, updated: 0, unchanged: 0 });
+    const refreshed = harness.users.records.find((user) => user.email === demoAgentEmail(DEMO_AGENTS[6]))!;
+    assert.equal(refreshed.agencyName, DEMO_AGENTS[6].agencyName);
+    assert.equal(harness.manifest.entries.size, 69);
+  } finally {
+    await harness.connection.close();
+  }
+});
+
+test('an agency profile with a demo agency name that the seeder did not create is a collision', async () => {
+  const foreign: PlainRecord = {
+    _id: newId(),
+    name: DEMO_AGENCIES[2].name,
+    normalizedName: normalizeDemoAgencyName(DEMO_AGENCIES[2].name),
+    status: 'active',
+    galleryUrls: [],
+  };
+  const harness = createHarness({ agencies: [foreign] });
+  try {
+    await assert.rejects(
+      seedDemoData(harness.collections, PASSWORD),
+      (error: unknown) =>
+        error instanceof DemoSeedError &&
+        error.message.includes(`agency profile "${DEMO_AGENCIES[2].name}"`) &&
+        error.message.includes('No records were changed'),
+    );
+    assert.equal(harness.totalWrites(), 0);
+    assert.equal(harness.manifest.entries.size, 0);
+    assert.deepEqual(harness.agencies.records, [foreign], 'existing agency untouched');
+  } finally {
+    await harness.connection.close();
+  }
+});
+
+test('seeding never touches unrelated agency profiles', async () => {
+  const realAgency: PlainRecord = {
+    _id: newId(), name: 'Real Agency', normalizedName: 'real agency', status: 'active',
+    logoUrl: '/api/v1/properties/images/real.webp', galleryUrls: [],
+  };
+  const harness = createHarness({ agencies: [realAgency] });
+  try {
+    await seedDemoData(harness.collections, PASSWORD);
+    await seedDemoData(harness.collections, PASSWORD);
+    assert.equal(harness.agencies.records.length, 5);
+    assert.deepEqual(harness.agencies.records.find((a) => a._id === realAgency._id), realAgency);
   } finally {
     await harness.connection.close();
   }

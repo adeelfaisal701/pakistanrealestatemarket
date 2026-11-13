@@ -121,6 +121,7 @@ export interface HarnessSeed {
   properties?: PlainRecord[];
   projects?: PlainRecord[];
   advertisements?: PlainRecord[];
+  agencies?: PlainRecord[];
   manifest?: DemoManifestEntry[];
   dependencies?: Record<string, PlainRecord[]>;
 }
@@ -136,14 +137,17 @@ export function createHarness(existing: HarnessSeed = {}) {
     name: 'advertisements',
     log: deletionOrder,
   });
+  const agencies = memoryCollection(models.agency, existing.agencies, { name: 'agencies', log: deletionOrder });
   const manifest = memoryManifest(existing.manifest);
   const dependencies = new Map(
     DEMO_DEPENDENCY_SPECS.map((spec) => [
       spec.modelName,
-      // As in the real cleanup, advertisements share one collection.
+      // As in the real cleanup, advertisements and agencies share one collection.
       spec.modelName === models.advertisement.modelName
         ? advertisements
-        : memoryCollection(null, existing.dependencies?.[spec.modelName] ?? []),
+        : spec.modelName === models.agency.modelName
+          ? agencies
+          : memoryCollection(null, existing.dependencies?.[spec.modelName] ?? []),
     ]),
   );
   const store: DemoCleanupStore = {
@@ -151,6 +155,7 @@ export function createHarness(existing: HarnessSeed = {}) {
     properties: properties.collection,
     projects: projects.collection,
     advertisements: advertisements.collection,
+    agencies: agencies.collection,
     manifest: manifest.manifest,
     dependency: (name) => {
       const found = dependencies.get(name);
@@ -159,9 +164,9 @@ export function createHarness(existing: HarnessSeed = {}) {
     },
   };
   const totalWrites = () =>
-    users.writes() + properties.writes() + projects.writes() + advertisements.writes();
+    users.writes() + properties.writes() + projects.writes() + advertisements.writes() + agencies.writes();
   return {
-    connection, users, properties, projects, advertisements, manifest, dependencies,
+    connection, users, properties, projects, advertisements, agencies, manifest, dependencies,
     deletionOrder, store, collections: store, totalWrites,
   };
 }

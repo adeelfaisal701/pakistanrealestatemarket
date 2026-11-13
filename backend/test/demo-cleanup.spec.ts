@@ -63,9 +63,9 @@ test('dry run reports exactly the seeded records and deletes nothing', async () 
     assert.equal(result.plan.projects.length, 5);
     assert.equal(result.plan.advertisements.length, 25);
     assert.deepEqual(result.plan.blockers, [], 'own advertisements are not treated as dependencies');
-    assert.deepEqual(result.deleted, { advertisements: 0, users: 0, properties: 0, projects: 0, manifestEntries: 0 });
+    assert.deepEqual(result.deleted, { advertisements: 0, agencies: 0, users: 0, properties: 0, projects: 0, manifestEntries: 0 });
     assert.equal(harness.totalWrites(), writes, 'dry run performs no writes');
-    assert.equal(harness.manifest.entries.size, 65);
+    assert.equal(harness.manifest.entries.size, 69);
     assert.equal(harness.users.records.length, 13);
     assert.equal(harness.advertisements.records.length, 27);
   } finally {
@@ -77,8 +77,8 @@ test('cleanup removes only manifest records, leaves unrelated data intact, and i
   const { harness, base } = await seededHarness();
   try {
     const result = await cleanupDemoData(harness.store, { dryRun: false });
-    assert.deepEqual(result.deleted, { advertisements: 25, users: 10, properties: 25, projects: 5, manifestEntries: 65 });
-    assert.deepEqual(harness.deletionOrder, ['advertisements', 'properties', 'projects', 'users'],
+    assert.deepEqual(result.deleted, { advertisements: 25, agencies: 4, users: 10, properties: 25, projects: 5, manifestEntries: 69 });
+    assert.deepEqual(harness.deletionOrder, ['advertisements', 'agencies', 'properties', 'projects', 'users'],
       'advertisements are removed before their listings');
     assert.deepEqual(harness.users.records, base.users);
     assert.deepEqual(harness.properties.records, base.properties);
@@ -87,7 +87,7 @@ test('cleanup removes only manifest records, leaves unrelated data intact, and i
     assert.equal(harness.manifest.entries.size, 0);
 
     const again = await cleanupDemoData(harness.store, { dryRun: false });
-    assert.deepEqual(again.deleted, { advertisements: 0, users: 0, properties: 0, projects: 0, manifestEntries: 0 });
+    assert.deepEqual(again.deleted, { advertisements: 0, agencies: 0, users: 0, properties: 0, projects: 0, manifestEntries: 0 });
     assert.deepEqual(harness.users.records, base.users, 'second cleanup changes nothing');
     assert.deepEqual(harness.advertisements.records, base.advertisements);
 
@@ -149,7 +149,7 @@ for (const [modelName, sample] of Object.entries(BLOCKING_SAMPLES)) {
         );
       }
       assert.equal(harness.totalWrites(), writes);
-      assert.equal(harness.manifest.entries.size, 65);
+      assert.equal(harness.manifest.entries.size, 69);
       assert.ok(dependency.records.some((record) => record._id === dependencyId), 'dependency itself untouched');
     } finally {
       await harness.connection.close();
@@ -253,6 +253,40 @@ test('stale manifest entries (record already removed) are cleared without error'
     assert.equal(result.plan.staleEntries.length, 1);
     assert.equal(result.deleted.projects, 4);
     assert.equal(harness.manifest.entries.size, 0);
+  } finally {
+    await harness.connection.close();
+  }
+});
+
+test('cleanup removes only manifest agency profiles, before agents, and preserves unrelated ones', async () => {
+  const realAgency = {
+    _id: newId(), name: 'Real Agency', normalizedName: 'real agency', status: 'active', galleryUrls: [],
+  } as PlainRecord;
+  const harness = createHarness({ ...unrelatedData(), agencies: [realAgency] });
+  try {
+    await seedDemoData(harness.collections, PASSWORD);
+    const dry = await cleanupDemoData(harness.store, { dryRun: true });
+    assert.equal(dry.plan.agencies.length, 4);
+    assert.deepEqual(dry.plan.blockers, [], 'own agency profiles are not treated as dependencies');
+    const result = await cleanupDemoData(harness.store, { dryRun: false });
+    assert.equal(result.deleted.agencies, 4);
+    assert.ok(
+      harness.deletionOrder.indexOf('agencies') < harness.deletionOrder.indexOf('users'),
+      'agency profiles removed before the demo agents',
+    );
+    assert.deepEqual(harness.agencies.records, [realAgency]);
+  } finally {
+    await harness.connection.close();
+  }
+});
+
+test('a manifest agency profile renamed away from its demo name blocks cleanup', async () => {
+  const { harness } = await seededHarness();
+  try {
+    harness.agencies.records[1].normalizedName = 'renamed agency';
+    await assert.rejects(cleanupDemoData(harness.store, { dryRun: false }), /agency profiles renamed away/);
+    assert.equal(harness.agencies.records.length, 4, 'no agency deleted');
+    assert.equal(harness.users.records.length, 13, 'no account deleted');
   } finally {
     await harness.connection.close();
   }

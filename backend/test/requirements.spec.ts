@@ -278,13 +278,25 @@ test('verified-agent guard accepts verified legacy records but rejects ineligibl
       });
     },
   } as never);
-  const context = {
-    switchToHttp: () => ({
-      getRequest: () => ({ user: { id: agentId, role: UserRole.AGENT } }),
-    }),
-  } as never;
+  // JwtStrategy always sets profileComplete on authenticated requests.
+  const contextFor = (profileComplete?: boolean) =>
+    ({
+      switchToHttp: () => ({
+        getRequest: () => ({ user: { id: agentId, role: UserRole.AGENT, profileComplete } }),
+      }),
+    }) as never;
+  const context = contextFor(true);
 
   assert.equal(await guard.canActivate(context), true);
+
+  // A verified agent with an incomplete profile is still rejected.
+  for (const profileComplete of [false, undefined]) {
+    await assert.rejects(
+      guard.canActivate(contextFor(profileComplete)),
+      (error: unknown) =>
+        error instanceof ForbiddenException && /Complete your agent profile/.test(error.message),
+    );
+  }
   assert.equal(filter?.role, UserRole.AGENT);
   assert.equal(filter?._id, agentId);
 

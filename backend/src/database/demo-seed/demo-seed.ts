@@ -12,7 +12,8 @@
  *   standalone `demo_seed_manifest` collection (no existing schema changes).
  *   The seeder only updates records listed there, and the cleanup command only
  *   removes records listed there.
- * - If any demo email, listing title or project slug already exists but is not
+ * - If any demo email, listing title, project slug, listing advertisement or
+ *   agency profile name already exists but is not
  *   in the manifest, the run stops before its first write and reports it; that
  *   record is never touched.
  * - Never drops, deletes or resets anything.
@@ -47,11 +48,18 @@ import {
   DevelopmentProjectSchema,
 } from '../../modules/projects/schemas/development-project.schema';
 import {
+  Agency,
+  AgencyAccountStatus,
+  AgencySchema,
+} from '../../modules/agencies/schemas/agency.schema';
+import {
+  DEMO_AGENCIES,
   DEMO_AGENTS,
   DEMO_CITY,
   DEMO_PROJECTS,
   DEMO_PROJECT_SLUG_PREFIX,
   DEMO_PROPERTIES,
+  type DemoAgencySeed,
   type DemoAgentSeed,
 } from './demo-seed-data';
 
@@ -82,6 +90,11 @@ export interface DemoSeedOptions {
 export interface DemoTarget {
   uri: string;
   databaseName: string;
+}
+
+/** Same normalization as AgenciesService / UsersService agency lookups. */
+export function normalizeDemoAgencyName(name: string): string {
+  return name.trim().replace(/\s+/g, ' ').toLowerCase();
 }
 
 export function demoAgentEmail(agent: Pick<DemoAgentSeed, 'email'>): string {
@@ -231,7 +244,7 @@ export interface SeedCollection {
   deleteByIds(ids: string[]): Promise<number>;
 }
 
-export type DemoRecordKind = 'user' | 'property' | 'project' | 'advertisement';
+export type DemoRecordKind = 'user' | 'property' | 'project' | 'advertisement' | 'agency';
 
 export interface DemoManifestEntry {
   kind: DemoRecordKind;
@@ -251,6 +264,7 @@ export interface DemoSeedCollections {
   properties: SeedCollection;
   projects: SeedCollection;
   advertisements: SeedCollection;
+  agencies: SeedCollection;
   manifest: DemoSeedManifest;
 }
 
@@ -340,6 +354,7 @@ export function registerDemoSeedModels(connection: mongoose.Connection) {
     property: connection.model(Property.name, PropertySchema),
     project: connection.model(DevelopmentProject.name, DevelopmentProjectSchema),
     advertisement: connection.model(PropertyAdvertisement.name, PropertyAdvertisementSchema),
+    agency: connection.model(Agency.name, AgencySchema),
   };
 }
 
@@ -358,6 +373,7 @@ export interface DemoSeedSummary {
   properties: DemoSeedCounts;
   projects: DemoSeedCounts;
   advertisements: DemoSeedCounts;
+  agencies: DemoSeedCounts;
 }
 
 const emptyCounts = (): DemoSeedCounts => ({ created: 0, updated: 0, unchanged: 0 });
@@ -372,6 +388,26 @@ export function assertDemoDataConsistency(): void {
     if (emails.has(email)) throw new DemoSeedError(`Duplicate demo agent email ${email}.`);
     agentKeys.add(agent.key);
     emails.add(email);
+  }
+  const agencyKeys = new Set<string>();
+  const agencyNames = new Set<string>();
+  for (const agency of DEMO_AGENCIES) {
+    const normalized = normalizeDemoAgencyName(agency.name);
+    if (agencyKeys.has(agency.key) || agencyNames.has(normalized)) {
+      throw new DemoSeedError(`Duplicate demo agency ${agency.name}.`);
+    }
+    agencyKeys.add(agency.key);
+    agencyNames.add(normalized);
+    const members = DEMO_AGENTS.filter((agent) => agent.agencyKey === agency.key);
+    if (members.length < 2 || members.length > 3) {
+      throw new DemoSeedError(`Demo agency ${agency.name} must have 2-3 agents (has ${members.length}).`);
+    }
+  }
+  for (const agent of DEMO_AGENTS) {
+    const agency = DEMO_AGENCIES.find((item) => item.key === agent.agencyKey);
+    if (!agency || normalizeDemoAgencyName(agent.agencyName) !== normalizeDemoAgencyName(agency.name)) {
+      throw new DemoSeedError(`Demo agent ${agent.key} agency name does not match its demo agency.`);
+    }
   }
   const titlesPerAgent = new Map<string, Set<string>>();
   for (const property of DEMO_PROPERTIES) {
@@ -448,6 +484,7 @@ export async function seedDemoData(
     properties: emptyCounts(),
     projects: emptyCounts(),
     advertisements: emptyCounts(),
+    agencies: emptyCounts(),
   };
 
   const owned = new Set((await collections.manifest.list()).map(manifestEntryId));
@@ -496,6 +533,15 @@ export async function seedDemoData(
     if (existing && !isOwned('project', existing._id)) collisions.push(`project ${project.slug}`);
     existingProjects.set(project.slug, existing);
   }
+  // Agency profiles are matched by normalizedName (unique index), exactly as
+  // the public agency endpoints resolve them.
+  const existingAgencies = new Map<string, PlainRecord | null>();
+  for (const agency of DEMO_AGENCIES) {
+    const normalizedName = normalizeDemoAgencyName(agency.name);
+    const existing = await collections.agencies.findOne({ normalizedName });
+    if (existing && !isOwned('agency', existing._id)) collisions.push(`agency profile "${agency.name}"`);
+    existingAgencies.set(agency.key, existing);
+  }
   if (collisions.length > 0) {
     throw new DemoSeedError(
       `These demo records already exist but were not created by this seeder: ${collisions.join(', ')}. ` +
@@ -510,6 +556,9 @@ export async function seedDemoData(
   }
   for (const project of DEMO_PROJECTS) {
     await collections.projects.normalize(buildProjectValues(project));
+  }
+  for (const agency of DEMO_AGENCIES) {
+    await collections.agencies.normalize({ ...buildAgencyValues(agency), ...buildAgencyCreateOnlyValues(agency) });
   }
 
   const agentIds = new Map<string, mongoose.Types.ObjectId>();
@@ -543,6 +592,19 @@ export async function seedDemoData(
       existing, managed, createOnly, summary.agents,
     );
     agentIds.set(agent.key, new mongoose.Types.ObjectId(id));
+  }
+
+  // Name/normalizedName stay aligned with the agents' agencyName. Profile
+  // content and status are create-only so agent edits and admin moderation
+  // (and any logo the agent uploads later) survive re-runs.
+  for (const agency of DEMO_AGENCIES) {
+    await upsertOwned(
+      collections.agencies, collections.manifest, 'agency', `agency:${agency.key}`,
+      existingAgencies.get(agency.key) ?? null,
+      buildAgencyValues(agency),
+      buildAgencyCreateOnlyValues(agency),
+      summary.agencies,
+    );
   }
 
   const propertyIds = new Map<string, mongoose.Types.ObjectId>();
@@ -622,6 +684,23 @@ function buildPropertyValues(
   };
 }
 
+function buildAgencyValues(agency: DemoAgencySeed): Record<string, unknown> {
+  return { name: agency.name, normalizedName: normalizeDemoAgencyName(agency.name) };
+}
+
+function buildAgencyCreateOnlyValues(agency: DemoAgencySeed): Record<string, unknown> {
+  return {
+    description: agency.description,
+    agencyType: agency.agencyType,
+    officeAddress: agency.officeAddress,
+    city: DEMO_CITY,
+    logoUrl: agency.logoUrl,
+    coverImageUrl: agency.coverImageUrl,
+    galleryUrls: [],
+    status: AgencyAccountStatus.ACTIVE,
+  };
+}
+
 function buildProjectValues(project: (typeof DEMO_PROJECTS)[number]): Record<string, unknown> {
   return {
     slug: project.slug,
@@ -643,7 +722,12 @@ function buildProjectValues(project: (typeof DEMO_PROJECTS)[number]): Record<str
 }
 
 /** Validates all demo records against the real schemas without connecting. */
-export async function dryRunDemoSeed(): Promise<{ agents: number; properties: number; projects: number }> {
+export async function dryRunDemoSeed(): Promise<{
+  agents: number;
+  agencies: number;
+  properties: number;
+  projects: number;
+}> {
   assertDemoDataConsistency();
   const connection = mongoose.createConnection();
   try {
@@ -681,11 +765,18 @@ export async function dryRunDemoSeed(): Promise<{ agents: number; properties: nu
       approvedAt: new Date(),
       publishedAt: new Date(),
     }).validate();
+    for (const agency of DEMO_AGENCIES) {
+      await new models.agency({
+        ...buildAgencyValues(agency),
+        ...buildAgencyCreateOnlyValues(agency),
+      }).validate();
+    }
   } finally {
     await connection.close();
   }
   return {
     agents: DEMO_AGENTS.length,
+    agencies: DEMO_AGENCIES.length,
     properties: DEMO_PROPERTIES.length,
     projects: DEMO_PROJECTS.length,
   };
@@ -715,7 +806,8 @@ export async function executeDemoSeed(env: NodeJS.ProcessEnv, args: string[]): P
   if (options.dryRun) {
     const counts = await dryRunDemoSeed();
     console.log(
-      `Dry run passed schema validation for ${counts.agents} agents, ${counts.properties} properties ` +
+      `Dry run passed schema validation for ${counts.agents} agents, ${counts.agencies} agencies, ` +
+        `${counts.properties} properties ` +
         `and ${counts.projects} projects. No database connection was made.`,
     );
     return;
@@ -730,6 +822,7 @@ export async function executeDemoSeed(env: NodeJS.ProcessEnv, args: string[]): P
         properties: createMongooseCollection(models.property),
         projects: createMongooseCollection(models.project),
         advertisements: createMongooseCollection(models.advertisement),
+        agencies: createMongooseCollection(models.agency),
         manifest: createMongoManifest(connection),
       },
       options.password!,
@@ -739,6 +832,7 @@ export async function executeDemoSeed(env: NodeJS.ProcessEnv, args: string[]): P
     console.log(formatCounts('Properties', summary.properties));
     console.log(formatCounts('Projects', summary.projects));
     console.log(formatCounts('Advertisements', summary.advertisements));
+    console.log(formatCounts('Agencies', summary.agencies));
     console.log(
       `Demo agents sign in with ${DEMO_AGENTS.map(demoAgentEmail).join(', ')} and the DEMO_SEED_PASSWORD value.`,
     );

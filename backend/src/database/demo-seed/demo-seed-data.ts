@@ -50,11 +50,73 @@ const IMG = {
   estate: photo('1560518883-ce09059eeffa'),
 };
 
+/** Agency names shared by demo agents; Agency.normalizedName is derived from these. */
+const DEMO_AGENCY_NAMES = {
+  raza: 'Raza Estates (Demo)',
+  malik: 'Malik Property Advisors (Demo)',
+  crescent: 'Crescent Realty Consultants (Demo)',
+  lakeview: 'Lakeview Property Network (Demo)',
+} as const;
+
+export type DemoAgencyKey = keyof typeof DEMO_AGENCY_NAMES;
+
+export interface DemoAgencySeed {
+  key: DemoAgencyKey;
+  name: string;
+  description: string;
+  agencyType: string;
+  officeAddress: string;
+  /** images.unsplash.com is an allowed default image origin (frontend next.config.ts). */
+  logoUrl: string;
+  coverImageUrl: string;
+}
+
+/** 4 fictional agencies grouping the 10 demo agents (2-3 agents each). */
+export const DEMO_AGENCIES: DemoAgencySeed[] = [
+  {
+    key: 'raza',
+    name: DEMO_AGENCY_NAMES.raza,
+    description: 'Fictional demo agency covering DHA and Askari residential and commercial property in Lahore.',
+    agencyType: 'Real estate agency',
+    officeAddress: 'Office 12, Commercial Area, Sector CCA, DHA Phase 6, Lahore',
+    logoUrl: avatar('1486406146926-c627a92ad1ab'),
+    coverImageUrl: IMG.office2,
+  },
+  {
+    key: 'malik',
+    name: DEMO_AGENCY_NAMES.malik,
+    description: 'Fictional demo agency advising on homes and investments across Gulberg, Model Town and Garden Town.',
+    agencyType: 'Property consultancy',
+    officeAddress: '2nd Floor, Liberty Arcade, Gulberg III, Lahore',
+    logoUrl: avatar('1497366216548-37526070297c'),
+    coverImageUrl: IMG.office1,
+  },
+  {
+    key: 'crescent',
+    name: DEMO_AGENCY_NAMES.crescent,
+    description: 'Fictional demo agency focused on Johar Town and Wapda Town sales and rentals.',
+    agencyType: 'Real estate agency',
+    officeAddress: '65-G1, Main Boulevard, Johar Town, Lahore',
+    logoUrl: avatar('1560518883-ce09059eeffa'),
+    coverImageUrl: IMG.estate,
+  },
+  {
+    key: 'lakeview',
+    name: DEMO_AGENCY_NAMES.lakeview,
+    description: 'Fictional demo agency for Bahria Town and Lake City housing societies.',
+    agencyType: 'Real estate agency',
+    officeAddress: 'Commercial Block M-2, Lake City, Raiwind Road, Lahore',
+    logoUrl: avatar('1449844908441-8829872d2607'),
+    coverImageUrl: IMG.house10,
+  },
+];
+
 export interface DemoAgentSeed {
   key: string;
   name: string;
   email: string;
   phone: string;
+  agencyKey: DemoAgencyKey;
   agencyName: string;
   agencyAddress: string;
   avatarUrl: string;
@@ -71,7 +133,8 @@ export const DEMO_AGENTS: DemoAgentSeed[] = [
     name: 'Ahmed Raza Khan',
     email: 'faisal@gmail.com',
     phone: '+923000000101',
-    agencyName: 'Raza Estates (Demo)',
+    agencyKey: 'raza',
+    agencyName: DEMO_AGENCY_NAMES.raza,
     agencyAddress: 'Office 12, Commercial Area, Sector CCA, DHA Phase 6, Lahore',
     avatarUrl: avatar('1507003211169-0a1dd7228f2d'),
     verificationStatus: AgentVerificationStatus.VERIFIED,
@@ -81,7 +144,8 @@ export const DEMO_AGENTS: DemoAgentSeed[] = [
     name: 'Sana Malik',
     email: 'faisal1@gmail.com',
     phone: '+923000000102',
-    agencyName: 'Malik Property Advisors (Demo)',
+    agencyKey: 'malik',
+    agencyName: DEMO_AGENCY_NAMES.malik,
     agencyAddress: '2nd Floor, Liberty Arcade, Gulberg III, Lahore',
     avatarUrl: avatar('1494790108377-be9c29b29330'),
     verificationStatus: AgentVerificationStatus.VERIFIED,
@@ -91,7 +155,8 @@ export const DEMO_AGENTS: DemoAgentSeed[] = [
     name: 'Usman Tariq',
     email: 'faisal2@gmail.com',
     phone: '+923000000103',
-    agencyName: 'Tariq Real Estate (Demo)',
+    agencyKey: 'lakeview',
+    agencyName: DEMO_AGENCY_NAMES.lakeview,
     agencyAddress: 'Shop 7, Commercial Hub, Sector C, Bahria Town, Lahore',
     avatarUrl: avatar('1500648767791-00dcc994a43e'),
     verificationStatus: AgentVerificationStatus.VERIFIED,
@@ -101,7 +166,8 @@ export const DEMO_AGENTS: DemoAgentSeed[] = [
     name: 'Ayesha Siddiqui',
     email: 'faisal3@gmail.com',
     phone: '+923000000104',
-    agencyName: 'Crescent Realty Consultants (Demo)',
+    agencyKey: 'crescent',
+    agencyName: DEMO_AGENCY_NAMES.crescent,
     agencyAddress: '65-G1, Main Boulevard, Johar Town, Lahore',
     avatarUrl: avatar('1438761681033-6461ffad8d80'),
     verificationStatus: AgentVerificationStatus.VERIFIED,
@@ -111,7 +177,8 @@ export const DEMO_AGENTS: DemoAgentSeed[] = [
     name: 'Bilal Chaudhry',
     email: 'faisal4@gmail.com',
     phone: '+923000000105',
-    agencyName: 'Chaudhry Associates (Demo)',
+    agencyKey: 'crescent',
+    agencyName: DEMO_AGENCY_NAMES.crescent,
     agencyAddress: 'Plot 14, Block H-3, Main Market, Wapda Town, Lahore',
     avatarUrl: avatar('1506794778202-cad84cf45f1d'),
     verificationStatus: AgentVerificationStatus.VERIFIED,
@@ -121,7 +188,8 @@ export const DEMO_AGENTS: DemoAgentSeed[] = [
     name: 'Kamran Mehmood',
     email: 'faisal5@gmail.com',
     phone: '+923000000106',
-    agencyName: 'Lakeview Property Network (Demo)',
+    agencyKey: 'lakeview',
+    agencyName: DEMO_AGENCY_NAMES.lakeview,
     agencyAddress: 'Commercial Block M-2, Lake City, Raiwind Road, Lahore',
     avatarUrl: avatar('1472099645785-5658abf4ff4e'),
     verificationStatus: AgentVerificationStatus.VERIFIED,
@@ -131,7 +199,8 @@ export const DEMO_AGENTS: DemoAgentSeed[] = [
     name: 'Zainab Haider',
     email: 'faisal6@gmail.com',
     phone: '+923000000107',
-    agencyName: 'Haider Estate Consultants (Demo)',
+    agencyKey: 'raza',
+    agencyName: DEMO_AGENCY_NAMES.raza,
     agencyAddress: 'Office 4, Y Block Commercial, DHA Phase 3, Lahore',
     avatarUrl: avatar('1544005313-94ddf0286df2'),
     verificationStatus: AgentVerificationStatus.VERIFIED,
@@ -141,7 +210,8 @@ export const DEMO_AGENTS: DemoAgentSeed[] = [
     name: 'Hamza Iqbal',
     email: 'faisal7@gmail.com',
     phone: '+923000000108',
-    agencyName: 'Iqbal Property Hub (Demo)',
+    agencyKey: 'raza',
+    agencyName: DEMO_AGENCY_NAMES.raza,
     agencyAddress: 'Askari 11 Commercial Area, Bedian Road, Lahore',
     avatarUrl: avatar('1519085360753-af0119f7cbe7'),
     verificationStatus: AgentVerificationStatus.VERIFIED,
@@ -151,7 +221,8 @@ export const DEMO_AGENTS: DemoAgentSeed[] = [
     name: 'Adnan Sheikh',
     email: 'faisal8@gmail.com',
     phone: '+923000000109',
-    agencyName: 'Sheikh & Co. Realtors (Demo)',
+    agencyKey: 'malik',
+    agencyName: DEMO_AGENCY_NAMES.malik,
     agencyAddress: '22-C, Main Boulevard, Model Town Extension, Lahore',
     avatarUrl: avatar('1560250097-0b93528c311a'),
     verificationStatus: AgentVerificationStatus.VERIFIED,
@@ -161,7 +232,8 @@ export const DEMO_AGENTS: DemoAgentSeed[] = [
     name: 'Imran Butt',
     email: 'faisal9@gmail.com',
     phone: '+923000000110',
-    agencyName: 'Garden Town Realty (Demo)',
+    agencyKey: 'malik',
+    agencyName: DEMO_AGENCY_NAMES.malik,
     agencyAddress: '9 Abu Bakar Block, Garden Town, Lahore',
     avatarUrl: avatar('1599566150163-29194dcaad36'),
     verificationStatus: AgentVerificationStatus.VERIFIED,
