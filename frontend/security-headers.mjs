@@ -17,6 +17,12 @@ export function buildContentSecurityPolicy(environment = process.env, nonce) {
     environment.NEXT_PUBLIC_API_BASE_URL,
     environment.NODE_ENV,
   );
+  // Campaign media uploads go straight to the backend (see next.config.ts).
+  const uploadOrigin = resolveApiOrigin(
+    environment.MEDIA_UPLOAD_API_BASE_URL,
+    environment.NODE_ENV,
+  );
+  const connectOrigins = [...new Set([apiOrigin, uploadOrigin].filter(Boolean))].join(" ");
   const isDevelopment = environment.NODE_ENV === "development";
   // Google Analytics 4 origins are allowed only when a measurement ID is configured.
   const analyticsEnabled = /^G-[A-Z0-9]{4,20}$/.test(
@@ -47,7 +53,7 @@ export function buildContentSecurityPolicy(environment = process.env, nonce) {
     // Sponsored campaign videos are served by the API (or the media origin).
     `media-src 'self' blob: ${[...new Set([...imageOrigins, ...(apiOrigin ? [apiOrigin] : [])])].join(" ")}`.trim(),
     `font-src 'self' data:`,
-    `connect-src 'self' ${apiOrigin ?? ""}${analyticsConnect}`.replace(/\s+/g, " ").trim(),
+    `connect-src 'self' ${connectOrigins}${analyticsConnect}`.replace(/\s+/g, " ").trim(),
     "frame-src https://maps.google.com",
     "worker-src 'self' blob:",
     "manifest-src 'self'",

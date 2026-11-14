@@ -21,7 +21,11 @@ function withContentSecurityPolicy(response: NextResponse, policy: string) {
 
 export function middleware(request: NextRequest) {
   const nonce = createNonce();
-  const contentSecurityPolicy = buildContentSecurityPolicy(process.env, nonce);
+  const contentSecurityPolicy = buildContentSecurityPolicy(
+    // MEDIA_UPLOAD_API_BASE_URL comes from next.config.ts `env` (inlined at build).
+    { ...process.env, MEDIA_UPLOAD_API_BASE_URL: process.env.MEDIA_UPLOAD_API_BASE_URL },
+    nonce,
+  );
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set("Content-Security-Policy-Report-Only", contentSecurityPolicy);
 

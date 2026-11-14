@@ -269,6 +269,12 @@ export function AdminPromotionsManager() {
                       <div className="flex flex-wrap items-center gap-2">
                         <StatusChip status={campaign.effectiveStatus} />
                         <span className="text-[11px] text-slate-500">Priority {campaign.priority}</span>
+                        {campaign.missingMedia?.length ? (
+                          <span className="inline-flex items-center gap-1 rounded-full border border-amber-700 bg-amber-950/50 px-2 py-0.5 text-[11px] font-semibold text-amber-200">
+                            <AlertTriangle className="h-3 w-3" />
+                            {campaign.missingMedia.length} media file{campaign.missingMedia.length === 1 ? "" : "s"} missing — edit to re-upload
+                          </span>
+                        ) : null}
                       </div>
                       <h3 className="truncate text-base font-bold text-white">{campaign.title}</h3>
                       <p className="truncate text-xs text-slate-400">

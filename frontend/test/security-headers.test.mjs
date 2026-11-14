@@ -41,6 +41,21 @@ test("CSP allows only verified Next.js development tooling exceptions in develop
   assert.doesNotMatch(policy, /script-src-attr[^;]*unsafe/);
 });
 
+test("CSP allows the exact direct media-upload backend origin", () => {
+  const nonce = "dXBsb2Fkcw==";
+  const policy = buildContentSecurityPolicy({
+    NODE_ENV: "production",
+    NEXT_PUBLIC_API_BASE_URL: "/api/v1",
+    MEDIA_UPLOAD_API_BASE_URL: "https://backend.example/api/v1",
+  }, nonce);
+  assert.match(policy, /connect-src 'self' https:\/\/backend\.example(;|$)/);
+  assert.doesNotMatch(policy, /\*/);
+  assert.throws(() => buildContentSecurityPolicy({
+    NODE_ENV: "production",
+    MEDIA_UPLOAD_API_BASE_URL: "http://backend.example/api/v1",
+  }, nonce));
+});
+
 test("CSP requires a valid per-request nonce", () => {
   assert.throws(() => buildContentSecurityPolicy({ NODE_ENV: "production" }));
   assert.throws(() => buildContentSecurityPolicy({ NODE_ENV: "production" }, "invalid nonce"));

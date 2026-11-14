@@ -1,3 +1,4 @@
+import axios from "axios";
 import apiClient, { type ApiEnvelope } from "@/lib/api-client";
 import { createAnalyticsId } from "@/lib/property-analytics";
 
@@ -178,6 +179,8 @@ export interface AdminCampaign {
   displayOrder: number;
   videoMaxSeconds: number;
   package: PromoPackage | null;
+  /** Media URLs whose files are missing from server storage (need re-uploading). */
+  missingMedia?: string[];
   createdAt: string;
   updatedAt: string;
   totals: PromoTotals;
@@ -208,6 +211,115 @@ export interface PromoAnalytics {
 
 const unwrap = <T,>(request: Promise<{ data: ApiEnvelope<T> }>) => request.then((response) => response.data.data);
 
+export interface PromoUploadResult {
+  kind: "image" | "video";
+  url: string;
+  contentType: string;
+  size: number;
+}
+
+export type PromoUploadFailure =
+  | "cancelled"
+  | "stalled"
+  | "offline"
+  | "network"
+  | "too-large"
+  | "rejected"
+  | "session"
+  | "rate-limited"
+  | "storage"
+  | "server"
+  | "invalid-response";
+
+/** An upload failure with a message an administrator can act on. */
+export class PromoUploadError extends Error {
+  constructor(
+    message: string,
+    readonly reason: PromoUploadFailure,
+  ) {
+    super(message);
+    this.name = "PromoUploadError";
+  }
+}
+
+/**
+ * Uploads have their own limits instead of the 15 s timeout used for normal API
+ * calls: an upload may take minutes on a slow connection, so it is only aborted
+ * when no progress is reported for UPLOAD_STALL_MS, or after UPLOAD_MAX_MS.
+ */
+export const UPLOAD_STALL_MS = 60_000;
+export const UPLOAD_MAX_MS = 30 * 60_000;
+
+/**
+ * Media files are sent from the browser straight to the backend API (never
+ * through the Next.js/Vercel proxy, whose request-body limits are far below
+ * the 60 MB video limit). The absolute base is resolved in next.config.ts.
+ */
+export function mediaUploadUrl(): string {
+  const base = (process.env.MEDIA_UPLOAD_API_BASE_URL ?? "").trim().replace(/\/+$/, "");
+  if (!/^https?:\/\//i.test(base)) {
+    throw new PromoUploadError("Media uploads are not configured on this site. Contact the site administrator.", "server");
+  }
+  return `${base}/admin/promotions/media`;
+}
+
+function serverMessage(data: unknown): string | undefined {
+  const message = (data as { message?: unknown } | undefined)?.message;
+  if (Array.isArray(message)) return message.join(", ");
+  return typeof message === "string" && message && message !== "Internal server error" ? message : undefined;
+}
+
+export function describeUploadError(
+  error: unknown,
+  context: { stalled?: boolean; cancelled?: boolean; started?: boolean } = {},
+): PromoUploadError {
+  if (error instanceof PromoUploadError) return error;
+  if (context.cancelled) return new PromoUploadError("Upload cancelled.", "cancelled");
+  if (context.stalled) {
+    return new PromoUploadError(
+      `The upload stopped making progress for ${UPLOAD_STALL_MS / 1000} seconds. Check your internet connection and try again.`,
+      "stalled",
+    );
+  }
+  if (axios.isAxiosError(error)) {
+    if (error.code === "ERR_CANCELED") return new PromoUploadError("Upload cancelled.", "cancelled");
+    if (error.code === "ECONNABORTED" || error.code === "ETIMEDOUT") {
+      return new PromoUploadError("The upload took too long and was stopped. Check your connection and try again.", "stalled");
+    }
+    const status = error.response?.status;
+    const message = serverMessage(error.response?.data);
+    if (!error.response) {
+      if (typeof navigator !== "undefined" && navigator.onLine === false) {
+        return new PromoUploadError("You appear to be offline. Reconnect to the internet and try the upload again.", "offline");
+      }
+      // Nothing was sent: the server is down, unreachable, or refused this site (CORS).
+      if (!context.started) {
+        return new PromoUploadError(
+          "The media server could not be reached. It may be temporarily unavailable, or not configured to accept uploads from this site. Please try again shortly; if it keeps failing, contact the site administrator.",
+          "network",
+        );
+      }
+      return new PromoUploadError("The upload was interrupted by a network error. Check your connection and try again.", "network");
+    }
+    if (status === 413) return new PromoUploadError(message ?? "This file is larger than allowed (images 10 MB, videos 60 MB).", "too-large");
+    if (status === 400 || status === 415 || status === 422) {
+      return new PromoUploadError(message ?? "The server rejected this file. Use a JPG, PNG or WebP image, or an MP4 or WebM video.", "rejected");
+    }
+    if (status === 401 || status === 403) return new PromoUploadError("Your admin session has expired. Sign in again, then retry the upload.", "session");
+    if (status === 429) return new PromoUploadError("Too many uploads in a short time. Wait a minute, then try again.", "rate-limited");
+    if (status === 507) return new PromoUploadError("Media storage on the server is full. The file was not saved — contact the site administrator.", "storage");
+    if (status === 503) {
+      return new PromoUploadError(
+        message && message !== "Media storage is not writable." ? message : "Media storage on the server is unavailable or not writable. The file was not saved — contact the site administrator.",
+        "storage",
+      );
+    }
+    if (status === 502 || status === 504) return new PromoUploadError("The media server could not be reached. Please try again shortly.", "network");
+    return new PromoUploadError("The server could not store this file. Please try again; if it keeps failing, contact the site administrator.", "server");
+  }
+  return new PromoUploadError("The upload failed unexpectedly. Please try again.", "server");
+}
+
 export const adminPromotions = {
   list: (params: { search?: string; status?: string; placement?: string } = {}) =>
     unwrap(apiClient.get<ApiEnvelope<AdminCampaign[]>>("/admin/promotions", { params })),
@@ -224,20 +336,53 @@ export const adminPromotions = {
   settings: () => unwrap(apiClient.get<ApiEnvelope<PromoSettings>>("/admin/promotions/settings")),
   saveSettings: (settings: PromoSettings) =>
     unwrap(apiClient.put<ApiEnvelope<PromoSettings>>("/admin/promotions/settings", settings)),
-  upload: (file: File, onProgress?: (percent: number) => void) => {
+  /**
+   * Uploads one campaign media file with upload-specific limits (see
+   * UPLOAD_STALL_MS / UPLOAD_MAX_MS) and optional cancellation. Throws a
+   * PromoUploadError with an actionable message on failure.
+   */
+  upload: async (file: File, onProgress?: (percent: number) => void, signal?: AbortSignal): Promise<PromoUploadResult> => {
     const form = new FormData();
     form.append("file", file);
-    return unwrap(
-      apiClient.post<ApiEnvelope<{ kind: "image" | "video"; url: string; contentType: string; size: number }>>(
-        "/admin/promotions/media",
-        form,
-        {
-          headers: { "Content-Type": "multipart/form-data" },
-          onUploadProgress: (event) => {
-            if (onProgress && event.total) onProgress(Math.round((event.loaded / event.total) * 100));
-          },
+    const target = mediaUploadUrl();
+    const controller = new AbortController();
+    let stalled = false;
+    let started = false;
+    let watchdog: ReturnType<typeof setTimeout> | undefined;
+    const armWatchdog = () => {
+      if (watchdog) clearTimeout(watchdog);
+      watchdog = setTimeout(() => {
+        stalled = true;
+        controller.abort();
+      }, UPLOAD_STALL_MS);
+    };
+    const cancel = () => controller.abort();
+    if (signal?.aborted) throw new PromoUploadError("Upload cancelled.", "cancelled");
+    signal?.addEventListener("abort", cancel);
+    armWatchdog();
+    try {
+      // Absolute URL: the shared client still attaches the admin bearer token,
+      // but the request goes directly to the backend instead of the proxy.
+      const response = await apiClient.post<ApiEnvelope<PromoUploadResult>>(target, form, {
+        headers: { "Content-Type": "multipart/form-data" },
+        timeout: UPLOAD_MAX_MS,
+        signal: controller.signal,
+        onUploadProgress: (event) => {
+          armWatchdog();
+          if (event.loaded > 0) started = true;
+          if (onProgress && event.total) onProgress(Math.min(100, Math.round((event.loaded / event.total) * 100)));
         },
-      ),
-    );
+      });
+      const result = response.data?.data;
+      if (!result || (result.kind !== "image" && result.kind !== "video") || typeof result.url !== "string" || !result.url.startsWith("/")) {
+        throw new PromoUploadError("The server returned an unexpected response, so the file could not be attached. Please try again.", "invalid-response");
+      }
+      return result;
+    } catch (error) {
+      throw describeUploadError(error, { stalled, started, cancelled: Boolean(signal?.aborted) && !stalled });
+    } finally {
+      if (watchdog) clearTimeout(watchdog);
+      signal?.removeEventListener("abort", cancel);
+    }
   },
 };

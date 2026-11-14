@@ -23,6 +23,7 @@ import {
   PROPERTY_TYPES,
   PURPOSES,
   adminPromotions,
+  PromoUploadError,
   type AdminCampaign,
   type CampaignPayload,
   type PromoDevice,
@@ -66,12 +67,14 @@ function emptyPayload(): CampaignPayload {
 }
 
 function fromCampaign(campaign: AdminCampaign): CampaignPayload {
-  const { id, effectiveStatus, createdAt, updatedAt, totals, ...payload } = campaign;
+  // Read-only server fields must not be sent back (the API rejects unknown properties).
+  const { id, effectiveStatus, createdAt, updatedAt, totals, missingMedia, ...payload } = campaign;
   void id;
   void effectiveStatus;
   void createdAt;
   void updatedAt;
   void totals;
+  void missingMedia;
   return { ...payload, logoUrl: payload.logoUrl ?? "", description: payload.description ?? "" };
 }
 
@@ -120,6 +123,9 @@ export function CampaignEditor({ campaign, onSaved, onCancel }: CampaignEditorPr
   const [problems, setProblems] = useState<string[]>([]);
   // Files already uploaded in this editor session (same file picked again => no second upload).
   const uploadedFiles = useRef(new Map<string, UploadedMedia>());
+  const uploadAbort = useRef<AbortController | null>(null);
+  // Media the server reported as missing from storage when this campaign was opened.
+  const missingMedia = useMemo(() => new Set(campaign?.missingMedia ?? []), [campaign?.missingMedia]);
   const [previewLayout, setPreviewLayout] = useState<"feature" | "inline">("feature");
   const [previewWidth, setPreviewWidth] = useState<"desktop" | "mobile">("desktop");
   const mediaInput = useRef<HTMLInputElement>(null);
@@ -133,30 +139,38 @@ export function CampaignEditor({ campaign, onSaved, onCancel }: CampaignEditorPr
   const toggle = <T extends string>(list: T[], value: T, on: boolean) =>
     on ? [...new Set([...list, value])] : list.filter((item) => item !== value);
 
-  /** Uploads one file; errors go to `report` (the logo has its own field-level message). */
+  /**
+   * Uploads one file; errors go to `report` (the logo has its own field-level
+   * message). The form keeps everything already attached when an upload fails.
+   */
   const upload = async (file: File, allowVideo: boolean, label: string, report: (message: string) => void = setError) => {
     const problem = checkFile(file, allowVideo);
     if (problem) {
-      report(problem);
+      report(`${file.name}: ${problem}`);
       return undefined;
     }
     report("");
     const key = `${file.name}|${file.size}|${file.lastModified}|${file.type}`;
     const previous = uploadedFiles.current.get(key);
     if (previous) return previous;
+    const controller = new AbortController();
+    uploadAbort.current = controller;
     setUploading(label);
     setProgress(0);
     try {
-      const saved = await adminPromotions.upload(file, setProgress);
+      const saved = await adminPromotions.upload(file, setProgress, controller.signal);
       uploadedFiles.current.set(key, saved);
       return saved;
     } catch (requestError) {
-      report(getApiErrorMessage(requestError));
+      report(requestError instanceof PromoUploadError ? `${file.name}: ${requestError.message}` : `${file.name}: ${getApiErrorMessage(requestError)}`);
       return undefined;
     } finally {
+      if (uploadAbort.current === controller) uploadAbort.current = null;
       setUploading("");
     }
   };
+
+  const cancelUpload = () => uploadAbort.current?.abort();
 
   const applyLogo = (url: string) => {
     set("logoUrl", url);
@@ -173,14 +187,26 @@ export function CampaignEditor({ campaign, onSaved, onCancel }: CampaignEditorPr
       setError(`A campaign can hold up to ${MAX_MEDIA} images or videos.`);
       return;
     }
-    for (const file of Array.from(files).slice(0, room)) {
-      const saved = await upload(file, true, file.name);
-      if (!saved) break;
+    const selected = Array.from(files);
+    const failures: string[] = [];
+    if (selected.length > room) failures.push(`Only ${room} more file${room === 1 ? "" : "s"} can be added (maximum ${MAX_MEDIA}).`);
+    // One failed file does not stop the others or remove media already attached.
+    for (const file of selected.slice(0, room)) {
+      let failure = "";
+      const saved = await upload(file, true, file.name, (message) => {
+        failure = message;
+      });
+      if (!saved) {
+        if (failure) failures.push(failure);
+        if (/cancelled/i.test(failure)) break;
+        continue;
+      }
       setForm((current) => ({
         ...current,
         media: [...current.media, { kind: saved.kind, url: saved.url, alt: "" }],
       }));
     }
+    setError(failures.join(" "));
   };
 
   const updateMedia = (index: number, patch: Partial<PromoMedia>) =>
@@ -293,7 +319,12 @@ export function CampaignEditor({ campaign, onSaved, onCancel }: CampaignEditorPr
               {uploading === "logo" ? (
                 <span role="status" className="flex items-center gap-1.5 text-xs text-slate-400">
                   <Loader2 className="h-3.5 w-3.5 animate-spin" /> Uploading logo… {progress}%
+                  <button type="button" onClick={cancelUpload} className="ml-1 rounded px-1.5 py-0.5 font-semibold text-rose-300 hover:bg-rose-500/10">
+                    Cancel
+                  </button>
                 </span>
+              ) : form.logoUrl && missingMedia.has(form.logoUrl) ? (
+                <span className="text-xs font-semibold text-amber-300">Logo file missing on the server — upload it again</span>
               ) : form.logoUrl ? (
                 <span className="text-xs font-medium text-emerald-400">Logo attached</span>
               ) : null}
@@ -364,17 +395,37 @@ export function CampaignEditor({ campaign, onSaved, onCancel }: CampaignEditorPr
           </div>
           {uploading && uploading !== "logo" ? (
             <div role="status" className="flex items-center gap-3 rounded-xl border border-slate-800 bg-slate-950/60 p-3 text-xs text-slate-300">
-              <Loader2 className="h-4 w-4 animate-spin" /> Uploading {uploading}… {progress}%
-              <span className="h-1.5 flex-1 overflow-hidden rounded-full bg-slate-800">
+              <Loader2 className="h-4 w-4 shrink-0 animate-spin" />
+              <span className="min-w-0 truncate">Uploading {uploading}… {progress}%</span>
+              <span className="h-1.5 min-w-12 flex-1 overflow-hidden rounded-full bg-slate-800">
                 <span className="block h-full rounded-full bg-emerald-500 transition-all" style={{ width: `${progress}%` }} />
               </span>
+              <button type="button" onClick={cancelUpload} className="shrink-0 rounded px-2 py-1 font-semibold text-rose-300 hover:bg-rose-500/10">
+                Cancel
+              </button>
             </div>
+          ) : null}
+          {form.media.some((item) => missingMedia.has(item.url) || (item.posterUrl ? missingMedia.has(item.posterUrl) : false)) ? (
+            <p role="alert" className="flex items-start gap-2 rounded-xl border border-amber-800 bg-amber-950/40 p-3 text-xs text-amber-200">
+              <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+              Some media files of this campaign are missing on the server (marked below). Remove them and upload them again before saving.
+            </p>
           ) : null}
           {form.media.length ? (
             <ul className="space-y-2">
               {form.media.map((item, index) => (
-                <li key={`${item.url}-${index}`} className="flex flex-wrap items-center gap-3 rounded-xl border border-slate-800 bg-slate-950/50 p-2.5 sm:flex-nowrap">
+                <li
+                  key={`${item.url}-${index}`}
+                  className={`flex flex-wrap items-center gap-3 rounded-xl border bg-slate-950/50 p-2.5 sm:flex-nowrap ${
+                    missingMedia.has(item.url) || (item.posterUrl && missingMedia.has(item.posterUrl)) ? "border-amber-700" : "border-slate-800"
+                  }`}
+                >
                   <div className="relative h-14 w-24 shrink-0 overflow-hidden rounded-lg bg-slate-800">
+                    {missingMedia.has(item.url) || (item.posterUrl && missingMedia.has(item.posterUrl)) ? (
+                      <span className="absolute inset-x-0 bottom-0 z-10 bg-amber-600/90 px-1 text-center text-[9px] font-bold uppercase text-white">
+                        {missingMedia.has(item.url) ? "File missing" : "Poster missing"}
+                      </span>
+                    ) : null}
                     {item.kind === "image" || item.posterUrl ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img src={item.kind === "image" ? item.url : item.posterUrl} alt="" className="h-full w-full object-contain" />

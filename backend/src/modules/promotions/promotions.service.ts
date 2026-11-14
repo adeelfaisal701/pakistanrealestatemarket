@@ -71,8 +71,24 @@ export class PromotionsService {
     return 'live';
   }
 
-  private serializeAdmin(campaign: CampaignLean, totals?: Record<string, number>) {
+  /**
+   * Canonical URLs of this campaign's media whose files are not in storage.
+   * Admin views check storage directly (no cache) so warnings are immediate;
+   * only public serving uses the short existence cache.
+   */
+  private async missingMediaFor(campaign: Pick<PromoCampaign, 'logoUrl' | 'media'>): Promise<string[]> {
+    const missing: string[] = [];
+    for (const url of this.mediaUrls(campaign)) {
+      const reference = this.videos.resolveReference(url);
+      if (!reference || !(await this.videos.exists(reference))) missing.push(this.publicMediaUrl(url));
+    }
+    return [...new Set(missing)];
+  }
+
+  private serializeAdmin(campaign: CampaignLean, totals?: Record<string, number>, missingMedia: string[] = []) {
     return {
+      /** Media referenced by the campaign whose files are missing from storage (re-upload needed). */
+      missingMedia,
       id: String(campaign._id),
       title: campaign.title,
       companyName: campaign.companyName,
@@ -251,17 +267,18 @@ export class PromotionsService {
     }
     const rows = (await this.campaigns.find(filter).sort({ updatedAt: -1 }).limit(500).lean().exec()) as CampaignLean[];
     const totals = await this.totalsFor(rows.map((row) => row._id));
-    const items = rows
-      .map((row) => this.serializeAdmin(row, totals.get(String(row._id))))
-      .filter((item) => !query.status || !['live', 'scheduled', 'expired'].includes(query.status) || item.effectiveStatus === query.status);
-    return items;
+    const items: Array<ReturnType<PromotionsService['serializeAdmin']>> = [];
+    for (const row of rows) {
+      items.push(this.serializeAdmin(row, totals.get(String(row._id)), await this.missingMediaFor(row)));
+    }
+    return items.filter((item) => !query.status || !['live', 'scheduled', 'expired'].includes(query.status) || item.effectiveStatus === query.status);
   }
 
   async get(id: string) {
     const campaign = (await this.campaigns.findById(this.objectId(id)).lean().exec()) as CampaignLean | null;
     if (!campaign) throw new NotFoundException('Campaign not found.');
     const totals = await this.totalsFor([campaign._id]);
-    return this.serializeAdmin(campaign, totals.get(String(campaign._id)));
+    return this.serializeAdmin(campaign, totals.get(String(campaign._id)), await this.missingMediaFor(campaign));
   }
 
   async create(dto: PromoCampaignDto, adminId: string) {
@@ -397,18 +414,45 @@ export class PromotionsService {
       placement: query.placement,
       enabled: true,
       ...placementSettings,
-      campaigns: scored.map(({ campaign }) => ({
+      campaigns: await this.servableCampaigns(scored.map(({ campaign }) => campaign)),
+    };
+  }
+
+  /**
+   * Public campaign payloads containing only media whose files exist: a
+   * missing logo or poster is dropped, missing slides are skipped, and a
+   * campaign left with no media is not served (other campaigns are unaffected).
+   */
+  private async servableCampaigns(campaigns: CampaignLean[]) {
+    const available = async (url: string | undefined) => {
+      const reference = this.videos.resolveReference(url);
+      return Boolean(reference && (await this.videos.exists(reference, { useCache: true })));
+    };
+    const served = [];
+    for (const campaign of campaigns) {
+      const media = [];
+      for (const item of this.publicMedia(campaign.media)) {
+        if (!(await available(item.url))) continue;
+        const { posterUrl, ...rest } = item;
+        media.push(posterUrl && (await available(posterUrl)) ? { ...rest, posterUrl } : rest);
+      }
+      if (!media.length) {
+        this.logger.warn(`Sponsored campaign ${String(campaign._id)} has no available media files; not served.`);
+        continue;
+      }
+      served.push({
         id: String(campaign._id),
         title: campaign.title,
         companyName: campaign.companyName,
-        logoUrl: this.publicMediaUrl(campaign.logoUrl),
+        logoUrl: (await available(campaign.logoUrl)) ? this.publicMediaUrl(campaign.logoUrl) : '',
         description: campaign.description ?? '',
         ctaText: campaign.ctaText,
         destinationUrl: campaign.destinationUrl,
-        media: this.publicMedia(campaign.media),
+        media,
         videoMaxSeconds: campaign.videoMaxSeconds ?? 0,
-      })),
-    };
+      });
+    }
+    return served;
   }
 
   // ---------------------------------------------------------------------------

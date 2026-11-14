@@ -4,6 +4,7 @@ import { AdminMutationRateLimitGuard } from '../admin/admin-mutation-rate-limit.
 import { PropertyImageStorageService } from '../properties/property-image-storage.service';
 import { AdminPromotionsController } from './admin-promotions.controller';
 import { PromoMediaStorageService } from './promo-media-storage.service';
+import { PromoMediaUploadInterceptor } from './promo-media-upload.interceptor';
 import { PromotionsController } from './promotions.controller';
 import { PromotionsService } from './promotions.service';
 import { PromoCampaign, PromoCampaignSchema } from './schemas/promo-campaign.schema';
@@ -21,6 +22,6 @@ import { PromoSettings, PromoSettingsSchema } from './schemas/promo-settings.sch
     ]),
   ],
   controllers: [AdminPromotionsController, PromotionsController],
-  providers: [PromotionsService, PromoMediaStorageService, PropertyImageStorageService, AdminMutationRateLimitGuard],
+  providers: [PromotionsService, PromoMediaStorageService, PromoMediaUploadInterceptor, PropertyImageStorageService, AdminMutationRateLimitGuard],
 })
 export class PromotionsModule {}

@@ -163,10 +163,25 @@ function resolveApiProxyTarget() {
   return configuredApiTarget.replace(/\/+$/, "");
 }
 
+/**
+ * Absolute backend API base the browser uses for campaign media uploads. Large
+ * files must not pass through the Next.js/Vercel proxy (request-body limits),
+ * so uploads go straight to the backend: NEXT_PUBLIC_API_BASE_URL when it is
+ * already absolute, otherwise the validated API_PROXY_TARGET. It is a public
+ * URL (no credentials), never a secret.
+ */
+function resolveMediaUploadApiBase() {
+  if (!usesApiProxy) return apiBaseUrl.replace(/\/+$/, "");
+  return resolveApiProxyTarget() ?? "";
+}
+
 const nextConfig: NextConfig = {
   distDir: process.env.NODE_ENV === "development" ? ".next-dev" : ".next",
   reactStrictMode: true,
   poweredByHeader: false,
+  env: {
+    MEDIA_UPLOAD_API_BASE_URL: resolveMediaUploadApiBase(),
+  },
   async rewrites() {
     const apiTarget = resolveApiProxyTarget();
     if (!apiTarget) return [];

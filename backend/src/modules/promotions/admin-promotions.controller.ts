@@ -13,8 +13,6 @@ import {
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
-import { FileInterceptor } from '@nestjs/platform-express';
-import { memoryStorage } from 'multer';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
@@ -34,11 +32,9 @@ import {
   PromoStatusDto,
 } from './dto/promo-campaign.dto';
 import { PROMO_IMAGE_PATH, PromoMediaStorageService } from './promo-media-storage.service';
+import { PromoMediaUploadInterceptor, type PromoUploadedFile } from './promo-media-upload.interceptor';
 import { PromotionsService } from './promotions.service';
 import { PROMO_LIMITS } from './promotion.constants';
-
-const IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
-const VIDEO_TYPES = ['video/mp4', 'video/webm'];
 
 /** Sponsored campaign management — administrators only. */
 @Controller('admin/promotions')
@@ -72,30 +68,25 @@ export class AdminPromotionsController {
     return this.promotions.updateSettings(dto);
   }
 
-  /** Uploads one image (JPEG/PNG/WebP, re-encoded) or video (MP4/WebM). */
+  /**
+   * Uploads one image (JPEG/PNG/WebP, re-encoded) or video (MP4/WebM).
+   * Guards run first, so unauthenticated requests are rejected before any
+   * bytes are stored; videos are streamed to disk (see PromoMediaUploadInterceptor).
+   */
   @Post('media')
   @UseGuards(AdminMutationRateLimitGuard)
-  @UseInterceptors(
-    FileInterceptor('file', {
-      storage: memoryStorage(),
-      limits: { files: 1, fileSize: PROMO_LIMITS.maxVideoBytes },
-      fileFilter: (_request, file, callback) => {
-        if (![...IMAGE_TYPES, ...VIDEO_TYPES].includes(file.mimetype)) {
-          callback(new BadRequestException('Upload a JPEG, PNG or WebP image, or an MP4 or WebM video.'), false);
-          return;
-        }
-        callback(null, true);
-      },
-    }),
-  )
-  async upload(@UploadedFile() file?: UploadedPropertyImage) {
+  @UseInterceptors(PromoMediaUploadInterceptor)
+  async upload(@UploadedFile() file?: PromoUploadedFile) {
     if (!file) throw new BadRequestException('Choose a file to upload.');
-    if (VIDEO_TYPES.includes(file.mimetype)) {
-      const saved = await this.videos.saveVideo(file);
+    if (file.promoVideo) {
+      const saved = await this.videos.commitVideo(file.promoVideo);
       return { kind: 'video', url: saved.url, contentType: saved.contentType, size: saved.size };
     }
-    if (file.size > PROMO_LIMITS.maxImageBytes) throw new BadRequestException('Images must be 10 MB or smaller.');
-    const saved = await this.images.save(file);
+    if (!file.buffer || file.size > PROMO_LIMITS.maxImageBytes) {
+      throw new BadRequestException(`Images must be ${PROMO_LIMITS.maxImageBytes / (1024 * 1024)} MB or smaller.`);
+    }
+    const image: UploadedPropertyImage = { originalname: file.originalname, mimetype: file.mimetype, size: file.size, buffer: file.buffer };
+    const saved = await this.images.save(image);
     // Return the canonical, environment-independent path that campaigns store (see PROMO_IMAGE_PATH).
     return { kind: 'image', url: `${PROMO_IMAGE_PATH}${saved.filename}`, contentType: saved.contentType, size: saved.size };
   }

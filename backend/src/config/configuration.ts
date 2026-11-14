@@ -131,6 +131,11 @@ export default () => {
       storageDir: process.env.PROPERTY_IMAGE_STORAGE_DIR,
       publicBaseUrl: process.env.PROPERTY_IMAGE_PUBLIC_BASE_URL,
     },
+    promotions: {
+      // Optional. Sponsored-campaign videos default to <PROPERTY_IMAGE_STORAGE_DIR>/promo-media,
+      // i.e. inside the persistent storage volume. Set only to use a different persistent path.
+      mediaStorageDir: process.env.PROMO_MEDIA_STORAGE_DIR?.trim() || undefined,
+    },
     admin: {
       email: process.env.ADMIN_EMAIL?.trim(),
     },
