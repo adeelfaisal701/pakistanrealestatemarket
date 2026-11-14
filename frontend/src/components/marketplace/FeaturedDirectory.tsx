@@ -6,6 +6,7 @@ import Link from "next/link";
 import { ArrowRight, Building2, MapPin, UserRound, Users } from "lucide-react";
 import { agencyPath, agentPath } from "@/lib/seo/slug";
 import { VerticalScrollList } from "./VerticalScrollList";
+import SponsoredSlot from "@/components/promotions/SponsoredSlot";
 import { getApiErrorMessage } from "@/lib/api-client";
 import {
   fetchFeaturedAgencies,
@@ -243,6 +244,7 @@ export function FeaturedAgencies() {
             No agency affiliations are available yet.
           </p>
         )}
+        <SponsoredSlot placement="agencies_section" layout="inline" className="mt-4 md:mt-6" />
       </div>
     </section>
   );

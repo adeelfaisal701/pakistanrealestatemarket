@@ -23,6 +23,7 @@ test("CSP contains only explicit app resource requirements", () => {
   assert.match(policy, /https:\/\/tile\.openstreetmap\.org/);
   assert.match(policy, /https:\/\/images\.example/);
   assert.match(policy, /connect-src 'self' https:\/\/api\.example/);
+  assert.match(policy, /media-src 'self' blob: https:\/\/images\.example https:\/\/api\.example/);
   assert.match(policy, /frame-src https:\/\/maps\.google\.com/);
   assert.match(policy, /frame-ancestors 'none'/);
   assert.doesNotMatch(policy, /script-src[^;]*unsafe-(?:inline|eval)/);

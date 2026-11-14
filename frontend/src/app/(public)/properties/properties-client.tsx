@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useRef, useState } from "react";
+import { FormEvent, Fragment, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { PropertyCard } from "@/components/marketplace/property-card";
 import { getApiErrorMessage } from "@/lib/api-client";
@@ -9,6 +9,9 @@ import type { MarketplaceProperty } from "@/types/marketplace";
 import type { PaginationMeta } from "@/types";
 import { SaveSearchButton } from "@/components/buyer/SaveSearchButton";
 import { canonicalListingSearch, describeListingSearch } from "@/lib/seo/listing-search";
+import SponsoredCarousel from "@/components/promotions/SponsoredCarousel";
+import { usePromotions } from "@/hooks/use-promotions";
+import type { PromoContext } from "@/lib/promotions";
 
 const PAGE_SIZE = 20;
 
@@ -87,10 +90,17 @@ export default function PropertiesCatalogPage({ initialHeading }: { initialHeadi
   const [error, setError] = useState("");
   const [filtersOpen, setFiltersOpen] = useState(false);
   const requestId = useRef(0);
+  // Sponsored targeting follows the applied search, not unsubmitted inputs.
+  const [adContext, setAdContext] = useState<PromoContext>({});
+  const inlineAds = usePromotions("listings_inline", adContext, !loading && !error && properties.length > 0);
+  const adCampaigns = inlineAds?.enabled ? inlineAds.campaigns : [];
+  const adInterval = Math.max(inlineAds?.listingsInterval ?? 6, 1);
+  const adMaxPerPage = inlineAds?.listingsMaxPerPage ?? 0;
 
   const loadProperties = async (filters: SearchFields, page: number) => {
     const currentRequestId = ++requestId.current;
     setHeading(describeListingSearch(canonicalListingSearch({ ...filters })));
+    setAdContext({ city: filters.city, purpose: filters.purpose, propertyType: filters.propertyType });
     setLoading(true);
     setError("");
     try {
@@ -412,9 +422,29 @@ export default function PropertiesCatalogPage({ initialHeading }: { initialHeadi
           </div>
         ) : properties.length ? (
           <div className="grid grid-cols-1 gap-4 sm:gap-5 md:grid-cols-2 xl:grid-cols-3 xl:gap-6">
-            {properties.map((property) => (
-              <PropertyCard key={property.id} property={property} />
-            ))}
+            {properties.map((property, index) => {
+              const position = index + 1;
+              const slot = position / adInterval - 1;
+              // A sponsored slot follows every Nth card (never after the last
+              // card), up to the configured limit, each with a different campaign.
+              const sponsored =
+                position % adInterval === 0 &&
+                position < properties.length &&
+                slot < adMaxPerPage &&
+                slot < adCampaigns.length
+                  ? adCampaigns[slot]
+                  : undefined;
+              return (
+                <Fragment key={property.id}>
+                  <PropertyCard property={property} />
+                  {sponsored ? (
+                    <div className="col-span-full">
+                      <SponsoredCarousel campaigns={[sponsored]} placement="listings_inline" layout="inline" />
+                    </div>
+                  ) : null}
+                </Fragment>
+              );
+            })}
           </div>
         ) : (
           <div className="rounded-2xl border border-slate-200 bg-white px-6 py-12 text-center dark:border-slate-800 dark:bg-slate-900">

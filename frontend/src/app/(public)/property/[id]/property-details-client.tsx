@@ -39,6 +39,7 @@ import type { MarketplaceProperty, PropertyFeatureData } from "@/types/marketpla
 import { agencyPath, agentPath, propertyPath } from "@/lib/seo/slug";
 import { canonicalListingSearch, listingSearchPath } from "@/lib/seo/listing-search";
 import { Breadcrumbs } from "@/lib/seo/structured-data";
+import SponsoredSlot from "@/components/promotions/SponsoredSlot";
 
 interface PropertyDetailsClientProps {
   propertyId: string;
@@ -1191,6 +1192,13 @@ export default function PropertyDetailsClient({
           </section>
         )}
 
+        <SponsoredSlot
+          placement="property_detail_content"
+          layout="inline"
+          context={{ city: property.location.city, propertyType: property.propertyType, purpose: property.purpose }}
+          className="mt-6 max-md:mx-4 max-md:mt-4"
+        />
+
         <section
           id="attributes"
           data-property-section
@@ -1457,6 +1465,12 @@ export default function PropertyDetailsClient({
             )}
           </div>
         </div>
+
+        <SponsoredSlot
+          placement="property_detail_similar"
+          context={{ city: property.location.city, propertyType: property.propertyType, purpose: property.purpose }}
+          className="mt-10 max-md:mx-4 max-md:mt-6"
+        />
 
         <section
           id="similar-properties"
