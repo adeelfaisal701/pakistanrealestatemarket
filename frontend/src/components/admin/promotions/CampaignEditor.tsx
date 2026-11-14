@@ -34,6 +34,8 @@ import {
 import { Field, ToggleChip, fromLocalInput, inputClass, toLocalInput } from "./shared";
 import { ScaledPreview } from "./ScaledPreview";
 
+type UploadedMedia = Awaited<ReturnType<typeof adminPromotions.upload>>;
+
 const IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
 const VIDEO_TYPES = ["video/mp4", "video/webm"];
 const MAX_IMAGE = 10 * 1024 * 1024;
@@ -93,6 +95,7 @@ export function validateCampaign(form: CampaignPayload): string[] {
   }
   if (form.endsAt && new Date(form.endsAt) <= new Date(form.startsAt)) problems.push("End date must be after the start date.");
   if (form.status === "active") {
+    if (!form.logoUrl?.trim()) problems.push("Upload the company logo before activating.");
     if (!form.media.length) problems.push("Add at least one image or video before activating.");
     if (!form.placements.length) problems.push("Choose at least one placement before activating.");
     if (!form.devices.length) problems.push("Choose at least one device before activating.");
@@ -113,7 +116,10 @@ export function CampaignEditor({ campaign, onSaved, onCancel }: CampaignEditorPr
   const [progress, setProgress] = useState(0);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [logoError, setLogoError] = useState("");
   const [problems, setProblems] = useState<string[]>([]);
+  // Files already uploaded in this editor session (same file picked again => no second upload).
+  const uploadedFiles = useRef(new Map<string, UploadedMedia>());
   const [previewLayout, setPreviewLayout] = useState<"feature" | "inline">("feature");
   const [previewWidth, setPreviewWidth] = useState<"desktop" | "mobile">("desktop");
   const mediaInput = useRef<HTMLInputElement>(null);
@@ -127,23 +133,37 @@ export function CampaignEditor({ campaign, onSaved, onCancel }: CampaignEditorPr
   const toggle = <T extends string>(list: T[], value: T, on: boolean) =>
     on ? [...new Set([...list, value])] : list.filter((item) => item !== value);
 
-  const upload = async (file: File, allowVideo: boolean, label: string) => {
+  /** Uploads one file; errors go to `report` (the logo has its own field-level message). */
+  const upload = async (file: File, allowVideo: boolean, label: string, report: (message: string) => void = setError) => {
     const problem = checkFile(file, allowVideo);
     if (problem) {
-      setError(problem);
+      report(problem);
       return undefined;
     }
-    setError("");
+    report("");
+    const key = `${file.name}|${file.size}|${file.lastModified}|${file.type}`;
+    const previous = uploadedFiles.current.get(key);
+    if (previous) return previous;
     setUploading(label);
     setProgress(0);
     try {
-      return await adminPromotions.upload(file, setProgress);
+      const saved = await adminPromotions.upload(file, setProgress);
+      uploadedFiles.current.set(key, saved);
+      return saved;
     } catch (requestError) {
-      setError(getApiErrorMessage(requestError));
+      report(getApiErrorMessage(requestError));
       return undefined;
     } finally {
       setUploading("");
     }
+  };
+
+  const applyLogo = (url: string) => {
+    set("logoUrl", url);
+    setLogoError("");
+    // A logo is now attached: drop earlier "missing logo" messages.
+    setProblems((current) => current.filter((problem) => !/company logo/i.test(problem)));
+    setError((current) => (/company logo/i.test(current) ? "" : current));
   };
 
   const addMedia = async (files: FileList | null) => {
@@ -254,8 +274,8 @@ export function CampaignEditor({ campaign, onSaved, onCancel }: CampaignEditorPr
               <input id="promo-cta" className={inputClass} value={form.ctaText} maxLength={40} onChange={(event) => set("ctaText", event.target.value)} />
             </Field>
           </div>
-          <Field label="Company logo" hint="Square JPG, PNG or WebP works best.">
-            <div className="flex items-center gap-3">
+          <Field label="Company logo" hint="JPG, PNG or WebP up to 10 MB — square works best. Required before the campaign can go live.">
+            <div className="flex flex-wrap items-center gap-3">
               {form.logoUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={form.logoUrl} alt="" className="h-12 w-12 rounded-xl border border-slate-700 bg-white object-contain p-1" />
@@ -270,20 +290,38 @@ export function CampaignEditor({ campaign, onSaved, onCancel }: CampaignEditorPr
               {form.logoUrl ? (
                 <Button type="button" variant="ghost" size="sm" onClick={() => set("logoUrl", "")}>Remove</Button>
               ) : null}
+              {uploading === "logo" ? (
+                <span role="status" className="flex items-center gap-1.5 text-xs text-slate-400">
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" /> Uploading logo… {progress}%
+                </span>
+              ) : form.logoUrl ? (
+                <span className="text-xs font-medium text-emerald-400">Logo attached</span>
+              ) : null}
               <input
                 ref={logoInput}
                 type="file"
                 accept={IMAGE_TYPES.join(",")}
                 className="hidden"
+                aria-label="Upload company logo"
                 onChange={async (event) => {
                   const file = event.target.files?.[0];
                   event.target.value = "";
                   if (!file) return;
-                  const saved = await upload(file, false, "logo");
-                  if (saved) set("logoUrl", saved.url);
+                  const saved = await upload(file, false, "logo", setLogoError);
+                  if (!saved) return;
+                  if (saved.kind !== "image") {
+                    setLogoError("The company logo must be a JPG, PNG or WebP image.");
+                    return;
+                  }
+                  applyLogo(saved.url);
                 }}
               />
             </div>
+            {logoError ? (
+              <p role="alert" className="mt-2 flex items-start gap-1.5 text-xs text-rose-300">
+                <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" /> {logoError}
+              </p>
+            ) : null}
           </Field>
         </section>
 
@@ -324,7 +362,7 @@ export function CampaignEditor({ campaign, onSaved, onCancel }: CampaignEditorPr
               }}
             />
           </div>
-          {uploading ? (
+          {uploading && uploading !== "logo" ? (
             <div role="status" className="flex items-center gap-3 rounded-xl border border-slate-800 bg-slate-950/60 p-3 text-xs text-slate-300">
               <Loader2 className="h-4 w-4 animate-spin" /> Uploading {uploading}… {progress}%
               <span className="h-1.5 flex-1 overflow-hidden rounded-full bg-slate-800">

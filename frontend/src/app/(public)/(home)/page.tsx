@@ -8,8 +8,6 @@ import DesktopMarketplace, { OurProjects } from '@/components/marketplace/Deskto
 import { buildMetadata } from '@/lib/seo/metadata';
 import { JsonLd, organizationJsonLd, websiteJsonLd } from '@/lib/seo/structured-data';
 import SponsoredSlot from '@/components/promotions/SponsoredSlot';
-import LiveUpdatesTicker from '@/components/daily-updates/LiveUpdatesTicker';
-import LatestNews from '@/components/daily-updates/LatestNews';
 
 export const metadata = buildMetadata({
   title: 'Ghar Safar | Houses, Plots & Property for Sale and Rent in Lahore',
@@ -40,8 +38,6 @@ export default function LandingPage() {
         <div className="min-h-screen bg-slate-50 dark:bg-slate-950 font-sans text-slate-900 dark:text-slate-100">
           <Navbar />
           <HeroSearch />
-          <LiveUpdatesTicker />
-          <LatestNews className="px-4 py-5 sm:px-6 lg:px-8" innerClassName="mx-auto max-w-7xl" />
           <FeaturedAgents />
           <FeaturedAgencies />
           <PopularLocations />

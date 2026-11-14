@@ -32,8 +32,6 @@ import { useMediaQuery } from '@/hooks/use-media-query';
 import { propertyPath } from '@/lib/seo/slug';
 import { VerticalScrollList } from './VerticalScrollList';
 import SponsoredSlot from '@/components/promotions/SponsoredSlot';
-import LiveUpdatesTicker from '@/components/daily-updates/LiveUpdatesTicker';
-import LatestNews from '@/components/daily-updates/LatestNews';
 
 /* ─────────────────────── HELPERS ─────────────────────── */
 function HouseIcon({ className }: { className?: string }) {
@@ -749,8 +747,6 @@ export default function MobileMarketplace() {
   return (
     <div className="min-h-screen bg-white font-sans text-slate-900">
       <MobileHero />
-      <LiveUpdatesTicker />
-      <LatestNews className="px-4 py-5 sm:px-6" />
       <FeaturedAgents />
       <FeaturedAgencies />
       <MobilePopularLocations properties={properties} error={propertiesError} />

@@ -23,8 +23,6 @@ import Navbar from './Navbar';
 import { useMediaQuery } from '@/hooks/use-media-query';
 import { VerticalScrollList } from './VerticalScrollList';
 import SponsoredSlot from '@/components/promotions/SponsoredSlot';
-import LiveUpdatesTicker from '@/components/daily-updates/LiveUpdatesTicker';
-import LatestNews from '@/components/daily-updates/LatestNews';
 
 function PropertyCategories() {
   const categories = [
@@ -305,8 +303,6 @@ export default function DesktopMarketplace() {
     <main className="min-h-screen bg-slate-50 font-sans text-slate-900 dark:bg-slate-950 dark:text-slate-100">
       <Navbar />
       <HeroSearch desktop />
-      <LiveUpdatesTicker />
-      <LatestNews className="px-5 py-6 sm:px-8" innerClassName="mx-auto max-w-7xl 2xl:max-w-[1440px]" />
       <FeaturedAgents />
       <FeaturedAgencies />
       <PopularLocations properties={properties} error={loading ? '' : error} />

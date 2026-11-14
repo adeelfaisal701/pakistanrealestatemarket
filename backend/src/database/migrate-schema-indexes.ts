@@ -45,12 +45,6 @@ import { PromoCampaign, PromoCampaignSchema } from '../modules/promotions/schema
 import { PromoDailyStat, PromoDailyStatSchema } from '../modules/promotions/schemas/promo-daily-stat.schema';
 import { PromoEventDedup, PromoEventDedupSchema } from '../modules/promotions/schemas/promo-event-dedup.schema';
 import { PromoSettings, PromoSettingsSchema } from '../modules/promotions/schemas/promo-settings.schema';
-import { MarketIndicator, MarketIndicatorSchema } from '../modules/daily-updates/schemas/market-indicator.schema';
-import {
-  MarketIndicatorHistory,
-  MarketIndicatorHistorySchema,
-} from '../modules/daily-updates/schemas/market-indicator-history.schema';
-import { NewsArticle, NewsArticleSchema } from '../modules/daily-updates/schemas/news-article.schema';
 
 export const APPROVED_INDEX_SCHEMAS = [
   { modelName: AdminActivity.name, schema: AdminActivitySchema, purpose: 'admin activity filtering by actor/action/entity and reverse-chronological audit listing' },
@@ -80,9 +74,6 @@ export const APPROVED_INDEX_SCHEMAS = [
   { modelName: PromoDailyStat.name, schema: PromoDailyStatSchema, purpose: 'one counter row per campaign/day/placement/device and date-range analytics' },
   { modelName: PromoEventDedup.name, schema: PromoEventDedupSchema, purpose: 'unique sponsored-event dedup keys with automatic expiry' },
   { modelName: PromoSettings.name, schema: PromoSettingsSchema, purpose: 'single sponsored placement settings document' },
-  { modelName: MarketIndicator.name, schema: MarketIndicatorSchema, purpose: 'one current verified value per daily-updates ticker indicator' },
-  { modelName: MarketIndicatorHistory.name, schema: MarketIndicatorHistorySchema, purpose: 'one history row per indicator revision/day, recent-history lookup, and retention expiry' },
-  { modelName: NewsArticle.name, schema: NewsArticleSchema, purpose: 'news URL/slug uniqueness, headline de-duplication, category/date listing, summary queue, and retention expiry' },
 ];
 
 function readArguments(args: string[]) {

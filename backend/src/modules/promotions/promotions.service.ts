@@ -76,8 +76,8 @@ export class PromotionsService {
       id: String(campaign._id),
       title: campaign.title,
       companyName: campaign.companyName,
-      logoUrl: campaign.logoUrl ?? '',
-      media: campaign.media ?? [],
+      logoUrl: this.publicMediaUrl(campaign.logoUrl),
+      media: this.publicMedia(campaign.media),
       destinationUrl: campaign.destinationUrl,
       ctaText: campaign.ctaText,
       description: campaign.description ?? '',
@@ -102,41 +102,69 @@ export class PromotionsService {
     };
   }
 
-  /** Only media uploaded through Ghar Safar may be referenced by campaigns. */
-  private assertManagedMedia(dto: PromoCampaignDto) {
-    const isImage = (url?: string) => Boolean(url && this.images.filenameForManagedUrl(url));
-    if (dto.logoUrl && !isImage(dto.logoUrl)) throw new BadRequestException('Upload the company logo through the media uploader.');
-    for (const item of dto.media) {
-      if (item.kind === PromoMediaKind.IMAGE && !isImage(item.url)) {
-        throw new BadRequestException('Campaign images must be uploaded through the media uploader.');
-      }
-      if (item.kind === PromoMediaKind.VIDEO && !this.videos.filenameForManagedUrl(item.url)) {
-        throw new BadRequestException('Campaign videos must be uploaded through the media uploader.');
-      }
-      if (item.posterUrl && !isImage(item.posterUrl)) {
-        throw new BadRequestException('Video posters must be uploaded through the media uploader.');
-      }
+  /**
+   * Resolves a submitted media URL to a file uploaded through the campaign media
+   * uploader and returns its canonical URL. Uploads are identified by file name
+   * and must exist in storage; the host/base-URL form the browser happened to
+   * hold (absolute or relative) does not matter.
+   */
+  private async managedMediaUrl(url: string, expected: 'image' | 'video', label: string): Promise<string> {
+    const reference = this.videos.resolveReference(url);
+    if (!reference) throw new BadRequestException(`Upload the ${label} through the media uploader.`);
+    if (reference.kind !== expected) {
+      throw new BadRequestException(`The ${label} must be ${expected === 'image' ? 'a JPG, PNG or WebP image' : 'an MP4 or WebM video'}.`);
     }
+    if (!(await this.videos.exists(reference))) {
+      throw new BadRequestException(`The uploaded ${label} could not be found on the server. Please upload it again.`);
+    }
+    return reference.url;
   }
 
-  private toDocument(dto: PromoCampaignDto) {
-    this.assertManagedMedia(dto);
+  /** Canonical form of a stored media URL for API responses (older stored forms are normalised). */
+  private publicMediaUrl(url: string | undefined): string {
+    if (!url) return '';
+    return this.videos.resolveReference(url)?.url ?? url;
+  }
+
+  private publicMedia(media: PromoCampaign['media'] | undefined) {
+    return (media ?? []).map((item) => ({
+      kind: item.kind,
+      url: this.publicMediaUrl(item.url),
+      ...(item.posterUrl ? { posterUrl: this.publicMediaUrl(item.posterUrl) } : {}),
+      alt: item.alt ?? '',
+    }));
+  }
+
+  private async toDocument(dto: PromoCampaignDto) {
     const startsAt = new Date(dto.startsAt);
     const endsAt = dto.endsAt ? new Date(dto.endsAt) : null;
     if (Number.isNaN(startsAt.getTime())) throw new BadRequestException('Start date is invalid.');
     if (endsAt && endsAt <= startsAt) throw new BadRequestException('End date must be after the start date.');
     const status = dto.status ?? PromoCampaignStatus.DRAFT;
     if (status === PromoCampaignStatus.ACTIVE) {
+      if (!dto.logoUrl?.trim()) throw new BadRequestException('Upload the company logo before activating.');
       if (!dto.media.length) throw new BadRequestException('Add at least one image or video before activating.');
       if (!dto.placements.length) throw new BadRequestException('Choose at least one placement before activating.');
       if (!dto.devices.length) throw new BadRequestException('Choose at least one device before activating.');
+    }
+    // Only media uploaded through Ghar Safar may be referenced by campaigns.
+    const logoUrl = dto.logoUrl?.trim() ? await this.managedMediaUrl(dto.logoUrl, 'image', 'company logo') : undefined;
+    const media: Array<{ kind: PromoMediaKind; url: string; posterUrl?: string; alt: string }> = [];
+    for (const item of dto.media) {
+      const isVideo = item.kind === PromoMediaKind.VIDEO;
+      media.push({
+        kind: item.kind,
+        url: await this.managedMediaUrl(item.url, isVideo ? 'video' : 'image', isVideo ? 'campaign video' : 'campaign image'),
+        posterUrl: isVideo && item.posterUrl?.trim() ? await this.managedMediaUrl(item.posterUrl, 'image', 'video poster') : undefined,
+        alt: item.alt?.trim() ?? '',
+      });
     }
     const cities = [...new Set((dto.targeting?.cities ?? []).map((city) => city.trim().toLowerCase()).filter(Boolean))];
     return {
       title: dto.title.trim(),
       companyName: dto.companyName.trim(),
-      logoUrl: dto.logoUrl || undefined,
-      media: dto.media.map((item) => ({ kind: item.kind, url: item.url, posterUrl: item.posterUrl || undefined, alt: item.alt?.trim() ?? '' })),
+      logoUrl,
+      media,
       destinationUrl: dto.destinationUrl.trim(),
       ctaText: dto.ctaText?.trim() || 'Learn more',
       description: dto.description?.trim() ?? '',
@@ -163,17 +191,18 @@ export class PromotionsService {
   /** Deletes uploaded files no longer referenced by any campaign. */
   private async cleanupUnreferenced(urls: string[]) {
     for (const url of [...new Set(urls)]) {
+      const reference = this.videos.resolveReference(url);
+      if (!reference) continue;
+      const forms = [...new Set([url, reference.url])];
       const stillUsed = await this.campaigns
-        .exists({ $or: [{ logoUrl: url }, { 'media.url': url }, { 'media.posterUrl': url }] })
+        .exists({ $or: [{ logoUrl: { $in: forms } }, { 'media.url': { $in: forms } }, { 'media.posterUrl': { $in: forms } }] })
         .exec();
       if (stillUsed) continue;
-      const image = this.images.filenameForManagedUrl(url);
-      if (image) {
-        await this.images.remove(image).catch(() => this.logger.warn(`Could not remove promotion image ${image}`));
-        continue;
+      if (reference.kind === 'image') {
+        await this.images.remove(reference.filename).catch(() => this.logger.warn(`Could not remove promotion image ${reference.filename}`));
+      } else {
+        await this.videos.remove(reference.filename);
       }
-      const video = this.videos.filenameForManagedUrl(url);
-      if (video) await this.videos.remove(video);
     }
   }
 
@@ -236,15 +265,16 @@ export class PromotionsService {
   }
 
   async create(dto: PromoCampaignDto, adminId: string) {
-    const created = await this.campaigns.create({ ...this.toDocument(dto), createdBy: this.adminObjectId(adminId), updatedBy: this.adminObjectId(adminId) });
+    const created = await this.campaigns.create({ ...(await this.toDocument(dto)), createdBy: this.adminObjectId(adminId), updatedBy: this.adminObjectId(adminId) });
     return this.get(String(created._id));
   }
 
   async update(id: string, dto: PromoCampaignDto, adminId: string) {
     const existing = await this.campaigns.findById(this.objectId(id)).exec();
     if (!existing) throw new NotFoundException('Campaign not found.');
+    const document = await this.toDocument(dto);
     const before = this.mediaUrls(existing);
-    existing.set({ ...this.toDocument(dto), updatedBy: this.adminObjectId(adminId) });
+    existing.set({ ...document, updatedBy: this.adminObjectId(adminId) });
     await existing.save();
     await this.cleanupUnreferenced(before.filter((url) => !this.mediaUrls(existing).includes(url)));
     return this.get(id);
@@ -272,6 +302,7 @@ export class PromotionsService {
     const campaign = await this.campaigns.findById(this.objectId(id)).exec();
     if (!campaign) throw new NotFoundException('Campaign not found.');
     if (status === PromoCampaignStatus.ACTIVE) {
+      if (!campaign.logoUrl) throw new BadRequestException('Upload the company logo before activating.');
       if (!campaign.media.length) throw new BadRequestException('Add at least one image or video before activating.');
       if (!campaign.placements.length) throw new BadRequestException('Choose at least one placement before activating.');
       if (!campaign.devices.length) throw new BadRequestException('Choose at least one device before activating.');
@@ -370,11 +401,11 @@ export class PromotionsService {
         id: String(campaign._id),
         title: campaign.title,
         companyName: campaign.companyName,
-        logoUrl: campaign.logoUrl ?? '',
+        logoUrl: this.publicMediaUrl(campaign.logoUrl),
         description: campaign.description ?? '',
         ctaText: campaign.ctaText,
         destinationUrl: campaign.destinationUrl,
-        media: campaign.media,
+        media: this.publicMedia(campaign.media),
         videoMaxSeconds: campaign.videoMaxSeconds ?? 0,
       })),
     };

@@ -33,7 +33,7 @@ import {
   PromoSettingsDto,
   PromoStatusDto,
 } from './dto/promo-campaign.dto';
-import { PromoMediaStorageService } from './promo-media-storage.service';
+import { PROMO_IMAGE_PATH, PromoMediaStorageService } from './promo-media-storage.service';
 import { PromotionsService } from './promotions.service';
 import { PROMO_LIMITS } from './promotion.constants';
 
@@ -96,7 +96,8 @@ export class AdminPromotionsController {
     }
     if (file.size > PROMO_LIMITS.maxImageBytes) throw new BadRequestException('Images must be 10 MB or smaller.');
     const saved = await this.images.save(file);
-    return { kind: 'image', url: saved.url, contentType: saved.contentType, size: saved.size };
+    // Return the canonical, environment-independent path that campaigns store (see PROMO_IMAGE_PATH).
+    return { kind: 'image', url: `${PROMO_IMAGE_PATH}${saved.filename}`, contentType: saved.contentType, size: saved.size };
   }
 
   @Get(':id')

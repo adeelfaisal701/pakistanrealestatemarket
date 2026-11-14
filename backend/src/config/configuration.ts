@@ -139,14 +139,5 @@ export default () => {
       frontendBaseUrl: getFrontendBaseUrl(),
       encryptionKey: getPropertyLocationEncryptionKey(),
     },
-    dailyUpdates: {
-      // Scheduled rate/news fetching (and its DB writes) is OFF unless explicitly enabled.
-      jobsEnabled: process.env.DAILY_UPDATES_JOBS_ENABLED?.trim().toLowerCase() === 'true',
-      // RSS feed ids to collect (see NEWS_FEEDS). Empty by default: enable a publisher only after it has
-      // granted permission for commercial display of its headlines, excerpts, thumbnails and links.
-      newsFeeds: (process.env.NEWS_FEEDS_ENABLED ?? '').split(',').map((id) => id.trim()).filter(Boolean),
-      // Public site URL or email sent in the User-Agent to data sources (required by MET Norway's terms).
-      contact: process.env.DAILY_UPDATES_CONTACT?.trim() || undefined,
-    },
   };
 };

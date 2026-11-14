@@ -1,6 +1,11 @@
 import 'reflect-metadata';
 import { strict as assert } from 'node:assert';
-import { test } from 'node:test';
+import { mkdirSync, mkdtempSync, writeFileSync, existsSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { after, test } from 'node:test';
+import sharp = require('sharp');
+import { PropertyImageStorageService } from '../src/modules/properties/property-image-storage.service';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
 import { validate } from 'class-validator';
@@ -20,6 +25,30 @@ const IMAGE_PREFIX = '/api/v1/properties/images/';
 const VIDEO_PREFIX = '/api/v1/promotions/media/';
 const IMAGE = `${IMAGE_PREFIX}11111111-1111-4111-8111-111111111111.webp`;
 const VIDEO = `${VIDEO_PREFIX}22222222-2222-4222-8222-222222222222.mp4`;
+
+/** Temporary upload folders (never the real uploads directory). */
+const STORAGE_ROOT = mkdtempSync(join(tmpdir(), 'promo-spec-'));
+after(() => rmSync(STORAGE_ROOT, { recursive: true, force: true }));
+
+function storageConfig(values: { nodeEnv?: string; publicBaseUrl?: string; folder?: string } = {}) {
+  const imagesDir = join(STORAGE_ROOT, values.folder ?? 'default', 'property-images');
+  mkdirSync(imagesDir, { recursive: true });
+  mkdirSync(join(imagesDir, '..', 'promo-media'), { recursive: true });
+  const map: Record<string, unknown> = {
+    nodeEnv: values.nodeEnv ?? 'test',
+    'propertyImages.storageDir': imagesDir,
+    'propertyImages.publicBaseUrl': values.publicBaseUrl,
+  };
+  return { config: { get: (key: string) => map[key] } as never, imagesDir, videosDir: join(imagesDir, '..', 'promo-media') };
+}
+
+/** Storage with the IMAGE and VIDEO fixtures present, as if uploaded. */
+function seededStorage() {
+  const { config, imagesDir, videosDir } = storageConfig();
+  writeFileSync(join(imagesDir, IMAGE.slice(IMAGE_PREFIX.length)), 'image');
+  writeFileSync(join(videosDir, VIDEO.slice(VIDEO_PREFIX.length)), 'video');
+  return new PromoMediaStorageService(config);
+}
 
 function chain<T>(value: T) {
   const result: Record<string, unknown> = {
@@ -59,6 +88,8 @@ function makeService(options: {
   rows?: Array<Record<string, unknown>>;
   settings?: Record<string, unknown> | null;
   activeCampaign?: Record<string, unknown> | null;
+  images?: unknown;
+  videos?: PromoMediaStorageService;
 } = {}) {
   const calls = {
     find: [] as unknown[],
@@ -98,14 +129,11 @@ function makeService(options: {
     },
   };
   const settingsModel = { findOne: () => chain(options.settings ?? null) };
-  const images = {
+  const images = options.images ?? {
     filenameForManagedUrl: (url: string) => (url.startsWith(IMAGE_PREFIX) ? url.slice(IMAGE_PREFIX.length) : undefined),
     remove: async () => undefined,
   };
-  const videos = {
-    filenameForManagedUrl: (url: string) => (url.startsWith(VIDEO_PREFIX) ? url.slice(VIDEO_PREFIX.length) : undefined),
-    remove: async () => undefined,
-  };
+  const videos = options.videos ?? seededStorage();
   const config = { get: (key: string) => (key === 'jwt.secret' ? 'test-secret-value' : undefined) };
   const service = new PromotionsService(
     campaigns as never,
@@ -290,9 +318,7 @@ test('event payloads require a UUID visitor id and known enums', async () => {
 });
 
 test('video storage validates file signatures and only resolves managed filenames', async () => {
-  const storage = new PromoMediaStorageService({
-    get: (key: string) => (key === 'nodeEnv' ? 'test' : undefined),
-  } as never);
+  const storage = new PromoMediaStorageService(storageConfig({ folder: 'signatures' }).config);
   const mp4 = Buffer.concat([Buffer.from([0, 0, 0, 0x18]), Buffer.from('ftypmp42'), Buffer.alloc(16)]);
   const webm = Buffer.concat([Buffer.from([0x1a, 0x45, 0xdf, 0xa3]), Buffer.alloc(16)]);
   assert.equal(storage.detectVideoType(mp4), 'video/mp4');
@@ -312,4 +338,76 @@ test('video storage validates file signatures and only resolves managed filename
   assert.equal(storage.filenameForManagedUrl(`${VIDEO_PREFIX}../../etc/passwd`), undefined);
   assert.equal(storage.filenameForManagedUrl('https://cdn.example.com/video.mp4'), undefined);
   await assert.rejects(() => storage.pathFor('../secret.mp4'), NotFoundException);
+});
+
+// ── Company logo / media references (regression: "Upload the company logo through the media uploader.") ──
+
+async function pngUpload(name = 'logo.png') {
+  const buffer = await sharp({ create: { width: 64, height: 64, channels: 3, background: '#0a7' } }).png().toBuffer();
+  return { originalname: name, mimetype: 'image/png', size: buffer.length, buffer };
+}
+
+test('a logo uploaded under a production loopback image base URL is accepted however the browser holds it', async () => {
+  // Production configured with the template value: absolute loopback base URL is kept as-is.
+  const { config } = storageConfig({ nodeEnv: 'production', publicBaseUrl: 'http://localhost:5000/api/v1', folder: 'prod-loopback' });
+  const images = new PropertyImageStorageService(config);
+  const videos = new PromoMediaStorageService(config);
+  const saved = await images.save(await pngUpload());
+  assert.equal(saved.url, `http://localhost:5000/api/v1/properties/images/${saved.filename}`);
+
+  // The browser's API client rewrites loopback image URLs to relative paths, so the
+  // form submitted "/api/v1/properties/images/<file>". The old exact-prefix check rejected it:
+  const relative = `/api/v1/properties/images/${saved.filename}`;
+  assert.equal(images.filenameForManagedUrl(relative), undefined);
+
+  const { service, calls } = makeService({ images, videos });
+  const adminId = new Types.ObjectId().toHexString();
+  for (const logoUrl of [relative, saved.url]) {
+    const created = await service.create(dto({ logoUrl, media: [{ kind: PromoMediaKind.IMAGE, url: relative }] }), adminId);
+    // Stored and returned in the canonical, environment-independent form.
+    assert.equal(created.logoUrl, relative);
+    assert.equal(calls.create.at(-1)?.logoUrl, relative);
+  }
+});
+
+test('the media uploader returns canonical paths for images and videos', async () => {
+  const { config } = storageConfig({ nodeEnv: 'production', publicBaseUrl: 'https://api.example.com/api/v1', folder: 'prod-public' });
+  const videos = new PromoMediaStorageService(config);
+  const mp4 = Buffer.concat([Buffer.from([0, 0, 0, 0x18]), Buffer.from('ftypmp42'), Buffer.alloc(64)]);
+  const video = await videos.saveVideo({ originalname: 'clip.mp4', mimetype: 'video/mp4', size: mp4.length, buffer: mp4 });
+  assert.match(video.url, /^\/api\/v1\/promotions\/media\/[0-9a-f-]{36}\.mp4$/);
+  // Absolute forms from the configured base are recognised and canonicalised; foreign hosts are not.
+  assert.equal(videos.resolveReference(`https://api.example.com/api/v1/promotions/media/${video.filename}`)?.url, video.url);
+  assert.equal(videos.resolveReference(`https://evil.example.com/api/v1/promotions/media/${video.filename}`), undefined);
+  assert.equal(videos.resolveReference(`/api/v1/properties/images/../../.env`), undefined);
+  assert.equal(await videos.exists(videos.resolveReference(video.url)!), true);
+});
+
+test('logo errors are specific: not uploaded here, wrong kind, or missing from storage', async () => {
+  const { service } = makeService();
+  const adminId = new Types.ObjectId().toHexString();
+  await assert.rejects(() => service.create(dto({ logoUrl: 'https://cdn.example.com/logo.png' }), adminId), /Upload the company logo through the media uploader/);
+  await assert.rejects(() => service.create(dto({ logoUrl: VIDEO }), adminId), /company logo must be a JPG, PNG or WebP image/);
+  await assert.rejects(
+    () => service.create(dto({ logoUrl: `${IMAGE_PREFIX}99999999-9999-4999-8999-999999999999.png` }), adminId),
+    /uploaded company logo could not be found on the server/,
+  );
+  // A draft without a logo is allowed; activation without a logo is not.
+  assert.equal((await service.create(dto(), adminId)).logoUrl, '');
+  await assert.rejects(() => service.create(dto({ status: PromoCampaignStatus.ACTIVE }), adminId), /Upload the company logo before activating/);
+  const live = await service.create(dto({ logoUrl: IMAGE, status: PromoCampaignStatus.ACTIVE }), adminId);
+  assert.equal(live.logoUrl, IMAGE);
+});
+
+test('served campaigns expose canonical media URLs even for older absolute stored values', async () => {
+  const { config, imagesDir } = storageConfig({ nodeEnv: 'production', publicBaseUrl: 'http://localhost:5000/api/v1', folder: 'serve' });
+  const videos = new PromoMediaStorageService(config);
+  const filename = '33333333-3333-4333-8333-333333333333.png';
+  writeFileSync(join(imagesDir, filename), 'x');
+  assert.ok(existsSync(join(imagesDir, filename)));
+  const stored = { logoUrl: `http://localhost:5000/api/v1/properties/images/${filename}`, media: [{ kind: PromoMediaKind.IMAGE, url: `http://localhost:5000/api/v1/properties/images/${filename}`, alt: '' }] };
+  const { service } = makeService({ videos, rows: [{ ...campaign(), ...stored }] });
+  const response = await service.serve({ placement: PromoPlacement.HOME_FEATURED, device: PromoDevice.DESKTOP });
+  assert.equal(response.campaigns[0]?.logoUrl, `/api/v1/properties/images/${filename}`);
+  assert.equal(response.campaigns[0]?.media[0].url, `/api/v1/properties/images/${filename}`);
 });

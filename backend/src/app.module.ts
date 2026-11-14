@@ -18,7 +18,6 @@ import { ProjectsModule } from './modules/projects/projects.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
 import { MaintenanceModule } from './modules/maintenance/maintenance.module';
 import { PromotionsModule } from './modules/promotions/promotions.module';
-import { DailyUpdatesModule } from './modules/daily-updates/daily-updates.module';
 
 const developmentAnalyticsMode =
   process.env.NODE_ENV === 'development' &&
@@ -52,7 +51,6 @@ const developmentAnalyticsMode =
           NotificationsModule,
           MaintenanceModule,
           PromotionsModule,
-          DailyUpdatesModule,
         ]),
   ],
 })

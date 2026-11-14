@@ -19,6 +19,23 @@ export interface UploadedPromoVideo {
 }
 
 const VIDEO_FILENAME = /^[a-f0-9-]{36}\.(mp4|webm)$/;
+const IMAGE_FILENAME = /^[a-f0-9-]{36}\.(jpg|png|webp)$/;
+
+/**
+ * Canonical, environment-independent paths of uploaded campaign media. They
+ * are served by the API (global prefix /api/v1) and, on the website and admin
+ * hosts, through the frontend's /api/v1 proxy — so they never depend on
+ * PROPERTY_IMAGE_PUBLIC_BASE_URL and are not rewritten by the browser client.
+ */
+export const PROMO_IMAGE_PATH = '/api/v1/properties/images/';
+export const PROMO_VIDEO_PATH = '/api/v1/promotions/media/';
+
+export interface PromoMediaReference {
+  kind: 'image' | 'video';
+  filename: string;
+  /** Canonical URL to store and serve. */
+  url: string;
+}
 
 /**
  * Filesystem storage for sponsored-campaign videos (images reuse the property
@@ -29,6 +46,7 @@ const VIDEO_FILENAME = /^[a-f0-9-]{36}\.(mp4|webm)$/;
 export class PromoMediaStorageService {
   private readonly logger = new Logger(PromoMediaStorageService.name);
   private readonly directory: string;
+  private readonly imagesDirectory: string;
   private readonly publicBaseUrl: string;
 
   constructor(config: ConfigService) {
@@ -43,12 +61,57 @@ export class PromoMediaStorageService {
       if (nodeEnv !== 'production' && loopback) baseUrl = '/api/v1';
     }
     this.publicBaseUrl = baseUrl;
-    const imagesDirectory = configuredDirectory
+    // Same directory resolution as PropertyImageStorageService (campaign images use that pipeline).
+    this.imagesDirectory = configuredDirectory
       ? isAbsolute(configuredDirectory)
         ? configuredDirectory
         : resolve(process.cwd(), configuredDirectory)
       : resolve(process.cwd(), 'uploads', 'property-images');
-    this.directory = join(imagesDirectory, '..', 'promo-media');
+    this.directory = join(this.imagesDirectory, '..', 'promo-media');
+  }
+
+  /**
+   * Resolves a campaign media URL to an uploaded file. Accepts the canonical
+   * relative path and the absolute form built from PROPERTY_IMAGE_PUBLIC_BASE_URL
+   * (older responses); anything else is not managed media.
+   */
+  resolveReference(url: string | undefined | null): PromoMediaReference | undefined {
+    const value = url?.trim();
+    if (!value) return undefined;
+    const forms: Array<{ kind: 'image' | 'video'; prefixes: string[]; pattern: RegExp; canonical: string }> = [
+      {
+        kind: 'image',
+        prefixes: [PROMO_IMAGE_PATH, `${this.publicBaseUrl}/properties/images/`],
+        pattern: IMAGE_FILENAME,
+        canonical: PROMO_IMAGE_PATH,
+      },
+      {
+        kind: 'video',
+        prefixes: [PROMO_VIDEO_PATH, `${this.publicBaseUrl}/promotions/media/`],
+        pattern: VIDEO_FILENAME,
+        canonical: PROMO_VIDEO_PATH,
+      },
+    ];
+    for (const form of forms) {
+      for (const prefix of new Set(form.prefixes)) {
+        if (!value.startsWith(prefix)) continue;
+        const filename = value.slice(prefix.length);
+        if (form.pattern.test(filename)) return { kind: form.kind, filename, url: `${form.canonical}${filename}` };
+      }
+    }
+    return undefined;
+  }
+
+  /** Whether the referenced file is present in storage (i.e. it really was uploaded here). */
+  async exists(reference: PromoMediaReference): Promise<boolean> {
+    const pattern = reference.kind === 'image' ? IMAGE_FILENAME : VIDEO_FILENAME;
+    if (!pattern.test(reference.filename)) return false;
+    const directory = reference.kind === 'image' ? this.imagesDirectory : this.directory;
+    try {
+      return (await stat(resolve(directory, reference.filename))).isFile();
+    } catch {
+      return false;
+    }
   }
 
   /** Detects MP4 (ISO BMFF "ftyp") and WebM (EBML) from file bytes. */
@@ -80,14 +143,12 @@ export class PromoMediaStorageService {
       this.logger.error('Could not save a promotion video', error instanceof Error ? error.stack : String(error));
       throw new InternalServerErrorException('Video storage is unavailable.');
     }
-    return { url: `${this.publicBaseUrl}/promotions/media/${filename}`, filename, contentType, size: file.size };
+    return { url: `${PROMO_VIDEO_PATH}${filename}`, filename, contentType, size: file.size };
   }
 
   filenameForManagedUrl(url: string): string | undefined {
-    const prefix = `${this.publicBaseUrl}/promotions/media/`;
-    if (!url.startsWith(prefix)) return undefined;
-    const filename = url.slice(prefix.length);
-    return VIDEO_FILENAME.test(filename) ? filename : undefined;
+    const reference = this.resolveReference(url);
+    return reference?.kind === 'video' ? reference.filename : undefined;
   }
 
   /** Absolute path for streaming (throws 404 for unknown or invalid names). */
