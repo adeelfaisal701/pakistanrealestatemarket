@@ -44,6 +44,8 @@ export function buildContentSecurityPolicy(environment = process.env, nonce) {
       ? "style-src-elem 'self' 'unsafe-inline'"
       : `style-src-elem 'self' 'nonce-${nonce}'`,
     `img-src 'self' data: blob: ${[...new Set([...DEFAULT_IMAGE_ORIGINS, ...imageOrigins])].join(" ")}${analyticsImages}`,
+    // Sponsored campaign videos are served by the API (or the media origin).
+    `media-src 'self' blob: ${[...new Set([...imageOrigins, ...(apiOrigin ? [apiOrigin] : [])])].join(" ")}`.trim(),
     `font-src 'self' data:`,
     `connect-src 'self' ${apiOrigin ?? ""}${analyticsConnect}`.replace(/\s+/g, " ").trim(),
     "frame-src https://maps.google.com",

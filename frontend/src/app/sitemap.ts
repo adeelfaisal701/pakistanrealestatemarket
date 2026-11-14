@@ -20,6 +20,7 @@ const STATIC_PAGES: Array<{ path: string; priority: number; changeFrequency: Met
   { path: "/agents", priority: 0.7, changeFrequency: "weekly" },
   { path: "/projects", priority: 0.7, changeFrequency: "weekly" },
   { path: "/maintenance", priority: 0.8, changeFrequency: "weekly" },
+  { path: "/news", priority: 0.6, changeFrequency: "hourly" },
 ];
 
 function toDate(value?: string): Date | undefined {

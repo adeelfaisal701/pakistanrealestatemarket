@@ -22,6 +22,9 @@ import DualCTA from './DualCTA';
 import Navbar from './Navbar';
 import { useMediaQuery } from '@/hooks/use-media-query';
 import { VerticalScrollList } from './VerticalScrollList';
+import SponsoredSlot from '@/components/promotions/SponsoredSlot';
+import LiveUpdatesTicker from '@/components/daily-updates/LiveUpdatesTicker';
+import LatestNews from '@/components/daily-updates/LatestNews';
 
 function PropertyCategories() {
   const categories = [
@@ -261,6 +264,7 @@ export function OurProjects() {
             ))}
           </VerticalScrollList>
         )}
+        <SponsoredSlot placement="projects_section" layout="inline" className="mt-6" />
       </div>
     </section>
   );
@@ -301,9 +305,16 @@ export default function DesktopMarketplace() {
     <main className="min-h-screen bg-slate-50 font-sans text-slate-900 dark:bg-slate-950 dark:text-slate-100">
       <Navbar />
       <HeroSearch desktop />
+      <LiveUpdatesTicker />
+      <LatestNews className="px-5 py-6 sm:px-8" innerClassName="mx-auto max-w-7xl 2xl:max-w-[1440px]" />
       <FeaturedAgents />
       <FeaturedAgencies />
       <PopularLocations properties={properties} error={loading ? '' : error} />
+      <SponsoredSlot
+        placement="home_featured"
+        className="bg-white px-5 pt-8 sm:px-8 sm:pt-10"
+        innerClassName="mx-auto max-w-7xl 2xl:max-w-[1440px]"
+      />
       <OurProjects />
       <DualCTA />
     </main>

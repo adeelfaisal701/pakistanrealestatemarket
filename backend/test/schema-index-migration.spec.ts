@@ -177,8 +177,8 @@ test('migration history versions are independently tracked', async () => {
 });
 
 test('migration allowlist covers audited indexed schemas and declared TTL definitions', () => {
-  assert.equal(APPROVED_INDEX_SCHEMAS.length, 23);
-  for (const modelName of ['MaintenanceRequest', 'TechnicianProfile', 'UserNotification']) {
+  assert.equal(APPROVED_INDEX_SCHEMAS.length, 30);
+  for (const modelName of ['MaintenanceRequest', 'TechnicianProfile', 'UserNotification', 'PromoCampaign', 'PromoDailyStat', 'PromoEventDedup', 'PromoSettings', 'MarketIndicator', 'MarketIndicatorHistory', 'NewsArticle']) {
     assert.ok(
       APPROVED_INDEX_SCHEMAS.some((entry) => entry.modelName === modelName),
       `${modelName} indexes must be in the explicit migration allowlist`,
@@ -191,7 +191,11 @@ test('migration allowlist covers audited indexed schemas and declared TTL defini
   const ttlIndexes = APPROVED_INDEX_SCHEMAS.flatMap(({ schema }) =>
     schema.indexes().filter(([, options]) => 'expireAfterSeconds' in options),
   );
-  assert.equal(ttlIndexes.length, 3);
+  assert.equal(ttlIndexes.length, 6);
+  assert.ok(
+    ttlIndexes.some(([keys, options]) => (keys as Record<string, unknown>).expiresAt === 1 && options.expireAfterSeconds === 0),
+    "sponsored campaign event de-duplication keys must expire",
+  );
   assert.ok(ttlIndexes.some(([, options]) => options.name === 'visitor_chat_session_expiry'));
   assert.ok(
     APPROVED_INDEX_SCHEMAS.some(

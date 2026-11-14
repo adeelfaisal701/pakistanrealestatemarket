@@ -17,6 +17,7 @@ import {
   Menu,
   Megaphone,
   MessageSquareWarning,
+  MonitorPlay,
   Search,
   Shield,
   ShieldCheck,
@@ -83,6 +84,12 @@ const navigation = [
     href: "/admin/advertisements",
     icon: Megaphone,
     description: "Publish, pause or remove ads",
+  },
+  {
+    name: "Sponsored Campaigns",
+    href: "/admin/promotions",
+    icon: MonitorPlay,
+    description: "Advertiser banners, videos & analytics",
   },
   {
     name: "Reports & Complaints",

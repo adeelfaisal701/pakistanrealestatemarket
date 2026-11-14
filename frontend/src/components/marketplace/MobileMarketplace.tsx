@@ -31,6 +31,9 @@ import { getLandingProjects } from '@/lib/projects';
 import { useMediaQuery } from '@/hooks/use-media-query';
 import { propertyPath } from '@/lib/seo/slug';
 import { VerticalScrollList } from './VerticalScrollList';
+import SponsoredSlot from '@/components/promotions/SponsoredSlot';
+import LiveUpdatesTicker from '@/components/daily-updates/LiveUpdatesTicker';
+import LatestNews from '@/components/daily-updates/LatestNews';
 
 /* ─────────────────────── HELPERS ─────────────────────── */
 function HouseIcon({ className }: { className?: string }) {
@@ -676,6 +679,7 @@ export function MobileProjects() {
         ))}
       </VerticalScrollList>
       )}
+      <SponsoredSlot placement="projects_section" layout="inline" className="mt-4" />
     </section>
   );
 }
@@ -745,9 +749,12 @@ export default function MobileMarketplace() {
   return (
     <div className="min-h-screen bg-white font-sans text-slate-900">
       <MobileHero />
+      <LiveUpdatesTicker />
+      <LatestNews className="px-4 py-5 sm:px-6" />
       <FeaturedAgents />
       <FeaturedAgencies />
       <MobilePopularLocations properties={properties} error={propertiesError} />
+      <SponsoredSlot placement="home_featured" className="bg-white px-4 pt-2 sm:px-6" />
       <MobileProjects />
       <MobileListCTA />
     </div>
