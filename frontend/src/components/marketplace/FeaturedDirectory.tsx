@@ -4,8 +4,8 @@ import { useEffect, useState } from "react";
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { ArrowRight, Building2, MapPin, UserRound, Users } from "lucide-react";
-import { PagedCarousel } from "./PagedCarousel";
 import { agencyPath, agentPath } from "@/lib/seo/slug";
+import { VerticalScrollList } from "./VerticalScrollList";
 import { getApiErrorMessage } from "@/lib/api-client";
 import {
   fetchFeaturedAgencies,
@@ -229,14 +229,15 @@ export function FeaturedAgencies() {
             {error}
           </p>
         ) : agencies.length ? (
-          <PagedCarousel
-            items={agencies}
-            pageSize={4}
+          <VerticalScrollList
+            visibleCount={4}
             label="Featured agencies"
-            pageClassName="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4 lg:gap-5"
-            getKey={(agency) => agency.name}
-            renderItem={(agency) => <FeaturedAgencyCard agency={agency} />}
-          />
+            className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4 lg:gap-5"
+          >
+            {agencies.map((agency) => (
+              <FeaturedAgencyCard key={agency.name} agency={agency} />
+            ))}
+          </VerticalScrollList>
         ) : (
           <p className="rounded-xl border border-dashed border-slate-300 p-4 text-center text-xs text-slate-500 md:p-6 md:text-sm md:dark:border-slate-700">
             No agency affiliations are available yet.

@@ -20,8 +20,8 @@ import HeroSearch from './HeroSearch';
 import { FeaturedAgencies, FeaturedAgents } from './FeaturedDirectory';
 import DualCTA from './DualCTA';
 import Navbar from './Navbar';
-import { PagedCarousel } from './PagedCarousel';
 import { useMediaQuery } from '@/hooks/use-media-query';
+import { VerticalScrollList } from './VerticalScrollList';
 
 function PropertyCategories() {
   const categories = [
@@ -255,14 +255,11 @@ export function OurProjects() {
         ) : projects.length === 0 ? (
           <p className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-500">No projects are available right now.</p>
         ) : (
-          <PagedCarousel
-            items={projects}
-            pageSize={3}
-            label="Our projects"
-            pageClassName="grid grid-cols-3 gap-4 lg:gap-5"
-            getKey={(project) => project.id}
-            renderItem={(project) => <ProjectCard project={project} />}
-          />
+          <VerticalScrollList visibleCount={3} label="Our projects" className="grid grid-cols-3 gap-4 lg:gap-5">
+            {projects.map((project) => (
+              <ProjectCard key={project.id} project={project} />
+            ))}
+          </VerticalScrollList>
         )}
       </div>
     </section>
