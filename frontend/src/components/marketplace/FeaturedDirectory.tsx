@@ -5,7 +5,8 @@ import type { ReactNode } from "react";
 import Link from "next/link";
 import { ArrowRight, Building2, MapPin, UserRound, Users } from "lucide-react";
 import { agencyPath, agentPath } from "@/lib/seo/slug";
-import { VerticalScrollList } from "./VerticalScrollList";
+import { PagedCarousel } from "./PagedCarousel";
+import { useMediaQuery } from "@/hooks/use-media-query";
 import SponsoredSlot from "@/components/promotions/SponsoredSlot";
 import { getApiErrorMessage } from "@/lib/api-client";
 import {
@@ -186,6 +187,9 @@ export function FeaturedAgencies() {
   const [agencies, setAgencies] = useState<PublicAgency[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  // Phones show one row of 2 agencies per slide; tablet/desktop keep one row of 4.
+  const isPhone = useMediaQuery("(max-width: 767px)");
+  const agenciesPerPage = isPhone ? 2 : 4;
 
   useEffect(() => {
     let active = true;
@@ -222,7 +226,7 @@ export function FeaturedAgencies() {
         {loading ? (
           <div className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4 lg:gap-5">
             {[1, 2, 3, 4].map((item) => (
-              <div key={item} className="h-[212px] animate-pulse rounded-2xl border border-slate-200 bg-white md:h-[264px] md:dark:border-slate-800 md:dark:bg-slate-950" />
+              <div key={item} className={`h-[212px] animate-pulse rounded-2xl border border-slate-200 bg-white md:h-[264px] md:dark:border-slate-800 md:dark:bg-slate-950 ${item > 2 ? "hidden md:block" : ""}`} />
             ))}
           </div>
         ) : error ? (
@@ -230,15 +234,15 @@ export function FeaturedAgencies() {
             {error}
           </p>
         ) : agencies.length ? (
-          <VerticalScrollList
-            visibleCount={4}
+          <PagedCarousel
+            key={agenciesPerPage}
+            items={agencies}
+            pageSize={agenciesPerPage}
             label="Featured agencies"
-            className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4 lg:gap-5"
-          >
-            {agencies.map((agency) => (
-              <FeaturedAgencyCard key={agency.name} agency={agency} />
-            ))}
-          </VerticalScrollList>
+            pageClassName="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4 lg:gap-5"
+            getKey={(agency) => agency.name}
+            renderItem={(agency) => <FeaturedAgencyCard agency={agency} />}
+          />
         ) : (
           <p className="rounded-xl border border-dashed border-slate-300 p-4 text-center text-xs text-slate-500 md:p-6 md:text-sm md:dark:border-slate-700">
             No agency affiliations are available yet.

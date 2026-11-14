@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 function chunk<T>(items: T[], size: number): T[][] {
@@ -23,10 +23,18 @@ interface PagedCarouselProps<T> {
   renderItem: (item: T) => ReactNode;
 }
 
+const buttonClass =
+  'items-center justify-center rounded-full border border-slate-200 bg-white/95 text-slate-700 shadow-md transition hover:border-emerald-300 hover:text-emerald-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 md:dark:border-slate-700 md:dark:bg-slate-900/95 md:dark:text-slate-200';
+/** Side arrows (tablet/desktop), vertically centred on the cards. */
+const sideArrowClass = `${buttonClass} absolute top-1/2 z-10 hidden h-10 w-10 -translate-y-1/2 backdrop-blur md:flex`;
+/** On phones the arrows sit beside the dots so they never cover card content. */
+const compactArrowClass = `${buttonClass} flex h-8 w-8 md:hidden`;
+
 /**
- * Horizontal, page-at-a-time carousel. Pages use native scroll snapping, so
- * touch swiping and trackpads work without extra libraries; arrows and dots
- * provide keyboard and mouse navigation.
+ * Side carousel: shows one page of items at a time and slides horizontally.
+ * Arrow buttons sit on the left and right edges; pages use native scroll
+ * snapping, so touch swiping and trackpads work without extra libraries.
+ * Navigation wraps around from the last page to the first.
  */
 export function PagedCarousel<T>({
   items,
@@ -54,8 +62,8 @@ export function PagedCarousel<T>({
 
   function goTo(target: number) {
     const track = trackRef.current;
-    if (!track) return;
-    const next = Math.min(pageCount - 1, Math.max(0, target));
+    if (!track || pageCount === 0) return;
+    const next = ((target % pageCount) + pageCount) % pageCount;
     const reduceMotion =
       typeof window !== 'undefined' &&
       window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
@@ -63,74 +71,92 @@ export function PagedCarousel<T>({
     setPage(next);
   }
 
-  return (
-    <div role="region" aria-roledescription="carousel" aria-label={label}>
-      <div
-        ref={trackRef}
-        onScroll={syncPage}
-        className="-mx-1 flex snap-x snap-mandatory overflow-x-auto overscroll-x-contain [scrollbar-width:none] [-ms-overflow-style:none] [-webkit-overflow-scrolling:touch] [&::-webkit-scrollbar]:hidden"
-      >
-        {pages.map((pageItems, index) => (
-          <div
-            key={pageItems.map(getKey).join('|')}
-            role="group"
-            aria-roledescription="slide"
-            aria-label={`Page ${index + 1} of ${pageCount}`}
-            aria-hidden={index !== page}
-            inert={index !== page ? true : undefined}
-            className="w-full shrink-0 snap-start snap-always px-1 pb-2 pt-1"
-          >
-            <div className={pageClassName}>
-              {pageItems.map((item) => (
-                <div key={getKey(item)} className="min-w-0">
-                  {renderItem(item)}
-                </div>
-              ))}
-            </div>
-          </div>
-        ))}
-      </div>
+  function onKeyDown(event: KeyboardEvent<HTMLDivElement>) {
+    if (pageCount < 2) return;
+    if (event.key === 'ArrowRight') {
+      event.preventDefault();
+      goTo(page + 1);
+    } else if (event.key === 'ArrowLeft') {
+      event.preventDefault();
+      goTo(page - 1);
+    }
+  }
 
-      {pageCount > 1 && (
-        <div className="mt-2 flex items-center justify-between gap-3">
-          <div className="flex items-center gap-1.5">
-            {pages.map((_, index) => (
-              <button
-                key={index}
-                type="button"
-                onClick={() => goTo(index)}
-                aria-label={`Show page ${index + 1} of ${pageCount}`}
-                aria-current={index === page ? 'true' : undefined}
-                className="flex h-6 items-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 rounded-full"
-              >
-                <span
-                  className={`block h-1.5 rounded-full transition-all duration-300 ${
-                    index === page ? 'w-6 bg-emerald-600' : 'w-1.5 bg-slate-300 md:dark:bg-slate-600'
-                  }`}
-                />
-              </button>
-            ))}
-          </div>
-          <div className="flex items-center gap-2">
+  return (
+    <div role="region" aria-roledescription="carousel" aria-label={label} onKeyDown={onKeyDown}>
+      <div className="relative">
+        <div
+          ref={trackRef}
+          onScroll={syncPage}
+          className="-mx-1 flex snap-x snap-mandatory overflow-x-auto overscroll-x-contain [scrollbar-width:none] [-ms-overflow-style:none] [-webkit-overflow-scrolling:touch] [&::-webkit-scrollbar]:hidden"
+        >
+          {pages.map((pageItems, index) => (
+            <div
+              key={pageItems.map(getKey).join('|')}
+              role="group"
+              aria-roledescription="slide"
+              aria-label={`Page ${index + 1} of ${pageCount}`}
+              aria-hidden={index !== page}
+              inert={index !== page ? true : undefined}
+              className="w-full shrink-0 snap-start snap-always px-1 pb-2 pt-1"
+            >
+              <div className={pageClassName}>
+                {pageItems.map((item) => (
+                  <div key={getKey(item)} className="min-w-0">
+                    {renderItem(item)}
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {pageCount > 1 && (
+          <>
             <button
               type="button"
               onClick={() => goTo(page - 1)}
-              disabled={page === 0}
-              aria-label="Previous page"
-              className="flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 shadow-sm transition hover:border-emerald-300 hover:text-emerald-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 disabled:cursor-not-allowed disabled:opacity-40 md:dark:border-slate-700 md:dark:bg-slate-900 md:dark:text-slate-200"
+              aria-label={`Previous ${label.toLowerCase()}`}
+              className={`${sideArrowClass} -left-5`}
             >
-              <ChevronLeft aria-hidden="true" className="h-4 w-4" />
+              <ChevronLeft aria-hidden="true" className="h-5 w-5" />
             </button>
             <button
               type="button"
               onClick={() => goTo(page + 1)}
-              disabled={page === pageCount - 1}
-              aria-label="Next page"
-              className="flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 shadow-sm transition hover:border-emerald-300 hover:text-emerald-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 disabled:cursor-not-allowed disabled:opacity-40 md:dark:border-slate-700 md:dark:bg-slate-900 md:dark:text-slate-200"
+              aria-label={`Next ${label.toLowerCase()}`}
+              className={`${sideArrowClass} -right-5`}
             >
-              <ChevronRight aria-hidden="true" className="h-4 w-4" />
+              <ChevronRight aria-hidden="true" className="h-5 w-5" />
             </button>
-          </div>
+          </>
+        )}
+      </div>
+
+      {pageCount > 1 && (
+        <div className="mt-2 flex items-center justify-center gap-1.5">
+          <button type="button" onClick={() => goTo(page - 1)} aria-label={`Previous ${label.toLowerCase()}`} className={`${compactArrowClass} mr-2`}>
+            <ChevronLeft aria-hidden="true" className="h-4 w-4" />
+          </button>
+          {pages.map((_, index) => (
+            <button
+              key={index}
+              type="button"
+              onClick={() => goTo(index)}
+              aria-label={`Show page ${index + 1} of ${pageCount}`}
+              aria-current={index === page ? 'true' : undefined}
+              className="flex h-6 items-center rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
+            >
+              <span
+                className={`block h-1.5 rounded-full transition-all duration-300 ${
+                  index === page ? 'w-6 bg-emerald-600' : 'w-1.5 bg-slate-300 md:dark:bg-slate-600'
+                }`}
+              />
+            </button>
+          ))}
+          <button type="button" onClick={() => goTo(page + 1)} aria-label={`Next ${label.toLowerCase()}`} className={`${compactArrowClass} ml-2`}>
+            <ChevronRight aria-hidden="true" className="h-4 w-4" />
+          </button>
         </div>
       )}
     </div>

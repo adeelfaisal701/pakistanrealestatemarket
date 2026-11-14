@@ -30,7 +30,7 @@ import { FeaturedAgencies, FeaturedAgents } from './FeaturedDirectory';
 import { getLandingProjects } from '@/lib/projects';
 import { useMediaQuery } from '@/hooks/use-media-query';
 import { propertyPath } from '@/lib/seo/slug';
-import { VerticalScrollList } from './VerticalScrollList';
+import { PagedCarousel } from './PagedCarousel';
 import SponsoredSlot from '@/components/promotions/SponsoredSlot';
 
 /* ─────────────────────── HELPERS ─────────────────────── */
@@ -645,10 +645,14 @@ export function MobileProjects() {
       ) : projects.length === 0 ? (
         <p className="rounded-xl border border-[#E2E8F0] bg-slate-50 p-4 text-xs text-[#64748B]">No projects are available right now.</p>
       ) : (
-      <VerticalScrollList visibleCount={3} label="Our projects" className="grid gap-3">
-        {projects.map((project) => (
+      <PagedCarousel
+        items={projects}
+        pageSize={3}
+        label="Our projects"
+        pageClassName="grid gap-3"
+        getKey={(project) => project.id}
+        renderItem={(project) => (
           <Link
-            key={project.id}
             href={`/projects/${encodeURIComponent(project.slug)}`}
             className="group flex h-[108px] min-w-0 items-center gap-3 overflow-hidden rounded-2xl border border-[#E2E8F0] bg-white p-2.5 shadow-[0_1px_3px_rgba(16,29,50,0.06)] transition-colors hover:border-emerald-300"
           >
@@ -674,8 +678,8 @@ export function MobileProjects() {
               <ArrowRight className="h-4 w-4" />
             </div>
           </Link>
-        ))}
-      </VerticalScrollList>
+        )}
+      />
       )}
       <SponsoredSlot placement="projects_section" layout="inline" className="mt-4" />
     </section>

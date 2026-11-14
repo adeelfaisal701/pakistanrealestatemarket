@@ -21,7 +21,7 @@ import { FeaturedAgencies, FeaturedAgents } from './FeaturedDirectory';
 import DualCTA from './DualCTA';
 import Navbar from './Navbar';
 import { useMediaQuery } from '@/hooks/use-media-query';
-import { VerticalScrollList } from './VerticalScrollList';
+import { PagedCarousel } from './PagedCarousel';
 import SponsoredSlot from '@/components/promotions/SponsoredSlot';
 
 function PropertyCategories() {
@@ -256,11 +256,14 @@ export function OurProjects() {
         ) : projects.length === 0 ? (
           <p className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-500">No projects are available right now.</p>
         ) : (
-          <VerticalScrollList visibleCount={3} label="Our projects" className="grid grid-cols-3 gap-4 lg:gap-5">
-            {projects.map((project) => (
-              <ProjectCard key={project.id} project={project} />
-            ))}
-          </VerticalScrollList>
+          <PagedCarousel
+            items={projects}
+            pageSize={3}
+            label="Our projects"
+            pageClassName="grid grid-cols-3 gap-4 lg:gap-5"
+            getKey={(project) => project.id}
+            renderItem={(project) => <ProjectCard project={project} />}
+          />
         )}
         <SponsoredSlot placement="projects_section" layout="inline" className="mt-6" />
       </div>
